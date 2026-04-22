@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shanzhu</groupId>
+        <artifactId>shanzhu</artifactId>
+        <version>2.0.2</version>
+    </parent>
+
+    <artifactId>shanzhu-biz</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>shanzhu-monitor</module>
+        <module>shanzhu-system</module>
+    </modules>
+
+    <dependencies>
+        <!--        持久化模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-mybatis</artifactId>
+        </dependency>
+        <!--        公共模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-common</artifactId>
+        </dependency>
+        <!--        websocket模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-websocket</artifactId>
+        </dependency>
+        <!--        web模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-web</artifactId>
+        </dependency>
+        <!--        字典模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-dict</artifactId>
+        </dependency>
+        <!--        数据脱敏模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-sensitive</artifactId>
+        </dependency>
+        <!--        日志模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-log</artifactId>
+        </dependency>
+        <!--        ip模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-ip</artifactId>
+        </dependency>
+        <!--        excel模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-excel</artifactId>
+        </dependency>
+        <!--        doc 模块-->
+        <dependency>
+            <groupId>com.shanzhu</groupId>
+            <artifactId>shanzhu-doc</artifactId>
+        </dependency>
+    </dependencies>
+</project>

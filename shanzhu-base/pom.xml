@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.shanzhu</groupId>
+        <artifactId>shanzhu</artifactId>
+        <version>2.0.2</version>
+    </parent>
+
+    <artifactId>shanzhu-base</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>shanzhu-attachment</module>
+        <module>shanzhu-captcha</module>
+        <module>shanzhu-common</module>
+        <module>shanzhu-dict</module>
+        <module>shanzhu-doc</module>
+        <module>shanzhu-excel</module>
+        <module>shanzhu-ip</module>
+        <module>shanzhu-job</module>
+        <module>shanzhu-log</module>
+        <module>shanzhu-mybatis</module>
+        <module>shanzhu-cache</module>
+        <module>shanzhu-security</module>
+        <module>shanzhu-sensitive</module>
+        <module>shanzhu-web</module>
+        <module>shanzhu-websocket</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!--        参数校验-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+    </dependencies>
+</project>
