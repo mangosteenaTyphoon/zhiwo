@@ -88,6 +88,19 @@ const routers = [
           visible: false,
           role: ["ROLE_admin", "ROLE_visitor"]
         }
+      },
+      {
+        path: '/shanzhu/goal',
+        component: () => import("@/views/shanzhu/goal/index.vue"),
+        name: 'ShanzhuGoal',
+        meta: {
+          label: "目标管理",
+          icon: "FlagOutlined",
+          cache: false,
+          affix: false,
+          viewTab: true,
+          visible: true
+        }
       }
     ],
   },
