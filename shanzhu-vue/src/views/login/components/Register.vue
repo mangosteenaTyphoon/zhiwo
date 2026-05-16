@@ -1,11 +1,17 @@
 <template>
   <div>
     <div class="register-title">
-      <a-typography-title :level="2">欢迎注册狸花猫</a-typography-title>
-      <a-typography-text>已有账号？</a-typography-text>
-      <a-typography-link @click="handleChangeComponent('login')">前往登录
-        <RightOutlined/>
-      </a-typography-link>
+      <a-typography-text class="register-eyebrow">Create workspace</a-typography-text>
+      <a-typography-title :level="2">创建自我数据空间</a-typography-title>
+      <a-typography-paragraph class="register-subtitle">
+        从一个账号开始，管理你的目标、习惯和长期成长记录。
+      </a-typography-paragraph>
+      <div class="register-login-tip">
+        <a-typography-text>已有账号？</a-typography-text>
+        <a-typography-link @click="handleChangeComponent('login')">前往登录
+          <RightOutlined/>
+        </a-typography-link>
+      </div>
     </div>
     <a-form :model="userRegister"
             :rules="rules"
@@ -48,7 +54,7 @@
                   type="primary"
                   class="register-form-item"
                   :loading="registerLoading"
-                  style="width: 100%">注册
+                  style="width: 100%">创建账号
         </a-button>
       </a-form-item>
     </a-form>
@@ -183,7 +189,71 @@ const handleRegister = async (captchaVerification: string) => {
 }
 
 .register-title {
-  margin-top: var(--lihua-space-lg);
-  margin-bottom: 56px;
+  margin-bottom: var(--lihua-space-xl);
+}
+
+.register-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--lihua-space-xs);
+  color: #1677ff;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.register-subtitle {
+  margin-bottom: var(--lihua-space-sm) !important;
+  color: rgba(15, 23, 42, 0.58);
+}
+
+.register-login-tip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lihua-space-xs);
+  align-items: center;
+}
+
+:deep(.ant-input-affix-wrapper),
+:deep(.ant-input) {
+  border-radius: var(--lihua-radius-sm);
+}
+
+:deep(.ant-btn-primary) {
+  font-weight: 600;
+  border-radius: var(--lihua-radius-sm);
+  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.22);
+}
+
+@media screen and (max-width: 520px) {
+  .register-title {
+    margin-bottom: var(--lihua-space-lg);
+  }
+
+  .register-title :deep(.ant-typography h2),
+  .register-title :deep(h2.ant-typography) {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+  }
+
+  .register-form-item {
+    height: 44px;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .register-title :deep(.ant-typography h2),
+  .register-title :deep(h2.ant-typography) {
+    font-size: 22px !important;
+  }
+
+  .register-subtitle {
+    font-size: var(--lihua-font-size-sm);
+  }
+}
+
+[data-theme = 'dark'] {
+  .register-subtitle {
+    color: rgba(255, 255, 255, 0.58);
+  }
 }
 </style>

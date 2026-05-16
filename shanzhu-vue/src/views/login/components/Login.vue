@@ -1,12 +1,16 @@
 <template>
   <div>
     <div class="login-title">
-      <a-typography-title :level="2">欢迎登录狸花猫</a-typography-title>
+      <a-typography-text class="login-eyebrow">Welcome back</a-typography-text>
+      <a-typography-title :level="2">登录自我数据中心</a-typography-title>
+      <a-typography-paragraph class="login-subtitle">
+        继续记录、分析并优化你的目标、习惯与成长节奏。
+      </a-typography-paragraph>
       <a-typography-text v-if="!settingStore.isServerConnected" type="danger">无法连接服务器</a-typography-text>
       <!--                    根据配置显示注册-->
-      <div v-if="settingStore.enableSignUp">
-        <a-typography-text>没有账号？</a-typography-text>
-        <a-typography-link @click="handleChangeComponent('register')">快速注册
+      <div v-if="settingStore.enableSignUp" class="login-register-tip">
+        <a-typography-text>还没有个人数据空间？</a-typography-text>
+        <a-typography-link @click="handleChangeComponent('register')">创建账号
           <RightOutlined/>
         </a-typography-link>
       </div>
@@ -46,7 +50,7 @@
                   type="primary"
                   class="login-form-item"
                   :loading="loginLoading"
-                  style="width: 100%">登录
+                  style="width: 100%">进入数据中心
         </a-button>
       </a-form-item>
     </a-form>
@@ -207,11 +211,75 @@ onMounted(() => {
 
 <style scoped>
 .login-title {
-  margin-top: var(--lihua-space-lg);
-  margin-bottom: 56px;
+  margin-bottom: var(--lihua-space-xl);
+}
+
+.login-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--lihua-space-xs);
+  color: #1677ff;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-subtitle {
+  margin-bottom: var(--lihua-space-sm) !important;
+  color: rgba(15, 23, 42, 0.58);
+}
+
+.login-register-tip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lihua-space-xs);
+  align-items: center;
 }
 
 .login-form-item {
-  height: 48px
+  height: 48px;
+}
+
+:deep(.ant-input-affix-wrapper),
+:deep(.ant-input) {
+  border-radius: var(--lihua-radius-sm);
+}
+
+:deep(.ant-btn-primary) {
+  font-weight: 600;
+  border-radius: var(--lihua-radius-sm);
+  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.22);
+}
+
+@media screen and (max-width: 520px) {
+  .login-title {
+    margin-bottom: var(--lihua-space-lg);
+  }
+
+  .login-title :deep(.ant-typography h2),
+  .login-title :deep(h2.ant-typography) {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+  }
+
+  .login-form-item {
+    height: 44px;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .login-title :deep(.ant-typography h2),
+  .login-title :deep(h2.ant-typography) {
+    font-size: 22px !important;
+  }
+
+  .login-subtitle {
+    font-size: var(--lihua-font-size-sm);
+  }
+}
+
+[data-theme = 'dark'] {
+  .login-subtitle {
+    color: rgba(255, 255, 255, 0.58);
+  }
 }
 </style>

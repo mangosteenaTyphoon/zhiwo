@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div id="lihua-tian-captcha" class="tian-captcha"/>
+    <Teleport to="body">
+      <div id="lihua-tian-captcha" class="tian-captcha"/>
+    </Teleport>
     <Mask :show-mask="showMask"/>
   </div>
 </template>

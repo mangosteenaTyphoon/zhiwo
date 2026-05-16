@@ -693,4 +693,233 @@ INSERT INTO `sys_view_tab` (`user_id`, `menu_id`, `affix`, `star`) VALUES (1, 18
 INSERT INTO `sys_view_tab` (`user_id`, `menu_id`, `affix`, `star`) VALUES (1, 1897209379781541890, '0', '1');
 COMMIT;
 
+-- ----------------------------
+-- Table structure for shanzhu_category
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_category`;
+CREATE TABLE `shanzhu_category` (
+  `id` bigint NOT NULL COMMENT '分类ID',
+  `user_id` bigint DEFAULT NULL COMMENT '用户ID，系统内置分类可为空',
+  `name` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '分类名称',
+  `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '分类编码',
+  `icon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '图标',
+  `color` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '颜色',
+  `sort_order` int DEFAULT NULL COMMENT '排序',
+  `built_in` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '是否内置（1是，0否）',
+  `enabled` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '1' COMMENT '是否启用（1是，0否）',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_category_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_category_code` (`code`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹分类表';
+
+-- ----------------------------
+-- Records of shanzhu_category
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_goal
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_goal`;
+CREATE TABLE `shanzhu_goal` (
+  `id` bigint NOT NULL COMMENT '目标ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `category_id` bigint NOT NULL COMMENT '分类ID',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '目标名称',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '目标描述',
+  `goal_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '目标类型',
+  `priority` int DEFAULT NULL COMMENT '优先级',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '目标状态',
+  `progress` int DEFAULT '0' COMMENT '当前进度，0-100',
+  `progress_mode` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '进度模式',
+  `start_date` date DEFAULT NULL COMMENT '开始日期',
+  `deadline` date DEFAULT NULL COMMENT '截止日期',
+  `completed_time` datetime DEFAULT NULL COMMENT '完成时间',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_goal_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_category_id` (`category_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_status` (`status`) USING BTREE,
+  KEY `idx_shanzhu_goal_deadline` (`deadline`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹目标表';
+
+-- ----------------------------
+-- Records of shanzhu_goal
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_sub_goal
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_sub_goal`;
+CREATE TABLE `shanzhu_sub_goal` (
+  `id` bigint NOT NULL COMMENT '子目标ID',
+  `goal_id` bigint NOT NULL COMMENT '所属目标ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '子目标名称',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '子目标描述',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '子目标状态',
+  `progress` int DEFAULT '0' COMMENT '子目标进度，0-100',
+  `weight` int DEFAULT NULL COMMENT '权重',
+  `sort_order` int DEFAULT NULL COMMENT '排序',
+  `start_date` date DEFAULT NULL COMMENT '开始日期',
+  `deadline` date DEFAULT NULL COMMENT '截止日期',
+  `completed_time` datetime DEFAULT NULL COMMENT '完成时间',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_sub_goal_goal_id` (`goal_id`) USING BTREE,
+  KEY `idx_shanzhu_sub_goal_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_sub_goal_status` (`status`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹子目标表';
+
+-- ----------------------------
+-- Records of shanzhu_sub_goal
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_task
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_task`;
+CREATE TABLE `shanzhu_task` (
+  `id` bigint NOT NULL COMMENT '任务ID',
+  `goal_id` bigint NOT NULL COMMENT '所属目标ID',
+  `sub_goal_id` bigint DEFAULT NULL COMMENT '所属子目标ID，可为空',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '任务标题',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '任务说明',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '任务状态',
+  `priority` int DEFAULT NULL COMMENT '优先级',
+  `planned_date` date DEFAULT NULL COMMENT '计划执行日期',
+  `deadline` datetime DEFAULT NULL COMMENT '截止时间',
+  `completed_time` datetime DEFAULT NULL COMMENT '完成时间',
+  `estimated_minutes` int DEFAULT NULL COMMENT '预计耗时，单位分钟',
+  `actual_minutes` int DEFAULT NULL COMMENT '实际耗时，单位分钟',
+  `sort_order` int DEFAULT NULL COMMENT '排序',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_task_goal_id` (`goal_id`) USING BTREE,
+  KEY `idx_shanzhu_task_sub_goal_id` (`sub_goal_id`) USING BTREE,
+  KEY `idx_shanzhu_task_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_task_status` (`status`) USING BTREE,
+  KEY `idx_shanzhu_task_planned_date` (`planned_date`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹任务表';
+
+-- ----------------------------
+-- Records of shanzhu_task
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_goal_progress
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_goal_progress`;
+CREATE TABLE `shanzhu_goal_progress` (
+  `id` bigint NOT NULL COMMENT '进展记录ID',
+  `goal_id` bigint NOT NULL COMMENT '目标ID',
+  `sub_goal_id` bigint DEFAULT NULL COMMENT '子目标ID，可为空',
+  `task_id` bigint DEFAULT NULL COMMENT '任务ID，可为空',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '进展标题',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '进展内容',
+  `progress_before` int DEFAULT NULL COMMENT '变更前进度',
+  `progress_after` int DEFAULT NULL COMMENT '变更后进度',
+  `record_date` date DEFAULT NULL COMMENT '记录日期',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_goal_progress_goal_id` (`goal_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_progress_sub_goal_id` (`sub_goal_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_progress_task_id` (`task_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_progress_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_goal_progress_record_date` (`record_date`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹目标进展记录表';
+
+-- ----------------------------
+-- Records of shanzhu_goal_progress
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_tag`;
+CREATE TABLE `shanzhu_tag` (
+  `id` bigint NOT NULL COMMENT '标签ID',
+  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+  `name` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标签名称',
+  `color` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '标签颜色',
+  `tag_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '标签类型',
+  `usage_count` int DEFAULT '0' COMMENT '使用次数',
+  `built_in` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '是否内置（1是，0否）',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_tag_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_tag_name` (`name`) USING BTREE,
+  KEY `idx_shanzhu_tag_type` (`tag_type`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹标签表';
+
+-- ----------------------------
+-- Records of shanzhu_tag
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_tag_relation
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_tag_relation`;
+CREATE TABLE `shanzhu_tag_relation` (
+  `id` bigint NOT NULL COMMENT '主键',
+  `tag_id` bigint NOT NULL COMMENT '标签ID',
+  `biz_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '业务类型',
+  `biz_id` bigint NOT NULL COMMENT '业务ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_tag_relation_tag_id` (`tag_id`) USING BTREE,
+  KEY `idx_shanzhu_tag_relation_biz` (`biz_type`,`biz_id`) USING BTREE,
+  KEY `idx_shanzhu_tag_relation_user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹标签关系表';
+
+-- ----------------------------
+-- Records of shanzhu_tag_relation
+-- ----------------------------
+BEGIN;
+COMMIT;
+
 SET FOREIGN_KEY_CHECKS = 1;

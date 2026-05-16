@@ -1,23 +1,58 @@
 <template>
   <a-flex class="login-background" justify="center" align="center">
-    <a-flex align="center" :gap="208" v-if="!showSetting">
+    <div class="login-grid" v-if="!showSetting">
       <!--      主题切换开关-->
       <head-theme-switch class="head-theme-switch"/>
-<!--        左侧标题-->
-      <div class="title">
+      <!--        左侧数据化说明-->
+      <section class="title">
         <transition name="fade" mode="out-in">
-          <div v-show="showTitle">
-            <a-typography-title>狸花猫后台管理系统
-              <a-tag :bordered="false">{{ settings.version }}</a-tag>
+          <div v-show="showTitle" class="hero-panel">
+            <a-tag class="system-tag" :bordered="false">Self Data OS · {{ settings.version }}</a-tag>
+            <a-typography-title class="hero-title">
+              把每一天，沉淀成可复盘的自我数据
             </a-typography-title>
-            <a-typography-title :level="2">
-              基于SpringBoot 4.x 和 vue3.x
-            </a-typography-title>
+            <a-typography-paragraph class="hero-description">
+              用统一的数据视角管理目标、习惯、计划与成长轨迹，让个人状态被看见、被分析、被持续优化。
+            </a-typography-paragraph>
+
+            <div class="dashboard-preview">
+              <div class="dashboard-header">
+                <div>
+                  <span class="dashboard-label">今日自我画像</span>
+                  <strong>Personal cockpit</strong>
+                </div>
+                <span class="dashboard-status">实时同步</span>
+              </div>
+              <div class="dashboard-chart">
+                <span class="chart-bar chart-bar-short"></span>
+                <span class="chart-bar chart-bar-middle"></span>
+                <span class="chart-bar chart-bar-high"></span>
+                <span class="chart-bar chart-bar-active"></span>
+                <span class="chart-bar chart-bar-middle"></span>
+                <span class="chart-bar chart-bar-high"></span>
+              </div>
+              <div class="dashboard-stats">
+                <div v-for="item in dashboardStats" :key="item.label" class="stat-card">
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.value }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="insight-list">
+              <div v-for="item in insightCards" :key="item.title" class="insight-card">
+                <span class="insight-dot"></span>
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.description }}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </transition>
-      </div>
-<!--      右侧表单-->
-      <div class="form">
+      </section>
+      <!--      右侧表单-->
+      <section class="form">
         <transition name="card" mode="out-in" v-show="showCard">
           <a-card class="login-card">
             <transition name="form" mode="out-in" v-show="showCard">
@@ -26,8 +61,8 @@
             </transition>
           </a-card>
         </transition>
-      </div>
-    </a-flex>
+      </section>
+    </div>
     <!--    登录设置-->
     <transition name="setting" mode="out-in">
       <login-setting :component-names="settingComponentNames"
@@ -55,6 +90,36 @@ const showTitle = ref<boolean>(false)
 
 // 注册的用户数据，定义registerUsername后，注册组件通过inject接收值，并在注册成功后赋值为用户名，登录组件可获取后进行处理
 provide("registerUsername",ref<string>())
+
+const dashboardStats = [
+  {
+    label: "专注指数",
+    value: "86%"
+  },
+  {
+    label: "目标推进",
+    value: "12 项"
+  },
+  {
+    label: "习惯连续",
+    value: "21 天"
+  }
+]
+
+const insightCards = [
+  {
+    title: "目标仪表盘",
+    description: "统一追踪长期目标、阶段任务和关键结果。"
+  },
+  {
+    title: "习惯数据流",
+    description: "沉淀打卡、复盘、精力与效率趋势。"
+  },
+  {
+    title: "成长分析",
+    description: "把碎片记录转化为可执行的自我洞察。"
+  }
+]
 
 // 初始化组件切换相关逻辑
 const initChangeComponent = () => {
@@ -150,57 +215,338 @@ onMounted(() => {
   screenUnlock()
 })
 </script>
-
 <style scoped>
 /* 登录背景 */
 .login-background {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  padding: clamp(32px, 6vh, 72px) clamp(16px, 4vw, 64px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+      radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.32), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(129, 140, 248, 0.32), transparent 30%),
+      linear-gradient(135deg, #eef7ff 0%, #f6fbff 42%, #eaf2ff 100%);
+}
+
+.login-background::before,
+.login-background::after {
+  position: absolute;
+  content: "";
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.login-background::before {
+  width: 420px;
+  height: 420px;
+  left: -160px;
+  bottom: -120px;
+  background: rgba(22, 119, 255, 0.16);
+  filter: blur(12px);
+}
+
+.login-background::after {
+  width: 560px;
+  height: 560px;
+  right: -220px;
+  top: -180px;
+  background: rgba(14, 165, 233, 0.14);
+  filter: blur(16px);
+}
+
+.login-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(360px, 420px);
+  gap: clamp(32px, 5vw, 88px);
+  width: min(1280px, 100%);
+  align-items: center;
+}
+
+.hero-panel {
+  color: #10233f;
+}
+
+.system-tag {
+  margin-bottom: var(--lihua-space-base);
+  padding: 6px var(--lihua-space-base);
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
+}
+
+.hero-title {
+  max-width: 620px;
+  margin-bottom: var(--lihua-space-base) !important;
+  font-size: clamp(38px, 4vw, 60px) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -2px;
+}
+
+.hero-description {
+  max-width: 560px;
+  margin-bottom: var(--lihua-space-xl) !important;
+  color: rgba(16, 35, 63, 0.72);
+  font-size: var(--lihua-font-size-lg);
+}
+
+.dashboard-preview {
+  width: 100%;
+  max-width: 560px;
+  padding: var(--lihua-space-lg);
+  margin-bottom: var(--lihua-space-base);
   overflow: hidden;
-  background-image:linear-gradient(-135deg,#C2FFD8 10%,#465EFB 100%);
-  background-size: 200% 200%;
-  animation: gradientAnimation 30s ease infinite;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--lihua-radius-lg);
+  box-shadow: 0 24px 80px rgba(37, 99, 235, 0.16);
+  backdrop-filter: blur(18px);
 }
 
-/* 渐变动画 */
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0 50%;
-  }
+.dashboard-header,
+.dashboard-stats,
+.insight-list {
+  display: flex;
 }
 
-/* 视口小于1300 像素时，隐藏title */
-@media screen and (max-width: 1200px) {
-  .title {
-    display: none;
-  }
+.dashboard-header {
+  justify-content: space-between;
+  gap: var(--lihua-space-base);
+  margin-bottom: var(--lihua-space-lg);
+}
+
+.dashboard-header strong {
+  display: block;
+  margin-top: var(--lihua-space-xxs);
+  color: #0f172a;
+  font-size: var(--lihua-font-size-xl);
+}
+
+.dashboard-label,
+.dashboard-status,
+.stat-card span,
+.insight-card p {
+  color: rgba(15, 23, 42, 0.58);
+  font-size: var(--lihua-font-size-sm);
+}
+
+.dashboard-status {
+  height: fit-content;
+  padding: var(--lihua-space-xxs) var(--lihua-space-sm);
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.12);
+  border-radius: 999px;
+}
+
+.dashboard-chart {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--lihua-space-sm);
+  align-items: end;
+  height: 126px;
+  padding: var(--lihua-space-base);
+  margin-bottom: var(--lihua-space-base);
+  background:
+      linear-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 99, 235, 0.08) 1px, transparent 1px);
+  background-size: 100% 33.3%, 20% 100%;
+  border-radius: var(--lihua-radius-base);
+}
+
+.chart-bar {
+  display: block;
+  min-height: 36px;
+  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+  border-radius: 999px 999px var(--lihua-radius-xs) var(--lihua-radius-xs);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+}
+
+.chart-bar-short {
+  height: 38%;
+}
+
+.chart-bar-middle {
+  height: 58%;
+}
+
+.chart-bar-high {
+  height: 78%;
+}
+
+.chart-bar-active {
+  height: 96%;
+  background: linear-gradient(180deg, #22d3ee 0%, #2563eb 100%);
+}
+
+.dashboard-stats {
+  gap: var(--lihua-space-sm);
+}
+
+.stat-card {
+  flex: 1;
+  padding: var(--lihua-space-sm);
+  background: rgba(255, 255, 255, 0.62);
+  border-radius: var(--lihua-radius-sm);
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: var(--lihua-space-xxs);
+  color: #0f172a;
+  font-size: var(--lihua-font-size-lg);
+}
+
+.insight-list {
+  width: 100%;
+  max-width: 560px;
+  gap: var(--lihua-space-sm);
+}
+
+.insight-card {
+  flex: 1;
+  min-height: 126px;
+  padding: var(--lihua-space-base);
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: var(--lihua-radius-base);
+  backdrop-filter: blur(16px);
+}
+
+.insight-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin-bottom: var(--lihua-space-sm);
+  background: #1677ff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 6px rgba(22, 119, 255, 0.12);
+}
+
+.insight-card strong {
+  color: #0f172a;
+}
+
+.insight-card p {
+  margin: var(--lihua-space-xs) 0 0;
+  line-height: 1.6;
 }
 
 /* 登录卡片 */
 .login-card {
-  max-width: 380px;
-  padding-left: var(--lihua-space-base);
-  padding-right: var(--lihua-space-base);
-  border-radius: var(--lihua-radius-lg);
+  width: 100%;
+  padding: var(--lihua-space-base) var(--lihua-space-base) var(--lihua-space-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 32px;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(18px);
 }
 
 /* 表单 */
 .form {
-  width: 378px;
+  width: min(420px, 100%);
 }
 
-/* 视口宽度小于378时，卡片取96视口宽度 居中 */
-@media screen and (max-width: 378px) {
+.form :deep(.ant-card-body) {
+  padding: var(--lihua-space-xl);
+}
+
+@media screen and (min-width: 1600px) {
+  .login-grid {
+    width: min(1360px, 86vw);
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .login-grid {
+    grid-template-columns: minmax(320px, 560px) minmax(360px, 400px);
+    gap: clamp(28px, 4vw, 56px);
+  }
+
+  .hero-title {
+    max-width: 540px;
+  }
+
+  .dashboard-chart {
+    height: 112px;
+  }
+
+  .insight-card {
+    min-height: 112px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .login-grid {
+    grid-template-columns: minmax(360px, 420px);
+    justify-content: center;
+    width: min(420px, 100%);
+  }
+
+  .title {
+    display: none;
+  }
+
+  .head-theme-switch {
+    right: 0;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .login-background {
+    align-items: flex-start;
+    padding: 72px 12px 24px;
+  }
+
+  .login-grid,
+  .form {
+    width: 100%;
+  }
+
+  .form :deep(.ant-card-body) {
+    padding: var(--lihua-space-lg);
+  }
+
   .login-card {
-    width: calc(100vw - var(--lihua-space-xl));
-    margin: auto;
+    border-radius: var(--lihua-radius-lg);
+  }
+
+  .head-theme-switch {
+    top: var(--lihua-space-base);
+    right: var(--lihua-space-base);
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .form :deep(.ant-card-body) {
+    padding: var(--lihua-space-base);
+  }
+
+  .login-card {
+    padding: var(--lihua-space-sm);
+  }
+}
+
+@media screen and (max-height: 720px) and (min-width: 1025px) {
+  .login-background {
+    align-items: flex-start;
+  }
+
+  .login-grid {
+    margin: auto 0;
+  }
+
+  .dashboard-chart {
+    height: 96px;
+  }
+
+  .insight-card {
+    min-height: 104px;
   }
 }
 
@@ -270,13 +616,46 @@ onMounted(() => {
   opacity: 0;
 }
 
-
 </style>
 
 <style>
 [data-theme = dark] {
   .login-background {
-    background-image: linear-gradient(-135deg, #1F7A56 0%, #2C3690 100%);
+    background:
+        radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.2), transparent 30%),
+        linear-gradient(135deg, #020617 0%, #0f172a 46%, #111827 100%);
+  }
+
+  .hero-panel,
+  .hero-title,
+  .dashboard-header strong,
+  .stat-card strong,
+  .insight-card strong {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+
+  .hero-description,
+  .dashboard-label,
+  .stat-card span,
+  .insight-card p {
+    color: rgba(255, 255, 255, 0.58) !important;
+  }
+
+  .system-tag,
+  .dashboard-preview,
+  .insight-card,
+  .stat-card,
+  .login-card {
+    background: rgba(15, 23, 42, 0.68) !important;
+    border-color: rgba(148, 163, 184, 0.18) !important;
+  }
+
+  .dashboard-chart {
+    background:
+        linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px) !important;
+    background-size: 100% 33.3%, 20% 100% !important;
   }
 }
 </style>
