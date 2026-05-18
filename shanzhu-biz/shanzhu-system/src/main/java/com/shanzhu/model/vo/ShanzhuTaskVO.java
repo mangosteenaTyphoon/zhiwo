@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ShanzhuTaskVO {
@@ -17,6 +18,26 @@ public class ShanzhuTaskVO {
      * 所属目标ID
      */
     private String goalId;
+
+    /**
+     * 目标名称
+     */
+    private String goalTitle;
+
+    /**
+     * 分类ID
+     */
+    private String categoryId;
+
+    /**
+     * 分类名称
+     */
+    private String categoryName;
+
+    /**
+     * 分类颜色
+     */
+    private String categoryColor;
 
     /**
      * 所属子目标ID，可为空
@@ -85,4 +106,9 @@ public class ShanzhuTaskVO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
+
+    /**
+     * 标签列表
+     */
+    private List<ShanzhuTagVO> tags;
 }

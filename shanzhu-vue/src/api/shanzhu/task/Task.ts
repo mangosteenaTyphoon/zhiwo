@@ -8,7 +8,7 @@ import type {
 } from "@/api/shanzhu/task/type/Task.ts";
 
 /**
- * 查询目标下的任务列表
+ * 查询任务列表
  * @param data
  */
 export const queryTaskList = (data: ShanzhuTaskQuery) => {

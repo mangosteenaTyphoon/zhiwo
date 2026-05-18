@@ -1,3 +1,5 @@
+import type {ShanzhuTag} from "@/api/shanzhu/tag/type/Tag.ts";
+
 export interface ShanzhuTask {
   /**
    * 任务ID
@@ -51,9 +53,29 @@ export interface ShanzhuTask {
    * 排序
    */
   sortOrder?: number;
+  /**
+   * 标签ID列表
+   */
+  tagIds?: string[];
 }
 
 export interface ShanzhuTaskVO extends ShanzhuTask {
+  /**
+   * 目标名称
+   */
+  goalTitle?: string;
+  /**
+   * 分类ID
+   */
+  categoryId?: string;
+  /**
+   * 分类名称
+   */
+  categoryName?: string;
+  /**
+   * 分类颜色
+   */
+  categoryColor?: string;
   /**
    * 用户ID
    */
@@ -62,13 +84,29 @@ export interface ShanzhuTaskVO extends ShanzhuTask {
    * 创建时间
    */
   createTime?: string;
+  /**
+   * 标签列表
+   */
+  tags?: ShanzhuTag[];
 }
 
 export interface ShanzhuTaskQuery {
   /**
+   * 关键词
+   */
+  keyword?: string;
+  /**
    * 所属目标ID
    */
-  goalId: string;
+  goalId?: string;
+  /**
+   * 目标分类ID
+   */
+  categoryId?: string;
+  /**
+   * 标签ID列表
+   */
+  tagIds?: string[];
   /**
    * 所属子目标ID，可为空
    */
@@ -78,9 +116,17 @@ export interface ShanzhuTaskQuery {
    */
   status?: string;
   /**
+   * 优先级
+   */
+  priority?: number;
+  /**
    * 计划执行日期
    */
   plannedDate?: string;
+  /**
+   * 查询类型：today 今日任务，overdue 逾期任务
+   */
+  queryType?: string;
 }
 
 export interface ShanzhuTaskStatus {

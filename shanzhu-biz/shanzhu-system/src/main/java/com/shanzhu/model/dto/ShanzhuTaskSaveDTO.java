@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ShanzhuTaskSaveDTO {
@@ -71,4 +72,9 @@ public class ShanzhuTaskSaveDTO {
      * 排序
      */
     private Integer sortOrder;
+
+    /**
+     * 标签ID列表
+     */
+    private List<String> tagIds;
 }
