@@ -5,7 +5,7 @@
         <a-flex justify="space-between" align="center" wrap="wrap" :gap="12">
           <div>
             <a-typography-title :level="4" class="dashboard-title">目标任务仪表盘</a-typography-title>
-            <a-typography-text type="secondary">聚合目标、任务和进展记录数据，快速识别执行状态和风险</a-typography-text>
+            <a-typography-text type="secondary">聚合目标、任务、习惯和进展记录数据，快速识别执行状态和风险</a-typography-text>
           </div>
           <a-button type="primary" :loading="pageLoading" @click="initDashboard">
             <template #icon>
@@ -26,6 +26,86 @@
                 </template>
               </a-statistic>
               <a-typography-text type="secondary">{{ item.description }}</a-typography-text>
+            </a-card>
+          </a-col>
+        </a-row>
+
+        <a-row :gutter="[16, 16]" class="dashboard-section">
+          <a-col :xs="24" :xl="10">
+            <a-card :bordered="false" title="习惯打卡统计">
+              <a-row :gutter="[12, 12]">
+                <a-col :span="12">
+                  <a-statistic title="今日待打卡" :value="habitStats.todayTotalCount || 0"/>
+                </a-col>
+                <a-col :span="12">
+                  <a-statistic title="今日已打卡" :value="habitStats.todayCheckedCount || 0" :value-style="{ color: '#52c41a' }"/>
+                </a-col>
+                <a-col :span="12">
+                  <a-statistic title="周期已完成" :value="habitStats.currentPeriodCompletedHabitCount || 0"/>
+                </a-col>
+                <a-col :span="12">
+                  <a-statistic title="最长连续" :value="habitStats.maxContinuousDays || 0" suffix="天"/>
+                </a-col>
+              </a-row>
+
+              <a-divider/>
+
+              <a-flex vertical :gap="8">
+                <a-flex justify="space-between" align="center">
+                  <a-typography-text type="secondary">当前周期完成率</a-typography-text>
+                  <a-typography-text strong>{{ formatHabitPercent(habitStats.currentPeriodCompletionRate) }}%</a-typography-text>
+                </a-flex>
+                <a-progress :percent="formatHabitPercent(habitStats.currentPeriodCompletionRate)" size="small"/>
+              </a-flex>
+            </a-card>
+          </a-col>
+
+          <a-col :xs="24" :xl="14">
+            <a-card :bordered="false" title="今日习惯打卡">
+              <template #extra>
+                <a-button type="link" size="small" @click="openHabitPage">查看全部</a-button>
+              </template>
+              <a-empty v-if="todayHabits.length === 0" description="今日暂无待打卡习惯"/>
+              <a-list v-else :data-source="todayHabits" size="small">
+                <template #renderItem="{ item }">
+                  <a-list-item class="habit-list-item">
+                    <a-list-item-meta>
+                      <template #title>
+                        <a-space size="small" wrap>
+                          <span>{{ item.title }}</span>
+                          <a-tag :color="item.todayChecked ? 'success' : 'processing'">
+                            {{ item.todayChecked ? '已打卡' : '待打卡' }}
+                          </a-tag>
+                          <a-tag v-if="item.goalTitle" color="blue">{{ item.goalTitle }}</a-tag>
+                        </a-space>
+                      </template>
+                      <template #description>
+                        目标值：{{ formatHabitTargetValue(item.targetValue, item.unit) }}
+                        <template v-if="item.note">，备注：{{ item.note }}</template>
+                      </template>
+                    </a-list-item-meta>
+                    <template #actions>
+                      <a-button
+                          v-if="item.todayChecked"
+                          type="link"
+                          size="small"
+                          danger
+                          @click="confirmCancelHabitCheckin(item)"
+                      >
+                        取消打卡
+                      </a-button>
+                      <a-button
+                          v-else
+                          type="link"
+                          size="small"
+                          @click="handleQuickHabitCheckin(item)"
+                      >
+                        快速打卡
+                      </a-button>
+                    </template>
+                  </a-list-item>
+                </template>
+              </a-list>
             </a-card>
           </a-col>
         </a-row>
@@ -193,12 +273,32 @@
 
 <script setup lang="ts">
 import {computed, onMounted, reactive, ref} from "vue";
-import {message} from "ant-design-vue";
+import {useRouter} from "vue-router";
+import {message, Modal} from "ant-design-vue";
 import {RedoOutlined} from "@ant-design/icons-vue";
 import {queryDashboard} from "@/api/shanzhu/dashboard/Dashboard.ts";
 import type {DashboardOverviewStats, ShanzhuDashboard} from "@/api/shanzhu/dashboard/type/Dashboard.ts";
+import {
+  cancelHabitCheckin,
+  queryHabitStats,
+  queryTodayHabits,
+  saveHabitCheckin
+} from "@/api/shanzhu/habit/Habit.ts";
+import type {ShanzhuHabitStatsVO, ShanzhuHabitTodayVO} from "@/api/shanzhu/habit/type/Habit.ts";
 
+const router = useRouter();
 const pageLoading = ref(false);
+const todayHabits = ref<ShanzhuHabitTodayVO[]>([]);
+
+const habitStats = reactive<ShanzhuHabitStatsVO>({
+  todayTotalCount: 0,
+  todayCheckedCount: 0,
+  currentPeriodHabitCount: 0,
+  currentPeriodCompletedHabitCount: 0,
+  currentPeriodUncompletedHabitCount: 0,
+  currentPeriodCompletionRate: 0,
+  maxContinuousDays: 0
+});
 
 const dashboard = reactive<ShanzhuDashboard>({
   overview: {
@@ -295,20 +395,53 @@ const maxTrendValue = computed(() => {
   return Math.max(...values, 1);
 });
 
+const loadDashboardData = async () => {
+  const response = await queryDashboard();
+  const dashboardData = response.data;
+  Object.assign(dashboard.overview, dashboardData.overview || {});
+  dashboard.categoryStats = dashboardData.categoryStats || [];
+  Object.assign(dashboard.timeStats, dashboardData.timeStats || {});
+  Object.assign(dashboard.riskStats, dashboardData.riskStats || {});
+};
+
+const loadHabitStats = async () => {
+  const response = await queryHabitStats();
+  if (response.code === 200) {
+    Object.assign(habitStats, response.data || {});
+  } else {
+    message.error(response.msg || "习惯统计加载失败");
+  }
+};
+
+const loadTodayHabits = async () => {
+  const response = await queryTodayHabits();
+  if (response.code === 200) {
+    todayHabits.value = response.data || [];
+  } else {
+    message.error(response.msg || "今日习惯加载失败");
+  }
+};
+
 const initDashboard = async () => {
   pageLoading.value = true;
   try {
-    const response = await queryDashboard();
-    const dashboardData = response.data;
-    Object.assign(dashboard.overview, dashboardData.overview || {});
-    dashboard.categoryStats = dashboardData.categoryStats || [];
-    Object.assign(dashboard.timeStats, dashboardData.timeStats || {});
-    Object.assign(dashboard.riskStats, dashboardData.riskStats || {});
+    await Promise.all([
+      loadDashboardData(),
+      loadHabitStats(),
+      loadTodayHabits()
+    ]);
   } catch (error) {
     message.error('仪表盘数据加载失败');
   } finally {
     pageLoading.value = false;
   }
+};
+
+const refreshHabitDashboard = async () => {
+  await Promise.all([
+    loadHabitStats(),
+    loadTodayHabits()
+  ]);
 };
 
 const calculatePercent = (completedCount: number, totalCount: number) => {
@@ -320,6 +453,71 @@ const calculatePercent = (completedCount: number, totalCount: number) => {
 
 const calculateTrendPercent = (completedTaskCount: number) => {
   return Math.round((completedTaskCount / maxTrendValue.value) * 100);
+};
+
+const formatHabitPercent = (value?: number) => {
+  return Math.min(Math.max(Number(value || 0), 0), 100);
+};
+
+const formatHabitTargetValue = (targetValue?: number, unit?: string) => {
+  if (targetValue === undefined || targetValue === null) {
+    return unit || "-";
+  }
+  return `${targetValue}${unit || ""}`;
+};
+
+const getTodayString = () => {
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const openHabitPage = () => {
+  router.push("/shanzhu/habit");
+};
+
+const handleQuickHabitCheckin = async (habit: ShanzhuHabitTodayVO) => {
+  if (!habit.id) {
+    return;
+  }
+
+  const response = await saveHabitCheckin({
+    habitId: habit.id,
+    checkinDate: getTodayString(),
+    actualValue: habit.targetValue,
+    note: "来自仪表盘快速打卡"
+  });
+  if (response.code === 200) {
+    message.success("打卡成功");
+    await refreshHabitDashboard();
+  } else {
+    message.error(response.msg || "打卡失败");
+  }
+};
+
+const confirmCancelHabitCheckin = (habit: ShanzhuHabitTodayVO) => {
+  if (!habit.todayCheckinId) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认取消今日打卡？",
+    content: `取消后，习惯「${habit.title || '-'}」今日将恢复为未打卡。`,
+    okText: "确认取消",
+    cancelText: "关闭",
+    okType: "danger",
+    onOk: async () => {
+      const response = await cancelHabitCheckin(habit.todayCheckinId || "");
+      if (response.code === 200) {
+        message.success("已取消打卡");
+        await refreshHabitDashboard();
+      } else {
+        message.error(response.msg || "取消打卡失败");
+      }
+    }
+  });
 };
 
 onMounted(() => {
@@ -347,7 +545,8 @@ onMounted(() => {
     margin-top: 16px;
   }
 
-  .trend-row {
+  .trend-row,
+  .habit-list-item {
     width: 100%;
   }
 
