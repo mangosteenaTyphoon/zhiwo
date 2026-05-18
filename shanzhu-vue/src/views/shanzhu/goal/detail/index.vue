@@ -44,12 +44,12 @@
             </a-col>
             <a-col :xs="24" :md="6">
               <a-card size="small" class="goal-stat-card">
-                <a-statistic title="子目标数量" :value="subGoalList.length"/>
+                <a-statistic title="子目标数量" :value="goalDetail?.subGoalCount ?? subGoalList.length"/>
               </a-card>
             </a-col>
             <a-col :xs="24" :md="6">
               <a-card size="small" class="goal-stat-card">
-                <a-statistic title="任务数量" :value="taskList.length"/>
+                <a-statistic title="任务数量" :value="goalDetail?.totalTaskCount ?? taskList.length"/>
               </a-card>
             </a-col>
             <a-col :xs="24" :md="6">
@@ -132,15 +132,64 @@
                     <span>开始：{{ subGoal.startDate || '-' }}</span>
                     <span>截止：{{ subGoal.deadline || '-' }}</span>
                   </a-flex>
+
+                  <a-divider class="sub-goal-task-divider"/>
+                  <a-flex justify="space-between" align="center">
+                    <a-typography-text strong>子目标任务</a-typography-text>
+                    <a-button type="link" size="small" @click="openCreateTaskModal(subGoal.id)">新增任务</a-button>
+                  </a-flex>
+                  <a-empty v-if="!subGoal.tasks || subGoal.tasks.length === 0" description="暂无任务" class="sub-goal-task-empty"/>
+                  <a-list v-else :data-source="subGoal.tasks" size="small">
+                    <template #renderItem="{ item }">
+                      <a-list-item class="task-list-item">
+                        <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="12">
+                          <div class="task-main">
+                            <a-space size="small" wrap>
+                              <a-tag :color="getGoalStatusOption(item.status).color">
+                                {{ getGoalStatusOption(item.status).label }}
+                              </a-tag>
+                              <a-tag color="blue">{{ getTaskPriorityLabel(item.priority) }}</a-tag>
+                            </a-space>
+                            <a-typography-title :level="5" class="task-title">
+                              {{ item.title }}
+                            </a-typography-title>
+                            <a-typography-paragraph class="task-description" :ellipsis="{ rows: 2 }">
+                              {{ item.description || '暂无任务说明' }}
+                            </a-typography-paragraph>
+                            <a-space size="small" wrap class="task-meta">
+                              <span>计划：{{ item.plannedDate || '-' }}</span>
+                              <span>截止：{{ item.deadline || '-' }}</span>
+                              <span>预计：{{ item.estimatedMinutes || 0 }} 分钟</span>
+                              <span>排序：{{ item.sortOrder || 0 }}</span>
+                            </a-space>
+                          </div>
+                          <a-space size="small" wrap>
+                            <a-select
+                                :value="item.status"
+                                size="small"
+                                class="task-status-select"
+                                @change="(value: string) => handleTaskStatusChange(item.id, value)"
+                            >
+                              <a-select-option v-for="statusItem in subGoalStatusOptions" :key="statusItem.value" :value="statusItem.value">
+                                {{ statusItem.label }}
+                              </a-select-option>
+                            </a-select>
+                            <a-button type="link" size="small" @click="openEditTaskModal(item)">编辑</a-button>
+                            <a-button type="link" size="small" danger @click="confirmDeleteTask(item)">删除</a-button>
+                          </a-space>
+                        </a-flex>
+                      </a-list-item>
+                    </template>
+                  </a-list>
                 </a-flex>
               </a-card>
             </a-col>
           </a-row>
         </a-card>
 
-        <a-card :bordered="false" title="任务列表">
+        <a-card :bordered="false" title="未归属子目标任务">
           <template #extra>
-            <a-button type="primary" size="small" @click="openCreateTaskModal">
+            <a-button type="primary" size="small" @click="openCreateTaskModal()">
               <template #icon>
                 <PlusOutlined/>
               </template>
@@ -148,8 +197,8 @@
             </a-button>
           </template>
           <a-spin :spinning="taskLoading">
-            <a-empty v-if="taskList.length === 0" description="暂无任务，先添加一个可执行事项吧"/>
-            <a-list v-else :data-source="taskList" item-layout="vertical">
+            <a-empty v-if="unassignedTaskList.length === 0" description="暂无未归属任务"/>
+            <a-list v-else :data-source="unassignedTaskList" item-layout="vertical">
               <template #renderItem="{ item }">
                 <a-list-item class="task-list-item">
                   <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="12">
@@ -159,9 +208,6 @@
                           {{ getGoalStatusOption(item.status).label }}
                         </a-tag>
                         <a-tag color="blue">{{ getTaskPriorityLabel(item.priority) }}</a-tag>
-                        <a-tag v-if="item.subGoalId">
-                          {{ getSubGoalTitle(item.subGoalId) }}
-                        </a-tag>
                       </a-space>
                       <a-typography-title :level="5" class="task-title">
                         {{ item.title }}
@@ -346,7 +392,6 @@ import {
 import type {ShanzhuSubGoal, ShanzhuSubGoalVO} from "@/api/shanzhu/sub-goal/type/SubGoal.ts";
 import {
   deleteTask,
-  queryTaskList,
   saveTask,
   updateTaskStatus
 } from "@/api/shanzhu/task/Task.ts";
@@ -358,7 +403,10 @@ const router = useRouter();
 const pageLoading = ref(false);
 const taskLoading = ref(false);
 const goalDetail = ref<ShanzhuGoalVO>();
-const taskList = ref<ShanzhuTaskVO[]>([]);
+const taskList = computed(() => {
+  const subGoalTasks = subGoalList.value.flatMap(subGoal => subGoal.tasks || []);
+  return [...subGoalTasks, ...unassignedTaskList.value];
+});
 const subGoalFormRef = ref<FormInstance>();
 const taskFormRef = ref<FormInstance>();
 const subGoalForm = ref<ShanzhuSubGoal>({});
@@ -394,11 +442,12 @@ const taskRules: Record<string, Rule[]> = {
 
 const goalId = computed(() => route.params.id as string);
 const subGoalList = computed(() => goalDetail.value?.subGoals || []);
+const unassignedTaskList = computed(() => goalDetail.value?.unassignedTasks || []);
 const completedSubGoalCount = computed(() => {
   return subGoalList.value.filter(subGoal => subGoal.status === "completed").length;
 });
 const completedTaskCount = computed(() => {
-  return taskList.value.filter(task => task.status === "completed").length;
+  return goalDetail.value?.completedTaskCount ?? taskList.value.filter(task => task.status === "completed").length;
 });
 
 const defaultSubGoalForm = (): ShanzhuSubGoal => ({
@@ -433,29 +482,6 @@ const getTaskPriorityLabel = (priority?: number) => {
   return `优先级：${getGoalPriorityLabel(priority)}`;
 };
 
-const getSubGoalTitle = (subGoalId: string) => {
-  const subGoal = subGoalList.value.find(item => item.id === subGoalId);
-  return subGoal?.title || "关联子目标";
-};
-
-const loadTaskList = async () => {
-  if (!goalId.value) {
-    return;
-  }
-
-  taskLoading.value = true;
-  try {
-    const response = await queryTaskList({goalId: goalId.value});
-    if (response.code === 200) {
-      taskList.value = response.data || [];
-    } else {
-      message.error(response.msg || "任务列表加载失败");
-    }
-  } finally {
-    taskLoading.value = false;
-  }
-};
-
 const loadGoalDetail = async () => {
   if (!goalId.value) {
     message.error("目标不存在");
@@ -467,7 +493,6 @@ const loadGoalDetail = async () => {
     const response = await queryGoalById(goalId.value);
     if (response.code === 200 && response.data) {
       goalDetail.value = response.data;
-      await loadTaskList();
     } else {
       message.error(response.msg || "目标不存在");
     }
@@ -492,8 +517,11 @@ const openEditSubGoalModal = (subGoal: ShanzhuSubGoalVO) => {
   subGoalModal.open = true;
 };
 
-const openCreateTaskModal = () => {
-  taskForm.value = defaultTaskForm();
+const openCreateTaskModal = (subGoalId?: string) => {
+  taskForm.value = {
+    ...defaultTaskForm(),
+    subGoalId
+  };
   taskModal.title = "新增任务";
   taskModal.open = true;
 };
@@ -577,7 +605,7 @@ const handleSaveTask = async () => {
     if (response.code === 200) {
       message.success("保存成功");
       taskModal.open = false;
-      await loadTaskList();
+      await loadGoalDetail();
     } else {
       message.error(response.msg);
     }
@@ -601,7 +629,7 @@ const confirmDeleteTask = (task: ShanzhuTaskVO) => {
       const response = await deleteTask(task.id || "");
       if (response.code === 200) {
         message.success("删除成功");
-        await loadTaskList();
+        await loadGoalDetail();
       } else {
         message.error(response.msg);
       }
@@ -620,7 +648,7 @@ const handleTaskStatusChange = async (taskId: string | undefined, status: string
   });
   if (response.code === 200) {
     message.success("状态已更新");
-    await loadTaskList();
+    await loadGoalDetail();
   } else {
     message.error(response.msg);
   }
@@ -740,5 +768,13 @@ onMounted(() => {
 .sub-goal-meta {
   color: var(--lihua-text-color-secondary);
   font-size: var(--lihua-font-size-sm);
+}
+
+.sub-goal-task-divider {
+  margin: 4px 0;
+}
+
+.sub-goal-task-empty {
+  margin: 8px 0;
 }
 </style>

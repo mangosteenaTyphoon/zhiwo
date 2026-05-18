@@ -1,5 +1,6 @@
 import type {ShanzhuTag} from "@/api/shanzhu/tag/type/Tag.ts";
 import type {ShanzhuSubGoalVO} from "@/api/shanzhu/sub-goal/type/SubGoal.ts";
+import type {ShanzhuTaskVO} from "@/api/shanzhu/task/type/Task.ts";
 
 export interface ShanzhuGoal {
   /**
@@ -85,6 +86,22 @@ export interface ShanzhuGoalVO extends ShanzhuGoal {
    * 子目标列表
    */
   subGoals?: ShanzhuSubGoalVO[];
+  /**
+   * 未归属子目标任务列表
+   */
+  unassignedTasks?: ShanzhuTaskVO[];
+  /**
+   * 子目标数量
+   */
+  subGoalCount?: number;
+  /**
+   * 任务总数
+   */
+  totalTaskCount?: number;
+  /**
+   * 已完成任务数量
+   */
+  completedTaskCount?: number;
 }
 
 export interface ShanzhuGoalQuery {

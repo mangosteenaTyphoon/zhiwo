@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ShanzhuSubGoalVO {
@@ -71,4 +72,9 @@ public class ShanzhuSubGoalVO {
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    /**
+     * 子目标下任务列表
+     */
+    private List<ShanzhuTaskVO> tasks;
 }

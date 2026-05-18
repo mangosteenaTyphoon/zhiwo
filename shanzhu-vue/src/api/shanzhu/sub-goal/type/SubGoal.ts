@@ -1,3 +1,5 @@
+import type {ShanzhuTaskVO} from "@/api/shanzhu/task/type/Task.ts";
+
 export interface ShanzhuSubGoal {
   /**
    * 子目标ID
@@ -54,6 +56,10 @@ export interface ShanzhuSubGoalVO extends ShanzhuSubGoal {
    * 创建时间
    */
   createTime?: string;
+  /**
+   * 子目标下任务列表
+   */
+  tasks?: ShanzhuTaskVO[];
 }
 
 export interface ShanzhuSubGoalQuery {

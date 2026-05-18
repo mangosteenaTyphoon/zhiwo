@@ -102,4 +102,24 @@ public class ShanzhuGoalVO {
      * 子目标列表
      */
     private List<ShanzhuSubGoalVO> subGoals;
+
+    /**
+     * 未归属子目标任务列表
+     */
+    private List<ShanzhuTaskVO> unassignedTasks;
+
+    /**
+     * 子目标数量
+     */
+    private Integer subGoalCount;
+
+    /**
+     * 任务总数
+     */
+    private Integer totalTaskCount;
+
+    /**
+     * 已完成任务数量
+     */
+    private Integer completedTaskCount;
 }

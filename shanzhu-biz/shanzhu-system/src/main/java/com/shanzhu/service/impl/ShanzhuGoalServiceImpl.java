@@ -12,11 +12,15 @@ import com.shanzhu.model.dto.ShanzhuGoalQueryDTO;
 import com.shanzhu.model.dto.ShanzhuGoalSaveDTO;
 import com.shanzhu.model.dto.ShanzhuTagRelationQueryDTO;
 import com.shanzhu.model.dto.ShanzhuTagRelationSaveDTO;
+import com.shanzhu.model.dto.ShanzhuTaskQueryDTO;
 import com.shanzhu.model.vo.ShanzhuGoalVO;
+import com.shanzhu.model.vo.ShanzhuSubGoalVO;
+import com.shanzhu.model.vo.ShanzhuTaskVO;
 import com.shanzhu.security.manager.LoginUserContext;
 import com.shanzhu.service.ShanzhuGoalService;
 import com.shanzhu.service.ShanzhuSubGoalService;
 import com.shanzhu.service.ShanzhuTagRelationService;
+import com.shanzhu.service.ShanzhuTaskService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -46,6 +50,9 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
     @Resource
     private ShanzhuSubGoalService shanzhuSubGoalService;
 
+    @Resource
+    private ShanzhuTaskService shanzhuTaskService;
+
     @Override
     public IPage<ShanzhuGoalVO> queryPage(ShanzhuGoalQueryDTO queryDTO) {
         IPage<ShanzhuGoal> goalPage = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
@@ -69,7 +76,7 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
             return null;
         }
         ShanzhuGoalVO goalVO = convertToVO(goal, queryCategoryMap(List.of(goal)));
-        goalVO.setSubGoals(shanzhuSubGoalService.queryByGoalId(goal.getId()));
+        fillGoalDetailAggregation(goalVO);
         return goalVO;
     }
 
@@ -157,5 +164,35 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         relationQueryDTO.setBizId(goal.getId());
         goalVO.setTags(shanzhuTagRelationService.queryRelations(relationQueryDTO));
         return goalVO;
+    }
+
+    private void fillGoalDetailAggregation(ShanzhuGoalVO goalVO) {
+        List<ShanzhuSubGoalVO> subGoals = shanzhuSubGoalService.queryByGoalId(goalVO.getId());
+
+        ShanzhuTaskQueryDTO taskQueryDTO = new ShanzhuTaskQueryDTO();
+        taskQueryDTO.setGoalId(goalVO.getId());
+        List<ShanzhuTaskVO> tasks = shanzhuTaskService.queryTaskList(taskQueryDTO);
+
+        Map<String, List<ShanzhuTaskVO>> subGoalIdToTasks = tasks.stream()
+                .filter(task -> StringUtils.hasText(task.getSubGoalId()))
+                .collect(Collectors.groupingBy(ShanzhuTaskVO::getSubGoalId));
+
+        subGoals.forEach(subGoal -> subGoal.setTasks(
+                subGoalIdToTasks.getOrDefault(subGoal.getId(), List.of())
+        ));
+
+        List<ShanzhuTaskVO> unassignedTasks = tasks.stream()
+                .filter(task -> !StringUtils.hasText(task.getSubGoalId()))
+                .toList();
+
+        long completedTaskCount = tasks.stream()
+                .filter(task -> "completed".equals(task.getStatus()))
+                .count();
+
+        goalVO.setSubGoals(subGoals);
+        goalVO.setUnassignedTasks(unassignedTasks);
+        goalVO.setSubGoalCount(subGoals.size());
+        goalVO.setTotalTaskCount(tasks.size());
+        goalVO.setCompletedTaskCount(Math.toIntExact(completedTaskCount));
     }
 }
