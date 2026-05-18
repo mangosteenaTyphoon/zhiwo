@@ -170,7 +170,7 @@ const handleGenerateMenuData = (sidebarRouters:RouterType[], isInner: boolean = 
                     // 存在子集
                     if (resp && resp.length > 0) {
                         const menuItem: ItemType = {
-                            key: sidebar.key,
+                            key: sidebar.key ? sidebar.key : sidebar.path,
                             icon: () => sidebar.meta.icon ? h(Icon, {icon: sidebar.meta.icon}) : h('template'),
                             label: sidebar.meta.label,
                             children: resp,
@@ -181,7 +181,7 @@ const handleGenerateMenuData = (sidebarRouters:RouterType[], isInner: boolean = 
                 } else {
                     // 不存在子集
                     const menuItem: ItemType = {
-                        key: sidebar.key,
+                        key: sidebar.key ? sidebar.key : sidebar.path,
                         icon: () => sidebar.meta.icon ? h(Icon, {icon: sidebar.meta.icon}) : h('template'),
                         label: sidebar.meta.label,
                         children: [],
