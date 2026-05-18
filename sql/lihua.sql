@@ -867,6 +867,81 @@ BEGIN;
 COMMIT;
 
 -- ----------------------------
+-- Table structure for shanzhu_habit
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_habit`;
+CREATE TABLE `shanzhu_habit` (
+  `id` bigint NOT NULL COMMENT '习惯ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `goal_id` bigint DEFAULT NULL COMMENT '关联目标ID，可为空',
+  `sub_goal_id` bigint DEFAULT NULL COMMENT '关联子目标ID，可为空',
+  `title` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '习惯名称',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '习惯描述',
+  `frequency_type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '频率类型：daily 每天，weekly 每周，monthly 每月',
+  `target_count` int DEFAULT NULL COMMENT '每周期目标次数',
+  `target_value` decimal(10,2) DEFAULT NULL COMMENT '每次目标值',
+  `unit` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '目标单位',
+  `start_date` date DEFAULT NULL COMMENT '开始日期',
+  `end_date` date DEFAULT NULL COMMENT '结束日期',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '习惯状态：active 进行中，paused 已暂停，completed 已结束，cancelled 已取消',
+  `sort_order` int DEFAULT NULL COMMENT '排序',
+  `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '备注',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_shanzhu_habit_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_goal_id` (`goal_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_sub_goal_id` (`sub_goal_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_status` (`status`) USING BTREE,
+  KEY `idx_shanzhu_habit_frequency_type` (`frequency_type`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹习惯表';
+
+-- ----------------------------
+-- Records of shanzhu_habit
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for shanzhu_habit_checkin
+-- ----------------------------
+DROP TABLE IF EXISTS `shanzhu_habit_checkin`;
+CREATE TABLE `shanzhu_habit_checkin` (
+  `id` bigint NOT NULL COMMENT '习惯打卡记录ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `habit_id` bigint NOT NULL COMMENT '习惯ID',
+  `goal_id` bigint DEFAULT NULL COMMENT '打卡时关联目标ID，可为空',
+  `sub_goal_id` bigint DEFAULT NULL COMMENT '打卡时关联子目标ID，可为空',
+  `checkin_date` date NOT NULL COMMENT '打卡日期',
+  `actual_value` decimal(10,2) DEFAULT NULL COMMENT '实际完成值',
+  `unit` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '单位',
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '打卡备注',
+  `mood` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '状态感受',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '打卡状态',
+  `create_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint DEFAULT NULL COMMENT '最近一次更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '最近一次更新时间',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT '逻辑删除标志',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_shanzhu_habit_checkin_user_habit_date_flag` (`user_id`, `habit_id`, `checkin_date`, `del_flag`) USING BTREE,
+  KEY `idx_shanzhu_habit_checkin_habit_id` (`habit_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_checkin_goal_id` (`goal_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_checkin_sub_goal_id` (`sub_goal_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_checkin_user_id` (`user_id`) USING BTREE,
+  KEY `idx_shanzhu_habit_checkin_date` (`checkin_date`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='山竹习惯打卡记录表';
+
+-- ----------------------------
+-- Records of shanzhu_habit_checkin
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
 -- Table structure for shanzhu_tag
 -- ----------------------------
 DROP TABLE IF EXISTS `shanzhu_tag`;
