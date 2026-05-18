@@ -20,6 +20,7 @@ import com.shanzhu.model.dto.ShanzhuTaskSortDTO;
 import com.shanzhu.model.dto.ShanzhuTaskStatusDTO;
 import com.shanzhu.model.vo.ShanzhuTaskVO;
 import com.shanzhu.security.manager.LoginUserContext;
+import com.shanzhu.service.ShanzhuGoalProgressService;
 import com.shanzhu.service.ShanzhuTagRelationService;
 import com.shanzhu.service.ShanzhuTaskService;
 import jakarta.annotation.Resource;
@@ -56,6 +57,9 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
 
     @Resource
     private ShanzhuTagRelationService shanzhuTagRelationService;
+
+    @Resource
+    private ShanzhuGoalProgressService shanzhuGoalProgressService;
 
     @Override
     public IPage<ShanzhuTaskVO> queryTaskPage(ShanzhuTaskQueryDTO queryDTO) {
@@ -105,6 +109,7 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
 
     @Override
     public String saveTask(ShanzhuTaskSaveDTO saveDTO) {
+        ShanzhuTask oldTask = StringUtils.hasText(saveDTO.getId()) ? getById(saveDTO.getId()) : null;
         ShanzhuTask task = new ShanzhuTask();
         BeanUtils.copyProperties(saveDTO, task);
         task.setUserId(LoginUserContext.getUserId());
@@ -121,6 +126,8 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
         } else {
             save(task);
         }
+
+        recordTaskCompletedProgress(oldTask, task);
 
         if (saveDTO.getTagIds() != null) {
             ShanzhuTagRelationSaveDTO relationSaveDTO = new ShanzhuTagRelationSaveDTO();
@@ -142,6 +149,7 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
 
     @Override
     public void updateStatus(ShanzhuTaskStatusDTO statusDTO) {
+        ShanzhuTask oldTask = getById(statusDTO.getId());
         ShanzhuTask task = new ShanzhuTask();
         task.setId(statusDTO.getId());
         task.setStatus(statusDTO.getStatus());
@@ -149,6 +157,13 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
             task.setCompletedTime(LocalDateTime.now());
         }
         updateById(task);
+
+        if (oldTask != null) {
+            task.setGoalId(oldTask.getGoalId());
+            task.setSubGoalId(oldTask.getSubGoalId());
+            task.setTitle(oldTask.getTitle());
+        }
+        recordTaskCompletedProgress(oldTask, task);
     }
 
     @Override
@@ -157,6 +172,19 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
         task.setId(sortDTO.getId());
         task.setSortOrder(sortDTO.getSortOrder());
         updateById(task);
+    }
+
+    private void recordTaskCompletedProgress(ShanzhuTask oldTask, ShanzhuTask task) {
+        if (!COMPLETED_STATUS.equals(task.getStatus())) {
+            return;
+        }
+        if (oldTask != null && COMPLETED_STATUS.equals(oldTask.getStatus())) {
+            return;
+        }
+
+        String title = "完成任务";
+        String content = String.format("任务「%s」已完成", task.getTitle());
+        shanzhuGoalProgressService.recordProgress(task.getGoalId(), task.getSubGoalId(), task.getId(), title, content, 0, 100);
     }
 
     private void applyGoalFilter(QueryWrapper<ShanzhuTask> queryWrapper, ShanzhuTaskQueryDTO queryDTO) {

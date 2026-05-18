@@ -75,6 +75,43 @@
           </a-space>
         </a-card>
 
+        <a-card :bordered="false" title="进展记录">
+          <template #extra>
+            <a-button type="primary" size="small" @click="openCreateProgressModal">
+              <template #icon>
+                <PlusOutlined/>
+              </template>
+              新增进展
+            </a-button>
+          </template>
+          <a-spin :spinning="progressLoading">
+            <a-empty v-if="goalProgressList.length === 0" description="暂无进展记录"/>
+            <a-list v-else :data-source="goalProgressList" item-layout="vertical">
+              <template #renderItem="{ item }">
+                <a-list-item class="progress-list-item">
+                  <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="12">
+                    <div class="progress-main">
+                      <a-space size="small" wrap>
+                        <a-tag color="blue">{{ item.recordDate || '-' }}</a-tag>
+                        <a-tag v-if="item.progressBefore !== undefined || item.progressAfter !== undefined" color="green">
+                          {{ item.progressBefore ?? '-' }}% → {{ item.progressAfter ?? '-' }}%
+                        </a-tag>
+                      </a-space>
+                      <a-typography-title :level="5" class="progress-title">
+                        {{ item.title }}
+                      </a-typography-title>
+                      <a-typography-paragraph class="progress-content">
+                        {{ item.content || '暂无进展内容' }}
+                      </a-typography-paragraph>
+                    </div>
+                    <a-button type="link" size="small" danger @click="confirmDeleteProgress(item)">删除</a-button>
+                  </a-flex>
+                </a-list-item>
+              </template>
+            </a-list>
+          </a-spin>
+        </a-card>
+
         <a-card :bordered="false" title="子目标列表">
           <a-empty v-if="subGoalList.length === 0" description="暂无子目标，先新增一个拆解项吧"/>
           <a-row v-else :gutter="[16, 16]">
@@ -246,6 +283,42 @@
     </a-spin>
 
     <a-modal
+        v-model:open="progressModal.open"
+        :title="progressModal.title"
+        :confirm-loading="progressModal.saveLoading"
+        width="640px"
+        ok-text="保 存"
+        cancel-text="取 消"
+        @ok="handleSaveProgress"
+    >
+      <a-form ref="progressFormRef" :colon="false" :model="progressForm" :rules="progressRules" :label-col="{ span: 4 }">
+        <a-form-item label="进展标题" name="title">
+          <a-input v-model:value="progressForm.title" placeholder="例如：完成阶段性里程碑" :maxlength="120" show-count allow-clear/>
+        </a-form-item>
+        <a-row>
+          <a-col :span="12">
+            <a-form-item label="记录日期" :label-col="{ span: 8 }">
+              <a-date-picker v-model:value="progressForm.recordDate" value-format="YYYY-MM-DD" style="width: 100%" placeholder="请选择记录日期"/>
+            </a-form-item>
+          </a-col>
+          <a-col :span="6">
+            <a-form-item label="变更前" :label-col="{ span: 12 }">
+              <a-input-number v-model:value="progressForm.progressBefore" :min="0" :max="100" addon-after="%" style="width: 100%"/>
+            </a-form-item>
+          </a-col>
+          <a-col :span="6">
+            <a-form-item label="变更后" :label-col="{ span: 12 }">
+              <a-input-number v-model:value="progressForm.progressAfter" :min="0" :max="100" addon-after="%" style="width: 100%"/>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-form-item label="进展内容">
+          <a-textarea v-model:value="progressForm.content" placeholder="记录本次推进了什么、有什么变化或下一步动作" :rows="4" :maxlength="500" show-count allow-clear/>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <a-modal
         v-model:open="subGoalModal.open"
         :title="subGoalModal.title"
         :confirm-loading="subGoalModal.saveLoading"
@@ -382,6 +455,8 @@ import {message, Modal} from "ant-design-vue";
 import {PlusOutlined} from "@ant-design/icons-vue";
 import {queryGoalById} from "@/api/shanzhu/goal/Goal.ts";
 import type {GoalStatusOption, ShanzhuGoalVO} from "@/api/shanzhu/goal/type/Goal.ts";
+import {deleteGoalProgress, queryGoalProgressList, saveGoalProgress} from "@/api/shanzhu/goal-progress/GoalProgress.ts";
+import type {ShanzhuGoalProgress, ShanzhuGoalProgressVO} from "@/api/shanzhu/goal-progress/type/GoalProgress.ts";
 import type {BaseModalActiveType} from "@/api/global/Type.ts";
 import {
   deleteSubGoal,
@@ -402,15 +477,25 @@ const router = useRouter();
 
 const pageLoading = ref(false);
 const taskLoading = ref(false);
+const progressLoading = ref(false);
 const goalDetail = ref<ShanzhuGoalVO>();
+const goalProgressList = ref<ShanzhuGoalProgressVO[]>([]);
 const taskList = computed(() => {
   const subGoalTasks = subGoalList.value.flatMap(subGoal => subGoal.tasks || []);
   return [...subGoalTasks, ...unassignedTaskList.value];
 });
+const progressFormRef = ref<FormInstance>();
 const subGoalFormRef = ref<FormInstance>();
 const taskFormRef = ref<FormInstance>();
+const progressForm = ref<ShanzhuGoalProgress>({});
 const subGoalForm = ref<ShanzhuSubGoal>({});
 const taskForm = ref<ShanzhuTask>({});
+
+const progressModal = reactive<BaseModalActiveType>({
+  open: false,
+  saveLoading: false,
+  title: "新增进展"
+});
 
 const subGoalModal = reactive<BaseModalActiveType>({
   open: false,
@@ -432,6 +517,10 @@ const subGoalStatusOptions: GoalStatusOption[] = [
   {label: "已取消", value: "cancelled", color: "error"}
 ];
 
+const progressRules: Record<string, Rule[]> = {
+  title: [{required: true, message: "请输入进展标题", trigger: "blur"}]
+};
+
 const subGoalRules: Record<string, Rule[]> = {
   title: [{required: true, message: "请输入子目标名称", trigger: "blur"}]
 };
@@ -448,6 +537,12 @@ const completedSubGoalCount = computed(() => {
 });
 const completedTaskCount = computed(() => {
   return goalDetail.value?.completedTaskCount ?? taskList.value.filter(task => task.status === "completed").length;
+});
+
+const defaultProgressForm = (): ShanzhuGoalProgress => ({
+  goalId: goalId.value,
+  progressBefore: goalDetail.value?.progress || 0,
+  progressAfter: goalDetail.value?.progress || 0
 });
 
 const defaultSubGoalForm = (): ShanzhuSubGoal => ({
@@ -501,8 +596,34 @@ const loadGoalDetail = async () => {
   }
 };
 
+const loadGoalProgressList = async () => {
+  if (!goalId.value) {
+    return;
+  }
+
+  progressLoading.value = true;
+  try {
+    const response = await queryGoalProgressList({
+      goalId: goalId.value
+    });
+    if (response.code === 200) {
+      goalProgressList.value = response.data || [];
+    } else {
+      message.error(response.msg || "进展记录加载失败");
+    }
+  } finally {
+    progressLoading.value = false;
+  }
+};
+
 const goBack = () => {
   router.push("/shanzhu/goal");
+};
+
+const openCreateProgressModal = () => {
+  progressForm.value = defaultProgressForm();
+  progressModal.title = "新增进展";
+  progressModal.open = true;
 };
 
 const openCreateSubGoalModal = () => {
@@ -532,6 +653,50 @@ const openEditTaskModal = (task: ShanzhuTaskVO) => {
   taskModal.open = true;
 };
 
+const handleSaveProgress = async () => {
+  await progressFormRef.value?.validate();
+
+  progressModal.saveLoading = true;
+  try {
+    const response = await saveGoalProgress({
+      ...progressForm.value,
+      goalId: goalId.value
+    });
+    if (response.code === 200) {
+      message.success("进展已保存");
+      progressModal.open = false;
+      await loadGoalProgressList();
+    } else {
+      message.error(response.msg || "保存失败");
+    }
+  } finally {
+    progressModal.saveLoading = false;
+  }
+};
+
+const confirmDeleteProgress = (progress: ShanzhuGoalProgressVO) => {
+  if (!progress.id) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认删除进展记录？",
+    content: `删除后，进展「${progress.title || '-'}」将不再展示。`,
+    okText: "确认删除",
+    cancelText: "取消",
+    okType: "danger",
+    onOk: async () => {
+      const response = await deleteGoalProgress(progress.id || "");
+      if (response.code === 200) {
+        message.success("删除成功");
+        await loadGoalProgressList();
+      } else {
+        message.error(response.msg || "删除失败");
+      }
+    }
+  });
+};
+
 const handleSaveSubGoal = async () => {
   await subGoalFormRef.value?.validate();
 
@@ -545,6 +710,7 @@ const handleSaveSubGoal = async () => {
       message.success("保存成功");
       subGoalModal.open = false;
       await loadGoalDetail();
+      await loadGoalProgressList();
     } else {
       message.error(response.msg);
     }
@@ -588,6 +754,7 @@ const handleSubGoalStatusChange = async (subGoalId: string | undefined, status: 
   if (response.code === 200) {
     message.success("状态已更新");
     await loadGoalDetail();
+    await loadGoalProgressList();
   } else {
     message.error(response.msg);
   }
@@ -606,6 +773,7 @@ const handleSaveTask = async () => {
       message.success("保存成功");
       taskModal.open = false;
       await loadGoalDetail();
+      await loadGoalProgressList();
     } else {
       message.error(response.msg);
     }
@@ -649,6 +817,7 @@ const handleTaskStatusChange = async (taskId: string | undefined, status: string
   if (response.code === 200) {
     message.success("状态已更新");
     await loadGoalDetail();
+    await loadGoalProgressList();
   } else {
     message.error(response.msg);
   }
@@ -666,6 +835,7 @@ const handleSubGoalProgressChange = async (subGoalId: string | undefined, progre
   if (response.code === 200) {
     message.success("进度已更新");
     await loadGoalDetail();
+    await loadGoalProgressList();
   } else {
     message.error(response.msg);
   }
@@ -673,6 +843,7 @@ const handleSubGoalProgressChange = async (subGoalId: string | undefined, progre
 
 onMounted(() => {
   loadGoalDetail();
+  loadGoalProgressList();
 });
 </script>
 
@@ -711,6 +882,26 @@ onMounted(() => {
 
 .goal-tags {
   margin-top: 12px;
+}
+
+.progress-list-item {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.progress-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.progress-title {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.progress-content {
+  margin-bottom: 0;
+  color: var(--lihua-text-color-secondary);
 }
 
 .sub-goal-card {

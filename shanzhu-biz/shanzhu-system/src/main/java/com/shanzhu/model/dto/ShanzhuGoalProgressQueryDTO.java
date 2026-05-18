@@ -1,0 +1,13 @@
+package com.shanzhu.model.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class ShanzhuGoalProgressQueryDTO {
+    /**
+     * 目标ID
+     */
+    @NotBlank(message = "请选择目标")
+    private String goalId;
+}

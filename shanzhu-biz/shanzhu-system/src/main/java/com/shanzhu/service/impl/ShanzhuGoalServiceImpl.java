@@ -17,6 +17,7 @@ import com.shanzhu.model.vo.ShanzhuGoalVO;
 import com.shanzhu.model.vo.ShanzhuSubGoalVO;
 import com.shanzhu.model.vo.ShanzhuTaskVO;
 import com.shanzhu.security.manager.LoginUserContext;
+import com.shanzhu.service.ShanzhuGoalProgressService;
 import com.shanzhu.service.ShanzhuGoalService;
 import com.shanzhu.service.ShanzhuSubGoalService;
 import com.shanzhu.service.ShanzhuTagRelationService;
@@ -26,8 +27,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +39,7 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
     private static final String DEFAULT_GOAL_STATUS = "not_started";
     private static final String DEFAULT_GOAL_TYPE = "normal";
     private static final String DEFAULT_PROGRESS_MODE = "manual";
+    private static final String COMPLETED_STATUS = "completed";
     private static final String TAG_BIZ_TYPE = "goal";
 
     @Resource
@@ -52,6 +56,9 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
 
     @Resource
     private ShanzhuTaskService shanzhuTaskService;
+
+    @Resource
+    private ShanzhuGoalProgressService shanzhuGoalProgressService;
 
     @Override
     public IPage<ShanzhuGoalVO> queryPage(ShanzhuGoalQueryDTO queryDTO) {
@@ -82,6 +89,7 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
 
     @Override
     public String saveGoal(ShanzhuGoalSaveDTO saveDTO) {
+        ShanzhuGoal oldGoal = queryCurrentUserGoal(saveDTO.getId());
         ShanzhuGoal goal = new ShanzhuGoal();
         BeanUtils.copyProperties(saveDTO, goal);
         goal.setUserId(LoginUserContext.getUserId());
@@ -91,11 +99,18 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         goal.setProgress(saveDTO.getProgress() == null ? 0 : saveDTO.getProgress());
         goal.setPriority(saveDTO.getPriority() == null ? 2 : saveDTO.getPriority());
 
+        if (COMPLETED_STATUS.equals(goal.getStatus()) && goal.getCompletedTime() == null) {
+            goal.setCompletedTime(LocalDateTime.now());
+            goal.setProgress(100);
+        }
+
         if (StringUtils.hasText(goal.getId())) {
             shanzhuGoalMapper.updateById(goal);
         } else {
             shanzhuGoalMapper.insert(goal);
         }
+
+        recordGoalProgressChange(oldGoal, goal);
 
         ShanzhuTagRelationSaveDTO relationSaveDTO = new ShanzhuTagRelationSaveDTO();
         relationSaveDTO.setBizType(TAG_BIZ_TYPE);
@@ -103,6 +118,28 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         relationSaveDTO.setTagIds(saveDTO.getTagIds());
         shanzhuTagRelationService.saveRelations(relationSaveDTO);
         return goal.getId();
+    }
+
+    private ShanzhuGoal queryCurrentUserGoal(String goalId) {
+        if (!StringUtils.hasText(goalId)) {
+            return null;
+        }
+
+        QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuGoal::getId, goalId)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId());
+        return shanzhuGoalMapper.selectOne(queryWrapper);
+    }
+
+    private void recordGoalProgressChange(ShanzhuGoal oldGoal, ShanzhuGoal goal) {
+        if (oldGoal == null || Objects.equals(oldGoal.getProgress(), goal.getProgress())) {
+            return;
+        }
+
+        String title = COMPLETED_STATUS.equals(goal.getStatus()) ? "完成目标" : "更新目标进度";
+        String content = String.format("目标「%s」进度由 %s%% 更新为 %s%%", goal.getTitle(), oldGoal.getProgress(), goal.getProgress());
+        shanzhuGoalProgressService.recordProgress(goal.getId(), null, null, title, content, oldGoal.getProgress(), goal.getProgress());
     }
 
     private QueryWrapper<ShanzhuGoal> buildQueryWrapper(ShanzhuGoalQueryDTO queryDTO) {
