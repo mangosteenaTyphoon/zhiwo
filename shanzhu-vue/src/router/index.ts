@@ -156,6 +156,19 @@ const routers = [
             }
           },
           {
+            path: '/shanzhu/habit',
+            component: () => import("@/views/shanzhu/habit/index.vue"),
+            name: 'ShanzhuHabit',
+            meta: {
+              label: "习惯打卡",
+              icon: "CalendarOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
             path: '/shanzhu/category',
             component: () => import("@/views/shanzhu/category/index.vue"),
             name: 'ShanzhuCategory',
