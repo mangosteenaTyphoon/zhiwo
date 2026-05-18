@@ -165,7 +165,7 @@ const routers = [
               cache: false,
               affix: false,
               viewTab: true,
-              visible: true
+              visible: false
             }
           },
           {
@@ -178,7 +178,7 @@ const routers = [
               cache: false,
               affix: false,
               viewTab: true,
-              visible: true
+              visible: false
             }
           },
           {

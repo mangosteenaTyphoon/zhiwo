@@ -1,3 +1,18 @@
+export interface ShanzhuCategorySave {
+  /**
+   * 分类名称
+   */
+  name: string;
+  /**
+   * 图标
+   */
+  icon?: string;
+  /**
+   * 颜色
+   */
+  color?: string;
+}
+
 export interface ShanzhuCategory {
   /**
    * 分类ID

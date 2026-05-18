@@ -4,16 +4,25 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanzhu.entity.ShanzhuCategory;
 import com.shanzhu.mapper.ShanzhuCategoryMapper;
+import com.shanzhu.model.dto.ShanzhuCategorySaveDTO;
 import com.shanzhu.model.vo.ShanzhuCategoryVO;
+import com.shanzhu.security.manager.LoginUserContext;
 import com.shanzhu.service.ShanzhuCategoryService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ShanzhuCategoryServiceImpl extends ServiceImpl<ShanzhuCategoryMapper, ShanzhuCategory> implements ShanzhuCategoryService {
+
+    private static final String BUILT_IN_FLAG = "1";
+    private static final String CUSTOM_FLAG = "0";
+    private static final String ENABLED_FLAG = "1";
+    private static final String DEFAULT_CATEGORY_COLOR = "#1677ff";
+    private static final int CUSTOM_CATEGORY_SORT_ORDER = 100;
 
     private static final List<BuiltInCategory> BUILT_IN_CATEGORIES = List.of(
             new BuiltInCategory("project", "项目建设", "appstore", "#1677ff", 1),
@@ -33,7 +42,11 @@ public class ShanzhuCategoryServiceImpl extends ServiceImpl<ShanzhuCategoryMappe
 
         QueryWrapper<ShanzhuCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
-                .eq(ShanzhuCategory::getEnabled, "1")
+                .eq(ShanzhuCategory::getEnabled, ENABLED_FLAG)
+                .and(wrapper -> wrapper
+                        .eq(ShanzhuCategory::getBuiltIn, BUILT_IN_FLAG)
+                        .or()
+                        .eq(ShanzhuCategory::getUserId, LoginUserContext.getUserId()))
                 .orderByAsc(ShanzhuCategory::getSortOrder);
         List<ShanzhuCategory> categories = list(queryWrapper);
 
@@ -44,6 +57,43 @@ public class ShanzhuCategoryServiceImpl extends ServiceImpl<ShanzhuCategoryMappe
             categoryVOList.add(categoryVO);
         });
         return categoryVOList;
+    }
+
+    @Override
+    public String addCategory(ShanzhuCategorySaveDTO saveDTO) {
+        String categoryName = saveDTO.getName() == null ? "" : saveDTO.getName().trim();
+        if (!StringUtils.hasText(categoryName)) {
+            return null;
+        }
+
+        ShanzhuCategory existingCategory = queryExistingCategory(categoryName);
+        if (existingCategory != null) {
+            return existingCategory.getId();
+        }
+
+        ShanzhuCategory category = new ShanzhuCategory();
+        category.setName(categoryName);
+        category.setCode("custom_" + System.currentTimeMillis());
+        category.setIcon(StringUtils.hasText(saveDTO.getIcon()) ? saveDTO.getIcon() : "appstore");
+        category.setColor(StringUtils.hasText(saveDTO.getColor()) ? saveDTO.getColor() : DEFAULT_CATEGORY_COLOR);
+        category.setSortOrder(CUSTOM_CATEGORY_SORT_ORDER);
+        category.setBuiltIn(CUSTOM_FLAG);
+        category.setEnabled(ENABLED_FLAG);
+        category.setUserId(LoginUserContext.getUserId());
+        save(category);
+        return category.getId();
+    }
+
+    private ShanzhuCategory queryExistingCategory(String categoryName) {
+        QueryWrapper<ShanzhuCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuCategory::getName, categoryName)
+                .eq(ShanzhuCategory::getEnabled, ENABLED_FLAG)
+                .and(wrapper -> wrapper
+                        .eq(ShanzhuCategory::getBuiltIn, BUILT_IN_FLAG)
+                        .or()
+                        .eq(ShanzhuCategory::getUserId, LoginUserContext.getUserId()));
+        return getOne(queryWrapper);
     }
 
     private void initBuiltInCategories() {
@@ -60,8 +110,8 @@ public class ShanzhuCategoryServiceImpl extends ServiceImpl<ShanzhuCategoryMappe
             category.setIcon(builtInCategory.icon());
             category.setColor(builtInCategory.color());
             category.setSortOrder(builtInCategory.sortOrder());
-            category.setBuiltIn("1");
-            category.setEnabled("1");
+            category.setBuiltIn(BUILT_IN_FLAG);
+            category.setEnabled(ENABLED_FLAG);
             save(category);
         }
     }
