@@ -104,6 +104,19 @@ const routers = [
         },
         children: [
           {
+            path: '/shanzhu/dashboard',
+            component: () => import("@/views/shanzhu/dashboard/index.vue"),
+            name: 'ShanzhuDashboard',
+            meta: {
+              label: "目标仪表盘",
+              icon: "DashboardOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
             path: '/shanzhu/goal',
             component: () => import("@/views/shanzhu/goal/index.vue"),
             name: 'ShanzhuGoal',
