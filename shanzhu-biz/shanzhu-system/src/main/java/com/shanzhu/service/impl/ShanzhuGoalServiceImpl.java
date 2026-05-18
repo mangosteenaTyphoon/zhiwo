@@ -15,6 +15,7 @@ import com.shanzhu.model.dto.ShanzhuTagRelationSaveDTO;
 import com.shanzhu.model.vo.ShanzhuGoalVO;
 import com.shanzhu.security.manager.LoginUserContext;
 import com.shanzhu.service.ShanzhuGoalService;
+import com.shanzhu.service.ShanzhuSubGoalService;
 import com.shanzhu.service.ShanzhuTagRelationService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +43,9 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
     @Resource
     private ShanzhuTagRelationService shanzhuTagRelationService;
 
+    @Resource
+    private ShanzhuSubGoalService shanzhuSubGoalService;
+
     @Override
     public IPage<ShanzhuGoalVO> queryPage(ShanzhuGoalQueryDTO queryDTO) {
         IPage<ShanzhuGoal> goalPage = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
@@ -64,7 +68,9 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         if (goal == null) {
             return null;
         }
-        return convertToVO(goal, queryCategoryMap(List.of(goal)));
+        ShanzhuGoalVO goalVO = convertToVO(goal, queryCategoryMap(List.of(goal)));
+        goalVO.setSubGoals(shanzhuSubGoalService.queryByGoalId(goal.getId()));
+        return goalVO;
     }
 
     @Override

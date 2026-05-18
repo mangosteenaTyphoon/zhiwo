@@ -1,4 +1,5 @@
 import type {ShanzhuTag} from "@/api/shanzhu/tag/type/Tag.ts";
+import type {ShanzhuSubGoalVO} from "@/api/shanzhu/sub-goal/type/SubGoal.ts";
 
 export interface ShanzhuGoal {
   /**
@@ -80,6 +81,10 @@ export interface ShanzhuGoalVO extends ShanzhuGoal {
    * 标签列表
    */
   tags?: ShanzhuTag[];
+  /**
+   * 子目标列表
+   */
+  subGoals?: ShanzhuSubGoalVO[];
 }
 
 export interface ShanzhuGoalQuery {

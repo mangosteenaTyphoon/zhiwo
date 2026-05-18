@@ -1,4 +1,36 @@
 package com.shanzhu.service;
 
+import com.shanzhu.model.dto.ShanzhuTaskQueryDTO;
+import com.shanzhu.model.dto.ShanzhuTaskSaveDTO;
+import com.shanzhu.model.dto.ShanzhuTaskSortDTO;
+import com.shanzhu.model.dto.ShanzhuTaskStatusDTO;
+import com.shanzhu.model.vo.ShanzhuTaskVO;
+
+import java.util.List;
+
 public interface ShanzhuTaskService {
+    /**
+     * 查询目标下的任务列表
+     */
+    List<ShanzhuTaskVO> queryTaskList(ShanzhuTaskQueryDTO queryDTO);
+
+    /**
+     * 保存任务
+     */
+    String saveTask(ShanzhuTaskSaveDTO saveDTO);
+
+    /**
+     * 删除任务
+     */
+    void deleteTask(String id);
+
+    /**
+     * 更新任务状态
+     */
+    void updateStatus(ShanzhuTaskStatusDTO statusDTO);
+
+    /**
+     * 调整任务排序
+     */
+    void updateSort(ShanzhuTaskSortDTO sortDTO);
 }

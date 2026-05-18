@@ -97,4 +97,9 @@ public class ShanzhuGoalVO {
      * 标签列表
      */
     private List<ShanzhuTagVO> tags;
+
+    /**
+     * 子目标列表
+     */
+    private List<ShanzhuSubGoalVO> subGoals;
 }

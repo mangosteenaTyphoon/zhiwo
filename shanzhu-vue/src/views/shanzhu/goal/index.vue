@@ -90,7 +90,10 @@
                       </a-tag>
                       <a-tag v-if="!goal.tags || goal.tags.length === 0">暂无标签</a-tag>
                     </a-space>
-                    <a-button type="link" size="small" @click="openEditModal(goal.id)">编辑</a-button>
+                    <a-space size="small">
+                      <a-button type="link" size="small" @click="openDetailPage(goal.id)">详情</a-button>
+                      <a-button type="link" size="small" @click="openEditModal(goal.id)">编辑</a-button>
+                    </a-space>
                   </a-flex>
 
                   <a-divider class="goal-card-divider"/>
@@ -185,6 +188,7 @@
 
 <script setup lang="ts">
 import {onMounted, reactive, ref} from "vue";
+import {useRouter} from "vue-router";
 import type {FormInstance, Rule} from "ant-design-vue/es/form";
 import {message} from "ant-design-vue";
 import {PlusOutlined, RedoOutlined, SearchOutlined} from "@ant-design/icons-vue";
@@ -199,6 +203,8 @@ import type {
   ShanzhuGoalVO
 } from "@/api/shanzhu/goal/type/Goal.ts";
 import type {BaseModalActiveType} from "@/api/global/Type.ts";
+
+const router = useRouter();
 
 const goalStatusOptions: GoalStatusOption[] = [
   {label: "未开始", value: "not_started", color: "default"},
@@ -281,6 +287,13 @@ const openCreateModal = () => {
   modalActive.open = true;
 };
 
+const openDetailPage = (goalId?: string) => {
+  if (!goalId) {
+    return;
+  }
+  router.push(`/shanzhu/goal/detail/${goalId}`);
+};
+
 const openEditModal = async (goalId?: string) => {
   if (!goalId) {
     return;
@@ -309,7 +322,7 @@ const handleSaveGoal = async () => {
     if (response.code === 200) {
       message.success("保存成功");
       modalActive.open = false;
-      await initPage();
+      await queryPage();
     } else {
       message.error(response.msg);
     }

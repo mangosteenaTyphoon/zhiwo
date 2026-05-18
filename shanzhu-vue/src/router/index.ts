@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import Layout from '@/layout/index.vue'
+import MiddleView from '@/components/middle-view/index.vue'
 /**
  * 说明：静态路由基于vue router，在项目中进行了逻辑定制
  * 1. meta 中 visible 设置为 true 的菜单/页面将会在导航中显示
@@ -90,17 +91,84 @@ const routers = [
         }
       },
       {
-        path: '/shanzhu/goal',
-        component: () => import("@/views/shanzhu/goal/index.vue"),
-        name: 'ShanzhuGoal',
+        path: '/shanzhu',
+        component: MiddleView,
+        name: 'ShanzhuGoalManage',
         meta: {
           label: "目标管理",
           icon: "FlagOutlined",
           cache: false,
           affix: false,
-          viewTab: true,
+          viewTab: false,
           visible: true
-        }
+        },
+        children: [
+          {
+            path: '/shanzhu/goal',
+            component: () => import("@/views/shanzhu/goal/index.vue"),
+            name: 'ShanzhuGoal',
+            meta: {
+              label: "目标列表",
+              icon: "UnorderedListOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
+            path: '/shanzhu/task',
+            component: () => import("@/views/shanzhu/task/index.vue"),
+            name: 'ShanzhuTask',
+            meta: {
+              label: "任务中心",
+              icon: "CheckSquareOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
+            path: '/shanzhu/category',
+            component: () => import("@/views/shanzhu/category/index.vue"),
+            name: 'ShanzhuCategory',
+            meta: {
+              label: "分类管理",
+              icon: "AppstoreOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
+            path: '/shanzhu/tag',
+            component: () => import("@/views/shanzhu/tag/index.vue"),
+            name: 'ShanzhuTag',
+            meta: {
+              label: "标签管理",
+              icon: "TagsOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
+            path: '/shanzhu/goal/detail/:id',
+            component: () => import("@/views/shanzhu/goal/detail/index.vue"),
+            name: 'ShanzhuGoalDetail',
+            meta: {
+              label: "目标详情",
+              icon: "FlagOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: false
+            }
+          }
+        ]
       }
     ],
   },
