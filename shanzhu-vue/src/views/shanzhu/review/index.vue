@@ -328,18 +328,19 @@ const maxActualMinutes = computed(() => {
 const initReview = async () => {
   pageLoading.value = true;
   try {
-    const data = await queryReviewSummary(reviewQuery);
+    const response = await queryReviewSummary(reviewQuery);
+    const reviewData = response.data;
     Object.assign(review, {
-      ...data,
-      overview: data.overview || review.overview,
-      categoryInvestmentStats: data.categoryInvestmentStats || [],
-      tagAnalysisStats: data.tagAnalysisStats || [],
-      taskEfficiencyTrends: data.taskEfficiencyTrends || [],
-      goalAchievementStats: data.goalAchievementStats || [],
-      adjustmentSuggestions: data.adjustmentSuggestions || [],
-      reviewSummary: data.reviewSummary || []
+      ...reviewData,
+      overview: reviewData.overview || review.overview,
+      categoryInvestmentStats: reviewData.categoryInvestmentStats || [],
+      tagAnalysisStats: reviewData.tagAnalysisStats || [],
+      taskEfficiencyTrends: reviewData.taskEfficiencyTrends || [],
+      goalAchievementStats: reviewData.goalAchievementStats || [],
+      adjustmentSuggestions: reviewData.adjustmentSuggestions || [],
+      reviewSummary: reviewData.reviewSummary || []
     });
-    dateRange.value = data.startDate && data.endDate ? [data.startDate, data.endDate] : [];
+    dateRange.value = reviewData.startDate && reviewData.endDate ? [reviewData.startDate, reviewData.endDate] : [];
   } catch (error) {
     message.error('复盘报告生成失败');
   } finally {

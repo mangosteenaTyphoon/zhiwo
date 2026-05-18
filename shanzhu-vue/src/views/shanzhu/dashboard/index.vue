@@ -298,11 +298,12 @@ const maxTrendValue = computed(() => {
 const initDashboard = async () => {
   pageLoading.value = true;
   try {
-    const data = await queryDashboard();
-    Object.assign(dashboard.overview, data.overview || {});
-    dashboard.categoryStats = data.categoryStats || [];
-    Object.assign(dashboard.timeStats, data.timeStats || {});
-    Object.assign(dashboard.riskStats, data.riskStats || {});
+    const response = await queryDashboard();
+    const dashboardData = response.data;
+    Object.assign(dashboard.overview, dashboardData.overview || {});
+    dashboard.categoryStats = dashboardData.categoryStats || [];
+    Object.assign(dashboard.timeStats, dashboardData.timeStats || {});
+    Object.assign(dashboard.riskStats, dashboardData.riskStats || {});
   } catch (error) {
     message.error('仪表盘数据加载失败');
   } finally {
