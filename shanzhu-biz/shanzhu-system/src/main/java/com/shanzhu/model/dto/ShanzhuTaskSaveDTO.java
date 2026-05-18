@@ -1,5 +1,6 @@
 package com.shanzhu.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -53,6 +54,7 @@ public class ShanzhuTaskSaveDTO {
     /**
      * 截止时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deadline;
 
     /**
