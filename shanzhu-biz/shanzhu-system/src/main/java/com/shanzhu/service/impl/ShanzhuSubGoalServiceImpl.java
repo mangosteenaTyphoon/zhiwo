@@ -1,6 +1,7 @@
 package com.shanzhu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanzhu.entity.ShanzhuGoal;
 import com.shanzhu.entity.ShanzhuSubGoal;
@@ -53,6 +54,13 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
     @Override
     public String saveSubGoal(ShanzhuSubGoalSaveDTO saveDTO) {
         ShanzhuSubGoal oldSubGoal = queryCurrentUserSubGoal(saveDTO.getId());
+        if (StringUtils.hasText(saveDTO.getId()) && oldSubGoal == null) {
+            return saveDTO.getId();
+        }
+        if (!isCurrentUserGoal(saveDTO.getGoalId())) {
+            return saveDTO.getId();
+        }
+
         ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
         BeanUtils.copyProperties(saveDTO, subGoal);
         subGoal.setUserId(LoginUserContext.getUserId());
@@ -67,7 +75,12 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
         }
 
         if (StringUtils.hasText(subGoal.getId())) {
-            updateById(subGoal);
+            UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda()
+                    .eq(ShanzhuSubGoal::getId, subGoal.getId())
+                    .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId())
+                    .eq(ShanzhuSubGoal::getDelFlag, NORMAL_FLAG);
+            update(subGoal, updateWrapper);
         } else {
             save(subGoal);
         }
@@ -83,9 +96,13 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
     @Override
     public void deleteSubGoal(String id) {
         ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
-        subGoal.setId(id);
         subGoal.setDelFlag(DELETED_FLAG);
-        updateById(subGoal);
+        UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuSubGoal::getId, id)
+                .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuSubGoal::getDelFlag, NORMAL_FLAG);
+        update(subGoal, updateWrapper);
     }
 
     @Override
@@ -96,13 +113,17 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
         }
 
         ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
-        subGoal.setId(statusDTO.getId());
         subGoal.setStatus(statusDTO.getStatus());
         if (COMPLETED_STATUS.equals(statusDTO.getStatus())) {
             subGoal.setCompletedTime(LocalDateTime.now());
             subGoal.setProgress(100);
         }
-        updateById(subGoal);
+        UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuSubGoal::getId, statusDTO.getId())
+                .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuSubGoal::getDelFlag, NORMAL_FLAG);
+        update(subGoal, updateWrapper);
 
         if (COMPLETED_STATUS.equals(statusDTO.getStatus())) {
             recordSubGoalProgressChange(oldSubGoal, 100, "完成子目标");
@@ -118,9 +139,13 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
         }
 
         ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
-        subGoal.setId(progressDTO.getId());
         subGoal.setProgress(progressDTO.getProgress());
-        updateById(subGoal);
+        UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuSubGoal::getId, progressDTO.getId())
+                .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuSubGoal::getDelFlag, NORMAL_FLAG);
+        update(subGoal, updateWrapper);
 
         recordSubGoalProgressChange(oldSubGoal, progressDTO.getProgress(), "更新子目标进度");
         refreshGoalProgress(oldSubGoal.getGoalId());
@@ -129,9 +154,26 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
     @Override
     public void updateSort(ShanzhuSubGoalSortDTO sortDTO) {
         ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
-        subGoal.setId(sortDTO.getId());
         subGoal.setSortOrder(sortDTO.getSortOrder());
-        updateById(subGoal);
+        UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuSubGoal::getId, sortDTO.getId())
+                .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuSubGoal::getDelFlag, NORMAL_FLAG);
+        update(subGoal, updateWrapper);
+    }
+
+    private boolean isCurrentUserGoal(String goalId) {
+        if (!StringUtils.hasText(goalId)) {
+            return false;
+        }
+
+        QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuGoal::getId, goalId)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
+        return shanzhuGoalMapper.selectCount(queryWrapper) > 0;
     }
 
     private ShanzhuSubGoal queryCurrentUserSubGoal(String subGoalId) {
@@ -161,7 +203,12 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
     }
 
     private void refreshGoalProgress(String goalId) {
-        ShanzhuGoal goal = shanzhuGoalMapper.selectById(goalId);
+        QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuGoal::getId, goalId)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
+        ShanzhuGoal goal = shanzhuGoalMapper.selectOne(queryWrapper);
         if (goal == null) {
             return;
         }
@@ -183,9 +230,13 @@ public class ShanzhuSubGoalServiceImpl extends ServiceImpl<ShanzhuSubGoalMapper,
         }
 
         ShanzhuGoal updateGoal = new ShanzhuGoal();
-        updateGoal.setId(goalId);
         updateGoal.setProgress(progressAfter);
-        shanzhuGoalMapper.updateById(updateGoal);
+        UpdateWrapper<ShanzhuGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuGoal::getId, goalId)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
+        shanzhuGoalMapper.update(updateGoal, updateWrapper);
         String content = String.format("目标「%s」进度由 %s%% 汇总更新为 %s%%", goal.getTitle(), goal.getProgress(), progressAfter);
         shanzhuGoalProgressService.recordProgress(goalId, null, null, "汇总目标进度", content, goal.getProgress(), progressAfter);
     }

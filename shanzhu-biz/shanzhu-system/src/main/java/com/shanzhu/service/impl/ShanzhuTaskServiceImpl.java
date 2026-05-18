@@ -1,6 +1,7 @@
 package com.shanzhu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -109,7 +110,14 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
 
     @Override
     public String saveTask(ShanzhuTaskSaveDTO saveDTO) {
-        ShanzhuTask oldTask = StringUtils.hasText(saveDTO.getId()) ? getById(saveDTO.getId()) : null;
+        ShanzhuTask oldTask = queryCurrentUserTask(saveDTO.getId());
+        if (StringUtils.hasText(saveDTO.getId()) && oldTask == null) {
+            return saveDTO.getId();
+        }
+        if (!isCurrentUserGoal(saveDTO.getGoalId())) {
+            return saveDTO.getId();
+        }
+
         ShanzhuTask task = new ShanzhuTask();
         BeanUtils.copyProperties(saveDTO, task);
         task.setUserId(LoginUserContext.getUserId());
@@ -122,7 +130,12 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
         }
 
         if (StringUtils.hasText(task.getId())) {
-            updateById(task);
+            UpdateWrapper<ShanzhuTask> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda()
+                    .eq(ShanzhuTask::getId, task.getId())
+                    .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
+                    .eq(ShanzhuTask::getDelFlag, NORMAL_FLAG);
+            update(task, updateWrapper);
         } else {
             save(task);
         }
@@ -142,36 +155,77 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
     @Override
     public void deleteTask(String id) {
         ShanzhuTask task = new ShanzhuTask();
-        task.setId(id);
         task.setDelFlag(DELETED_FLAG);
-        updateById(task);
+        UpdateWrapper<ShanzhuTask> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuTask::getId, id)
+                .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTask::getDelFlag, NORMAL_FLAG);
+        update(task, updateWrapper);
     }
 
     @Override
     public void updateStatus(ShanzhuTaskStatusDTO statusDTO) {
-        ShanzhuTask oldTask = getById(statusDTO.getId());
+        ShanzhuTask oldTask = queryCurrentUserTask(statusDTO.getId());
+        if (oldTask == null) {
+            return;
+        }
+
         ShanzhuTask task = new ShanzhuTask();
-        task.setId(statusDTO.getId());
         task.setStatus(statusDTO.getStatus());
         if (COMPLETED_STATUS.equals(statusDTO.getStatus())) {
             task.setCompletedTime(LocalDateTime.now());
         }
-        updateById(task);
+        UpdateWrapper<ShanzhuTask> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuTask::getId, statusDTO.getId())
+                .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTask::getDelFlag, NORMAL_FLAG);
+        update(task, updateWrapper);
 
-        if (oldTask != null) {
-            task.setGoalId(oldTask.getGoalId());
-            task.setSubGoalId(oldTask.getSubGoalId());
-            task.setTitle(oldTask.getTitle());
-        }
+        task.setId(statusDTO.getId());
+        task.setGoalId(oldTask.getGoalId());
+        task.setSubGoalId(oldTask.getSubGoalId());
+        task.setTitle(oldTask.getTitle());
         recordTaskCompletedProgress(oldTask, task);
     }
 
     @Override
     public void updateSort(ShanzhuTaskSortDTO sortDTO) {
         ShanzhuTask task = new ShanzhuTask();
-        task.setId(sortDTO.getId());
         task.setSortOrder(sortDTO.getSortOrder());
-        updateById(task);
+        UpdateWrapper<ShanzhuTask> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuTask::getId, sortDTO.getId())
+                .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTask::getDelFlag, NORMAL_FLAG);
+        update(task, updateWrapper);
+    }
+
+    private ShanzhuTask queryCurrentUserTask(String taskId) {
+        if (!StringUtils.hasText(taskId)) {
+            return null;
+        }
+
+        QueryWrapper<ShanzhuTask> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuTask::getId, taskId)
+                .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTask::getDelFlag, NORMAL_FLAG);
+        return getOne(queryWrapper);
+    }
+
+    private boolean isCurrentUserGoal(String goalId) {
+        if (!StringUtils.hasText(goalId)) {
+            return false;
+        }
+
+        QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuGoal::getId, goalId)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
+        return shanzhuGoalMapper.selectCount(queryWrapper) > 0;
     }
 
     private void recordTaskCompletedProgress(ShanzhuTask oldTask, ShanzhuTask task) {

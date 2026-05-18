@@ -129,7 +129,15 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         }
 
         if (StringUtils.hasText(goal.getId())) {
-            shanzhuGoalMapper.updateById(goal);
+            if (oldGoal == null) {
+                return goal.getId();
+            }
+            UpdateWrapper<ShanzhuGoal> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda()
+                    .eq(ShanzhuGoal::getId, goal.getId())
+                    .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                    .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
+            shanzhuGoalMapper.update(goal, updateWrapper);
         } else {
             shanzhuGoalMapper.insert(goal);
         }
@@ -209,7 +217,8 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(ShanzhuGoal::getId, goalId)
-                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId());
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
         return shanzhuGoalMapper.selectOne(queryWrapper);
     }
 
