@@ -117,6 +117,19 @@ const routers = [
             }
           },
           {
+            path: '/shanzhu/review',
+            component: () => import("@/views/shanzhu/review/index.vue"),
+            name: 'ShanzhuReview',
+            meta: {
+              label: "目标复盘",
+              icon: "LineChartOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
             path: '/shanzhu/goal',
             component: () => import("@/views/shanzhu/goal/index.vue"),
             name: 'ShanzhuGoal',
