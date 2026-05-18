@@ -24,6 +24,11 @@
               </a-form-item>
             </a-col>
             <a-col :xs="24" :sm="12" :md="8" :lg="6">
+              <a-form-item label="标签">
+                <shanzhu-tag-select v-model:value="goalQuery.tagIds" tag-type="goal"/>
+              </a-form-item>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8" :lg="6">
               <a-form-item>
                 <a-space size="small">
                   <a-button type="primary" :loading="tableLoading" @click="queryPage">
@@ -93,6 +98,7 @@
                     <a-space size="small">
                       <a-button type="link" size="small" @click="openDetailPage(goal.id)">详情</a-button>
                       <a-button type="link" size="small" @click="openEditModal(goal.id)">编辑</a-button>
+                      <a-button type="link" size="small" danger @click="confirmDeleteGoal(goal)">删除</a-button>
                     </a-space>
                   </a-flex>
 
@@ -190,11 +196,11 @@
 import {onMounted, reactive, ref} from "vue";
 import {useRouter} from "vue-router";
 import type {FormInstance, Rule} from "ant-design-vue/es/form";
-import {message} from "ant-design-vue";
+import {message, Modal} from "ant-design-vue";
 import {PlusOutlined, RedoOutlined, SearchOutlined} from "@ant-design/icons-vue";
 import ShanzhuCategorySelect from "@/components/shanzhu-category-select/index.vue";
 import ShanzhuTagSelect from "@/components/shanzhu-tag-select/index.vue";
-import {queryGoalById, queryGoalPage, saveGoal} from "@/api/shanzhu/goal/Goal.ts";
+import {deleteGoal, queryGoalById, queryGoalPage, saveGoal} from "@/api/shanzhu/goal/Goal.ts";
 import type {
   GoalPriorityOption,
   GoalStatusOption,
@@ -311,6 +317,29 @@ const openEditModal = async (goalId?: string) => {
   };
   modalActive.title = "编辑目标";
   modalActive.open = true;
+};
+
+const confirmDeleteGoal = (goal: ShanzhuGoalVO) => {
+  if (!goal.id) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认删除目标？",
+    content: `删除后，目标「${goal.title || '-'}」及其子目标、任务和进展记录将不再展示。`,
+    okText: "确认删除",
+    cancelText: "取消",
+    okType: "danger",
+    onOk: async () => {
+      const response = await deleteGoal(goal.id || "");
+      if (response.code === 200) {
+        message.success("删除成功");
+        await initPage();
+      } else {
+        message.error(response.msg || "删除失败");
+      }
+    }
+  });
 };
 
 const handleSaveGoal = async () => {

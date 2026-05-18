@@ -11,6 +11,7 @@ import com.shanzhu.service.ShanzhuGoalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,5 +40,12 @@ public class ShanzhuGoalController extends ApiResponseController {
     @PostMapping
     public ApiResponseModel<String> save(@RequestBody @Validated ShanzhuGoalSaveDTO saveDTO) {
         return success(shanzhuGoalService.saveGoal(saveDTO));
+    }
+
+    @Operation(summary = "删除目标")
+    @DeleteMapping("{id}")
+    public ApiResponseModel<String> delete(@PathVariable("id") @NotBlank(message = "请选择目标") String id) {
+        shanzhuGoalService.deleteGoal(id);
+        return success();
     }
 }

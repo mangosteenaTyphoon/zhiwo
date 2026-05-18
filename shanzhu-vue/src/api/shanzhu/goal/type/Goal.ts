@@ -118,6 +118,10 @@ export interface ShanzhuGoalQuery {
    */
   status?: string;
   /**
+   * 标签ID列表
+   */
+  tagIds?: string[];
+  /**
    * 开始日期
    */
   startDate?: string;

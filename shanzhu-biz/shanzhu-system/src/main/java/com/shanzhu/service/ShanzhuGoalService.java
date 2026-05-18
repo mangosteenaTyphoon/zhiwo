@@ -20,4 +20,9 @@ public interface ShanzhuGoalService {
      * 保存目标
      */
     String saveGoal(ShanzhuGoalSaveDTO saveDTO);
+
+    /**
+     * 删除目标
+     */
+    void deleteGoal(String id);
 }

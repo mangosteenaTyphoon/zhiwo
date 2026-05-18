@@ -36,3 +36,14 @@ export const queryGoalById = (id: string) => {
     method: 'get'
   })
 }
+
+/**
+ * 删除目标
+ * @param id
+ */
+export const deleteGoal = (id: string) => {
+  return request<string>({
+    url: 'shanzhu/goal/' + id,
+    method: 'delete'
+  })
+}

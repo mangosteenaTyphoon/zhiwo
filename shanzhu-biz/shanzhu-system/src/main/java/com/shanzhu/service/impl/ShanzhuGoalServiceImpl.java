@@ -1,13 +1,22 @@
 package com.shanzhu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanzhu.entity.ShanzhuCategory;
 import com.shanzhu.entity.ShanzhuGoal;
+import com.shanzhu.entity.ShanzhuGoalProgress;
+import com.shanzhu.entity.ShanzhuSubGoal;
+import com.shanzhu.entity.ShanzhuTagRelation;
+import com.shanzhu.entity.ShanzhuTask;
 import com.shanzhu.mapper.ShanzhuCategoryMapper;
 import com.shanzhu.mapper.ShanzhuGoalMapper;
+import com.shanzhu.mapper.ShanzhuGoalProgressMapper;
+import com.shanzhu.mapper.ShanzhuSubGoalMapper;
+import com.shanzhu.mapper.ShanzhuTagRelationMapper;
+import com.shanzhu.mapper.ShanzhuTaskMapper;
 import com.shanzhu.model.dto.ShanzhuGoalQueryDTO;
 import com.shanzhu.model.dto.ShanzhuGoalSaveDTO;
 import com.shanzhu.model.dto.ShanzhuTagRelationQueryDTO;
@@ -40,10 +49,24 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
     private static final String DEFAULT_GOAL_TYPE = "normal";
     private static final String DEFAULT_PROGRESS_MODE = "manual";
     private static final String COMPLETED_STATUS = "completed";
+    private static final String DELETED_FLAG = "1";
+    private static final String NORMAL_FLAG = "0";
     private static final String TAG_BIZ_TYPE = "goal";
 
     @Resource
     private ShanzhuGoalMapper shanzhuGoalMapper;
+
+    @Resource
+    private ShanzhuSubGoalMapper shanzhuSubGoalMapper;
+
+    @Resource
+    private ShanzhuTaskMapper shanzhuTaskMapper;
+
+    @Resource
+    private ShanzhuGoalProgressMapper shanzhuGoalProgressMapper;
+
+    @Resource
+    private ShanzhuTagRelationMapper shanzhuTagRelationMapper;
 
     @Resource
     private ShanzhuCategoryMapper shanzhuCategoryMapper;
@@ -77,7 +100,8 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(ShanzhuGoal::getId, id)
-                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId());
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
         ShanzhuGoal goal = shanzhuGoalMapper.selectOne(queryWrapper);
         if (goal == null) {
             return null;
@@ -120,6 +144,63 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         return goal.getId();
     }
 
+    @Override
+    public void deleteGoal(String id) {
+        ShanzhuGoal goal = new ShanzhuGoal();
+        goal.setDelFlag(DELETED_FLAG);
+        UpdateWrapper<ShanzhuGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuGoal::getId, id)
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId());
+        shanzhuGoalMapper.update(goal, updateWrapper);
+
+        logicDeleteSubGoals(id);
+        logicDeleteTasks(id);
+        logicDeleteGoalProgress(id);
+        logicDeleteGoalTagRelations(id);
+    }
+
+    private void logicDeleteSubGoals(String goalId) {
+        ShanzhuSubGoal subGoal = new ShanzhuSubGoal();
+        subGoal.setDelFlag(DELETED_FLAG);
+        UpdateWrapper<ShanzhuSubGoal> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuSubGoal::getGoalId, goalId)
+                .eq(ShanzhuSubGoal::getUserId, LoginUserContext.getUserId());
+        shanzhuSubGoalMapper.update(subGoal, updateWrapper);
+    }
+
+    private void logicDeleteTasks(String goalId) {
+        ShanzhuTask task = new ShanzhuTask();
+        task.setDelFlag(DELETED_FLAG);
+        UpdateWrapper<ShanzhuTask> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuTask::getGoalId, goalId)
+                .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId());
+        shanzhuTaskMapper.update(task, updateWrapper);
+    }
+
+    private void logicDeleteGoalProgress(String goalId) {
+        ShanzhuGoalProgress progress = new ShanzhuGoalProgress();
+        progress.setDelFlag(DELETED_FLAG);
+        UpdateWrapper<ShanzhuGoalProgress> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuGoalProgress::getGoalId, goalId)
+                .eq(ShanzhuGoalProgress::getUserId, LoginUserContext.getUserId());
+        shanzhuGoalProgressMapper.update(progress, updateWrapper);
+    }
+
+    private void logicDeleteGoalTagRelations(String goalId) {
+        ShanzhuTagRelation relation = new ShanzhuTagRelation();
+        relation.setDelFlag(DELETED_FLAG);
+        UpdateWrapper<ShanzhuTagRelation> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda()
+                .eq(ShanzhuTagRelation::getBizType, TAG_BIZ_TYPE)
+                .eq(ShanzhuTagRelation::getBizId, goalId)
+                .eq(ShanzhuTagRelation::getUserId, LoginUserContext.getUserId());
+        shanzhuTagRelationMapper.update(relation, updateWrapper);
+    }
+
     private ShanzhuGoal queryCurrentUserGoal(String goalId) {
         if (!StringUtils.hasText(goalId)) {
             return null;
@@ -144,7 +225,9 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
 
     private QueryWrapper<ShanzhuGoal> buildQueryWrapper(ShanzhuGoalQueryDTO queryDTO) {
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId());
+        queryWrapper.lambda()
+                .eq(ShanzhuGoal::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuGoal::getDelFlag, NORMAL_FLAG);
 
         if (StringUtils.hasText(queryDTO.getKeyword())) {
             queryWrapper.lambda().like(ShanzhuGoal::getTitle, queryDTO.getKeyword());
@@ -161,7 +244,32 @@ public class ShanzhuGoalServiceImpl extends ServiceImpl<ShanzhuGoalMapper, Shanz
         if (queryDTO.getDeadline() != null) {
             queryWrapper.lambda().le(ShanzhuGoal::getDeadline, queryDTO.getDeadline());
         }
+        applyTagFilter(queryWrapper, queryDTO);
         return queryWrapper;
+    }
+
+    private void applyTagFilter(QueryWrapper<ShanzhuGoal> queryWrapper, ShanzhuGoalQueryDTO queryDTO) {
+        if (queryDTO.getTagIds() == null || queryDTO.getTagIds().isEmpty()) {
+            return;
+        }
+
+        QueryWrapper<ShanzhuTagRelation> relationQueryWrapper = new QueryWrapper<>();
+        relationQueryWrapper.lambda()
+                .select(ShanzhuTagRelation::getBizId)
+                .eq(ShanzhuTagRelation::getBizType, TAG_BIZ_TYPE)
+                .eq(ShanzhuTagRelation::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTagRelation::getDelFlag, NORMAL_FLAG)
+                .in(ShanzhuTagRelation::getTagId, queryDTO.getTagIds());
+        List<String> goalIds = shanzhuTagRelationMapper.selectList(relationQueryWrapper).stream()
+                .map(ShanzhuTagRelation::getBizId)
+                .distinct()
+                .toList();
+
+        if (goalIds.isEmpty()) {
+            queryWrapper.lambda().eq(ShanzhuGoal::getId, "");
+            return;
+        }
+        queryWrapper.lambda().in(ShanzhuGoal::getId, goalIds);
     }
 
     private List<ShanzhuGoalVO> convertToVOList(List<ShanzhuGoal> goals) {
