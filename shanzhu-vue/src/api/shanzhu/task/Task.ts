@@ -1,4 +1,5 @@
 import request from "@/utils/Request.ts";
+import type {PageResponseType} from "@/api/global/Type.ts";
 import type {
   ShanzhuTask,
   ShanzhuTaskQuery,
@@ -6,6 +7,18 @@ import type {
   ShanzhuTaskStatus,
   ShanzhuTaskVO
 } from "@/api/shanzhu/task/type/Task.ts";
+
+/**
+ * 分页查询任务列表
+ * @param data
+ */
+export const queryTaskPage = (data: ShanzhuTaskQuery) => {
+  return request<PageResponseType<ShanzhuTaskVO>>({
+    url: 'shanzhu/task/page',
+    method: 'post',
+    data: data
+  })
+}
 
 /**
  * 查询任务列表

@@ -127,6 +127,14 @@ export interface ShanzhuTaskQuery {
    * 查询类型：today 今日任务，overdue 逾期任务
    */
   queryType?: string;
+  /**
+   * 当前页数
+   */
+  pageNum?: number;
+  /**
+   * 每页记录数
+   */
+  pageSize?: number;
 }
 
 export interface ShanzhuTaskStatus {

@@ -1,6 +1,8 @@
 package com.shanzhu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanzhu.entity.ShanzhuCategory;
 import com.shanzhu.entity.ShanzhuGoal;
@@ -56,7 +58,20 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
     private ShanzhuTagRelationService shanzhuTagRelationService;
 
     @Override
+    public IPage<ShanzhuTaskVO> queryTaskPage(ShanzhuTaskQueryDTO queryDTO) {
+        IPage<ShanzhuTask> taskPage = new Page<>(getPageNum(queryDTO), getPageSize(queryDTO));
+        IPage<ShanzhuTask> pageResult = page(taskPage, buildQueryWrapper(queryDTO));
+        IPage<ShanzhuTaskVO> taskVOPage = new Page<>(pageResult.getCurrent(), pageResult.getSize(), pageResult.getTotal());
+        taskVOPage.setRecords(convertToVOList(pageResult.getRecords()));
+        return taskVOPage;
+    }
+
+    @Override
     public List<ShanzhuTaskVO> queryTaskList(ShanzhuTaskQueryDTO queryDTO) {
+        return convertToVOList(list(buildQueryWrapper(queryDTO)));
+    }
+
+    private QueryWrapper<ShanzhuTask> buildQueryWrapper(ShanzhuTaskQueryDTO queryDTO) {
         QueryWrapper<ShanzhuTask> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(ShanzhuTask::getUserId, LoginUserContext.getUserId())
@@ -77,7 +92,15 @@ public class ShanzhuTaskServiceImpl extends ServiceImpl<ShanzhuTaskMapper, Shanz
                 .orderByAsc(ShanzhuTask::getPlannedDate)
                 .orderByAsc(ShanzhuTask::getDeadline)
                 .orderByDesc(ShanzhuTask::getCreateTime);
-        return convertToVOList(list(queryWrapper));
+        return queryWrapper;
+    }
+
+    private long getPageNum(ShanzhuTaskQueryDTO queryDTO) {
+        return queryDTO.getPageNum() == null || queryDTO.getPageNum() < 1 ? 1L : queryDTO.getPageNum();
+    }
+
+    private long getPageSize(ShanzhuTaskQueryDTO queryDTO) {
+        return queryDTO.getPageSize() == null || queryDTO.getPageSize() < 1 ? 10L : queryDTO.getPageSize();
     }
 
     @Override

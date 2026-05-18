@@ -51,4 +51,14 @@ public class ShanzhuTaskQueryDTO {
      * 查询类型：today 今日任务，overdue 逾期任务
      */
     private String queryType;
+
+    /**
+     * 当前页数
+     */
+    private Long pageNum;
+
+    /**
+     * 每页记录数
+     */
+    private Long pageSize;
 }

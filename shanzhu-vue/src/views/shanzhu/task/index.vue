@@ -65,7 +65,7 @@
             <a-col :xs="24">
               <a-form-item>
                 <a-space size="small">
-                  <a-button type="primary" :loading="tableLoading" @click="loadTaskList">
+                  <a-button type="primary" :loading="tableLoading" @click="handleSearch">
                     <template #icon>
                       <SearchOutlined/>
                     </template>
@@ -102,60 +102,75 @@
 
         <a-spin :spinning="tableLoading">
           <a-empty v-if="taskList.length === 0" description="暂无任务"/>
-          <a-list v-else :data-source="taskList" item-layout="vertical">
-            <template #renderItem="{ item }">
-              <a-list-item class="task-list-item">
-                <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="12">
-                  <div class="task-main">
+          <template v-else>
+            <a-list :data-source="taskList" item-layout="vertical">
+              <template #renderItem="{ item }">
+                <a-list-item class="task-list-item">
+                  <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="12">
+                    <div class="task-main">
+                      <a-space size="small" wrap>
+                        <a-tag :color="getTaskStatusOption(item.status).color">
+                          {{ getTaskStatusOption(item.status).label }}
+                        </a-tag>
+                        <a-tag :color="getTaskPriorityOption(item.priority).color">
+                          {{ getTaskPriorityOption(item.priority).label }}
+                        </a-tag>
+                        <a-tag :color="item.categoryColor || 'blue'">
+                          {{ item.categoryName || '未分类' }}
+                        </a-tag>
+                        <a-tag v-for="tag in item.tags" :key="tag.id" :color="tag.color || 'blue'">
+                          {{ tag.name }}
+                        </a-tag>
+                      </a-space>
+
+                      <a-typography-title :level="5" class="task-title">
+                        {{ item.title }}
+                      </a-typography-title>
+                      <a-typography-paragraph class="task-description" :ellipsis="{ rows: 2 }">
+                        {{ item.description || '暂无任务说明' }}
+                      </a-typography-paragraph>
+
+                      <a-space size="small" wrap class="task-meta">
+                        <span>目标：{{ item.goalTitle || '-' }}</span>
+                        <span>计划：{{ item.plannedDate || '-' }}</span>
+                        <span>截止：{{ item.deadline || '-' }}</span>
+                        <span>预计：{{ item.estimatedMinutes || 0 }} 分钟</span>
+                        <span>实际：{{ item.actualMinutes || 0 }} 分钟</span>
+                      </a-space>
+                    </div>
+
                     <a-space size="small" wrap>
-                      <a-tag :color="getTaskStatusOption(item.status).color">
-                        {{ getTaskStatusOption(item.status).label }}
-                      </a-tag>
-                      <a-tag :color="getTaskPriorityOption(item.priority).color">
-                        {{ getTaskPriorityOption(item.priority).label }}
-                      </a-tag>
-                      <a-tag :color="item.categoryColor || 'blue'">
-                        {{ item.categoryName || '未分类' }}
-                      </a-tag>
-                      <a-tag v-for="tag in item.tags" :key="tag.id" :color="tag.color || 'blue'">
-                        {{ tag.name }}
-                      </a-tag>
+                      <a-button
+                          v-if="item.status !== completedStatus"
+                          type="primary"
+                          size="small"
+                          ghost
+                          @click="handleQuickComplete(item)"
+                      >
+                        完成
+                      </a-button>
+                      <a-button type="link" size="small" @click="openGoalDetail(item.goalId)">目标详情</a-button>
+                      <a-button type="link" size="small" @click="openEditTaskModal(item)">编辑</a-button>
+                      <a-button type="link" size="small" danger @click="confirmDeleteTask(item)">删除</a-button>
                     </a-space>
+                  </a-flex>
+                </a-list-item>
+              </template>
+            </a-list>
 
-                    <a-typography-title :level="5" class="task-title">
-                      {{ item.title }}
-                    </a-typography-title>
-                    <a-typography-paragraph class="task-description" :ellipsis="{ rows: 2 }">
-                      {{ item.description || '暂无任务说明' }}
-                    </a-typography-paragraph>
-
-                    <a-space size="small" wrap class="task-meta">
-                      <span>目标：{{ item.goalTitle || '-' }}</span>
-                      <span>计划：{{ item.plannedDate || '-' }}</span>
-                      <span>截止：{{ item.deadline || '-' }}</span>
-                      <span>预计：{{ item.estimatedMinutes || 0 }} 分钟</span>
-                      <span>实际：{{ item.actualMinutes || 0 }} 分钟</span>
-                    </a-space>
-                  </div>
-
-                  <a-space size="small" wrap>
-                    <a-button
-                        v-if="item.status !== completedStatus"
-                        type="primary"
-                        size="small"
-                        ghost
-                        @click="handleQuickComplete(item)"
-                    >
-                      完成
-                    </a-button>
-                    <a-button type="link" size="small" @click="openGoalDetail(item.goalId)">目标详情</a-button>
-                    <a-button type="link" size="small" @click="openEditTaskModal(item)">编辑</a-button>
-                    <a-button type="link" size="small" danger @click="confirmDeleteTask(item)">删除</a-button>
-                  </a-space>
-                </a-flex>
-              </a-list-item>
-            </template>
-          </a-list>
+            <a-flex class="task-pagination" justify="end">
+              <a-pagination
+                  v-model:current="taskPagination.current"
+                  v-model:page-size="taskPagination.pageSize"
+                  :total="taskPagination.total"
+                  show-size-changer
+                  show-quick-jumper
+                  :show-total="total => `共 ${total} 条`"
+                  @change="handlePageChange"
+                  @showSizeChange="handlePageChange"
+              />
+            </a-flex>
+          </template>
         </a-spin>
       </a-card>
     </a-flex>
@@ -252,7 +267,7 @@ import ShanzhuCategorySelect from "@/components/shanzhu-category-select/index.vu
 import ShanzhuTagSelect from "@/components/shanzhu-tag-select/index.vue";
 import {queryGoalPage} from "@/api/shanzhu/goal/Goal.ts";
 import type {GoalStatusOption, ShanzhuGoalVO} from "@/api/shanzhu/goal/type/Goal.ts";
-import {deleteTask, queryTaskList, saveTask, updateTaskStatus} from "@/api/shanzhu/task/Task.ts";
+import {deleteTask, queryTaskPage, saveTask, updateTaskStatus} from "@/api/shanzhu/task/Task.ts";
 import type {ShanzhuTask, ShanzhuTaskQuery, ShanzhuTaskVO} from "@/api/shanzhu/task/type/Task.ts";
 import type {BaseModalActiveType} from "@/api/global/Type.ts";
 
@@ -291,7 +306,9 @@ const queryTypeOptions: QueryTypeOption[] = [
 ];
 
 const defaultTaskQuery = (): ShanzhuTaskQuery => ({
-  queryType: ""
+  queryType: "",
+  pageNum: 1,
+  pageSize: 10
 });
 
 const defaultTaskForm = (): ShanzhuTask => ({
@@ -305,6 +322,11 @@ const defaultTaskForm = (): ShanzhuTask => ({
 
 const taskQuery = ref<ShanzhuTaskQuery>(defaultTaskQuery());
 const taskList = ref<ShanzhuTaskVO[]>([]);
+const taskPagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0
+});
 const goalOptions = ref<ShanzhuGoalVO[]>([]);
 const tableLoading = ref(false);
 const goalLoading = ref(false);
@@ -340,7 +362,7 @@ const loadGoalOptions = async () => {
   try {
     const response = await queryGoalPage({
       pageNum: 1,
-      pageSize: 999
+      pageSize: 50
     });
     if (response.code === 200) {
       goalOptions.value = response.data.records || [];
@@ -352,12 +374,21 @@ const loadGoalOptions = async () => {
   }
 };
 
-const loadTaskList = async () => {
+const loadTaskList = async (pageNum = taskPagination.current, pageSize = taskPagination.pageSize) => {
   tableLoading.value = true;
   try {
-    const response = await queryTaskList(taskQuery.value);
+    const response = await queryTaskPage({
+      ...taskQuery.value,
+      pageNum,
+      pageSize
+    });
     if (response.code === 200) {
-      taskList.value = response.data || [];
+      taskList.value = response.data.records || [];
+      taskPagination.current = response.data.current || pageNum;
+      taskPagination.pageSize = response.data.size || pageSize;
+      taskPagination.total = response.data.total || 0;
+      taskQuery.value.pageNum = taskPagination.current;
+      taskQuery.value.pageSize = taskPagination.pageSize;
     } else {
       message.error(response.msg || "任务列表加载失败");
     }
@@ -366,9 +397,20 @@ const loadTaskList = async () => {
   }
 };
 
+const handleSearch = () => {
+  loadTaskList(1, taskPagination.pageSize);
+};
+
+const handlePageChange = (pageNum: number, pageSize: number) => {
+  loadTaskList(pageNum, pageSize);
+};
+
 const resetQuery = () => {
   taskQuery.value = defaultTaskQuery();
-  loadTaskList();
+  taskPagination.current = 1;
+  taskPagination.pageSize = 10;
+  taskPagination.total = 0;
+  loadTaskList(1, taskPagination.pageSize);
 };
 
 const openCreateTaskModal = () => {
@@ -490,5 +532,9 @@ onMounted(async () => {
 .task-meta {
   color: var(--lihua-text-color-secondary);
   font-size: var(--lihua-font-size-sm);
+}
+
+.task-pagination {
+  margin-top: 16px;
 }
 </style>

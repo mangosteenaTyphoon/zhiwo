@@ -1,5 +1,6 @@
 package com.shanzhu.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.shanzhu.common.model.response.ApiResponseModel;
 import com.shanzhu.common.model.response.basecontroller.ApiResponseController;
 import com.shanzhu.model.dto.ShanzhuTaskQueryDTO;
@@ -25,6 +26,12 @@ public class ShanzhuTaskController extends ApiResponseController {
 
     @Resource
     private ShanzhuTaskService shanzhuTaskService;
+
+    @Operation(summary = "分页查询任务列表")
+    @PostMapping("page")
+    public ApiResponseModel<IPage<ShanzhuTaskVO>> page(@RequestBody @Validated ShanzhuTaskQueryDTO queryDTO) {
+        return success(shanzhuTaskService.queryTaskPage(queryDTO));
+    }
 
     @Operation(summary = "查询目标下的任务列表")
     @PostMapping("list")

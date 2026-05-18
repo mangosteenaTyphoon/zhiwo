@@ -1,5 +1,6 @@
 package com.shanzhu.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.shanzhu.model.dto.ShanzhuTaskQueryDTO;
 import com.shanzhu.model.dto.ShanzhuTaskSaveDTO;
 import com.shanzhu.model.dto.ShanzhuTaskSortDTO;
@@ -9,6 +10,11 @@ import com.shanzhu.model.vo.ShanzhuTaskVO;
 import java.util.List;
 
 public interface ShanzhuTaskService {
+    /**
+     * 分页查询任务列表
+     */
+    IPage<ShanzhuTaskVO> queryTaskPage(ShanzhuTaskQueryDTO queryDTO);
+
     /**
      * 查询目标下的任务列表
      */
