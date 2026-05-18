@@ -112,6 +112,73 @@
           </a-spin>
         </a-card>
 
+        <a-card :bordered="false" title="关联习惯">
+          <template #extra>
+            <a-button type="link" size="small" @click="openHabitPage">查看全部习惯</a-button>
+          </template>
+          <a-spin :spinning="habitLoading">
+            <a-empty v-if="goalHabitList.length === 0" description="暂无关联习惯，可在习惯打卡页创建并关联当前目标"/>
+            <a-row v-else :gutter="[16, 16]">
+              <a-col v-for="habit in goalHabitList" :key="habit.id" :xs="24" :lg="12">
+                <a-card class="goal-habit-card" hoverable>
+                  <a-flex vertical :gap="12">
+                    <a-flex justify="space-between" align="flex-start" :gap="12">
+                      <div class="goal-habit-main">
+                        <a-space size="small" wrap>
+                          <a-tag :color="getHabitStatusOption(habit.status).color">
+                            {{ getHabitStatusOption(habit.status).label }}
+                          </a-tag>
+                          <a-tag color="blue">{{ getHabitFrequencyLabel(habit.frequencyType) }}</a-tag>
+                          <a-tag :color="habit.todayChecked ? 'success' : 'default'">
+                            {{ habit.todayChecked ? '今日已打卡' : '今日未打卡' }}
+                          </a-tag>
+                        </a-space>
+                        <a-typography-title :level="5" class="goal-habit-title">
+                          {{ habit.title }}
+                        </a-typography-title>
+                      </div>
+                      <a-space size="small">
+                        <a-button
+                            v-if="habit.todayChecked"
+                            size="small"
+                            danger
+                            ghost
+                            @click="confirmCancelHabitCheckin(habit)"
+                        >
+                          取消打卡
+                        </a-button>
+                        <a-button
+                            v-else
+                            type="primary"
+                            size="small"
+                            ghost
+                            :disabled="habit.status !== habitActiveStatus"
+                            @click="handleQuickHabitCheckin(habit)"
+                        >
+                          快速打卡
+                        </a-button>
+                      </a-space>
+                    </a-flex>
+
+                    <a-typography-paragraph class="goal-habit-description" :ellipsis="{ rows: 2 }">
+                      {{ habit.description || '暂无习惯说明' }}
+                    </a-typography-paragraph>
+
+                    <a-progress :percent="formatHabitPercent(habit.currentPeriodCompletionRate)" size="small"/>
+
+                    <a-space size="small" wrap class="goal-habit-meta">
+                      <span>周期：{{ habit.currentPeriodCheckedCount || 0 }}/{{ habit.currentPeriodTargetCount || 0 }}</span>
+                      <span>连续：{{ habit.continuousDays || 0 }} 天</span>
+                      <span>目标值：{{ formatHabitTargetValue(habit.targetValue, habit.unit) }}</span>
+                      <span>子目标：{{ habit.subGoalTitle || '-' }}</span>
+                    </a-space>
+                  </a-flex>
+                </a-card>
+              </a-col>
+            </a-row>
+          </a-spin>
+        </a-card>
+
         <a-card :bordered="false" title="子目标列表">
           <a-empty v-if="subGoalList.length === 0" description="暂无子目标，先新增一个拆解项吧"/>
           <a-row v-else :gutter="[16, 16]">
@@ -471,6 +538,12 @@ import {
   updateTaskStatus
 } from "@/api/shanzhu/task/Task.ts";
 import type {ShanzhuTask, ShanzhuTaskVO} from "@/api/shanzhu/task/type/Task.ts";
+import {
+  cancelHabitCheckin,
+  queryHabitList,
+  saveHabitCheckin
+} from "@/api/shanzhu/habit/Habit.ts";
+import type {HabitFrequencyOption, HabitStatusOption, ShanzhuHabitVO} from "@/api/shanzhu/habit/type/Habit.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -478,8 +551,10 @@ const router = useRouter();
 const pageLoading = ref(false);
 const taskLoading = ref(false);
 const progressLoading = ref(false);
+const habitLoading = ref(false);
 const goalDetail = ref<ShanzhuGoalVO>();
 const goalProgressList = ref<ShanzhuGoalProgressVO[]>([]);
+const goalHabitList = ref<ShanzhuHabitVO[]>([]);
 const taskList = computed(() => {
   const subGoalTasks = subGoalList.value.flatMap(subGoal => subGoal.tasks || []);
   return [...subGoalTasks, ...unassignedTaskList.value];
@@ -515,6 +590,21 @@ const subGoalStatusOptions: GoalStatusOption[] = [
   {label: "已完成", value: "completed", color: "success"},
   {label: "已暂停", value: "paused", color: "warning"},
   {label: "已取消", value: "cancelled", color: "error"}
+];
+
+const habitActiveStatus = "active";
+
+const habitStatusOptions: HabitStatusOption[] = [
+  {label: "进行中", value: "active", color: "processing"},
+  {label: "已暂停", value: "paused", color: "warning"},
+  {label: "已完成", value: "completed", color: "success"},
+  {label: "已取消", value: "cancelled", color: "error"}
+];
+
+const habitFrequencyOptions: HabitFrequencyOption[] = [
+  {label: "每日", value: "daily"},
+  {label: "每周", value: "weekly"},
+  {label: "每月", value: "monthly"}
 ];
 
 const progressRules: Record<string, Rule[]> = {
@@ -577,6 +667,33 @@ const getTaskPriorityLabel = (priority?: number) => {
   return `优先级：${getGoalPriorityLabel(priority)}`;
 };
 
+const getHabitStatusOption = (status?: string) => {
+  return habitStatusOptions.find(item => item.value === status) || habitStatusOptions[0];
+};
+
+const getHabitFrequencyLabel = (frequencyType?: string) => {
+  return habitFrequencyOptions.find(item => item.value === frequencyType)?.label || "每日";
+};
+
+const formatHabitPercent = (value?: number) => {
+  return Math.min(Math.max(Number(value || 0), 0), 100);
+};
+
+const formatHabitTargetValue = (targetValue?: number, unit?: string) => {
+  if (targetValue === undefined || targetValue === null) {
+    return unit || "-";
+  }
+  return `${targetValue}${unit || ""}`;
+};
+
+const getTodayString = () => {
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const loadGoalDetail = async () => {
   if (!goalId.value) {
     message.error("目标不存在");
@@ -616,8 +733,32 @@ const loadGoalProgressList = async () => {
   }
 };
 
+const loadGoalHabitList = async () => {
+  if (!goalId.value) {
+    return;
+  }
+
+  habitLoading.value = true;
+  try {
+    const response = await queryHabitList({
+      goalId: goalId.value
+    });
+    if (response.code === 200) {
+      goalHabitList.value = response.data || [];
+    } else {
+      message.error(response.msg || "关联习惯加载失败");
+    }
+  } finally {
+    habitLoading.value = false;
+  }
+};
+
 const goBack = () => {
   router.push("/shanzhu/goal");
+};
+
+const openHabitPage = () => {
+  router.push("/shanzhu/habit");
 };
 
 const openCreateProgressModal = () => {
@@ -841,9 +982,52 @@ const handleSubGoalProgressChange = async (subGoalId: string | undefined, progre
   }
 };
 
+const handleQuickHabitCheckin = async (habit: ShanzhuHabitVO) => {
+  if (!habit.id) {
+    return;
+  }
+
+  const response = await saveHabitCheckin({
+    habitId: habit.id,
+    checkinDate: getTodayString(),
+    actualValue: habit.targetValue,
+    note: `来自目标「${goalDetail.value?.title || '-'}」详情页快速打卡`
+  });
+  if (response.code === 200) {
+    message.success("打卡成功");
+    await loadGoalHabitList();
+  } else {
+    message.error(response.msg || "打卡失败");
+  }
+};
+
+const confirmCancelHabitCheckin = (habit: ShanzhuHabitVO) => {
+  if (!habit.todayCheckinId) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认取消今日打卡？",
+    content: `取消后，习惯「${habit.title || '-'}」今日将恢复为未打卡。`,
+    okText: "确认取消",
+    cancelText: "关闭",
+    okType: "danger",
+    onOk: async () => {
+      const response = await cancelHabitCheckin(habit.todayCheckinId || "");
+      if (response.code === 200) {
+        message.success("已取消打卡");
+        await loadGoalHabitList();
+      } else {
+        message.error(response.msg || "取消打卡失败");
+      }
+    }
+  });
+};
+
 onMounted(() => {
   loadGoalDetail();
   loadGoalProgressList();
+  loadGoalHabitList();
 });
 </script>
 
@@ -907,6 +1091,31 @@ onMounted(() => {
 .sub-goal-card {
   height: 100%;
   border-radius: var(--lihua-radius-md);
+}
+
+.goal-habit-card {
+  height: 100%;
+  border-radius: var(--lihua-radius-md);
+}
+
+.goal-habit-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-habit-title {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.goal-habit-description {
+  margin-bottom: 0;
+  color: var(--lihua-text-color-secondary);
+}
+
+.goal-habit-meta {
+  color: var(--lihua-text-color-secondary);
+  font-size: var(--lihua-font-size-sm);
 }
 
 .task-list-item {
