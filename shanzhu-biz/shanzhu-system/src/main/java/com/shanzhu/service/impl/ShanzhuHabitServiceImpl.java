@@ -34,7 +34,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -344,7 +344,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (goalIds.isEmpty()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
@@ -363,7 +363,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (subGoalIds.isEmpty()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuSubGoal> queryWrapper = new QueryWrapper<>();
@@ -382,7 +382,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (habitIds.isEmpty()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuHabitCheckin> queryWrapper = new QueryWrapper<>();

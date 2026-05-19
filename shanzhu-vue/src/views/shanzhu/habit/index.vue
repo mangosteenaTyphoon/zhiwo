@@ -536,8 +536,12 @@ const loadTodayHabits = async () => {
     if (response.code === 200) {
       todayHabits.value = response.data || [];
     } else {
+      todayHabits.value = [];
       message.error(response.msg || "今日打卡列表加载失败");
     }
+  } catch (error) {
+    todayHabits.value = [];
+    message.error("今日打卡列表加载失败，请稍后重试");
   } finally {
     todayLoading.value = false;
   }
