@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -139,19 +140,25 @@ public class ShanzhuHabitCheckinServiceImpl extends ServiceImpl<ShanzhuHabitChec
             ShanzhuHabitCheckinVO checkinVO = new ShanzhuHabitCheckinVO();
             BeanUtils.copyProperties(checkin, checkinVO);
 
-            ShanzhuHabit habit = habitMap.get(checkin.getHabitId());
-            if (habit != null) {
-                checkinVO.setHabitTitle(habit.getTitle());
+            if (StringUtils.hasText(checkin.getHabitId())) {
+                ShanzhuHabit habit = habitMap.get(checkin.getHabitId());
+                if (habit != null) {
+                    checkinVO.setHabitTitle(habit.getTitle());
+                }
             }
 
-            ShanzhuGoal goal = goalMap.get(checkin.getGoalId());
-            if (goal != null) {
-                checkinVO.setGoalTitle(goal.getTitle());
+            if (StringUtils.hasText(checkin.getGoalId())) {
+                ShanzhuGoal goal = goalMap.get(checkin.getGoalId());
+                if (goal != null) {
+                    checkinVO.setGoalTitle(goal.getTitle());
+                }
             }
 
-            ShanzhuSubGoal subGoal = subGoalMap.get(checkin.getSubGoalId());
-            if (subGoal != null) {
-                checkinVO.setSubGoalTitle(subGoal.getTitle());
+            if (StringUtils.hasText(checkin.getSubGoalId())) {
+                ShanzhuSubGoal subGoal = subGoalMap.get(checkin.getSubGoalId());
+                if (subGoal != null) {
+                    checkinVO.setSubGoalTitle(subGoal.getTitle());
+                }
             }
 
             checkinVOList.add(checkinVO);
@@ -166,7 +173,7 @@ public class ShanzhuHabitCheckinServiceImpl extends ServiceImpl<ShanzhuHabitChec
                 .distinct()
                 .toList();
         if (habitIds.isEmpty()) {
-            return Map.of();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuHabit> queryWrapper = new QueryWrapper<>();
@@ -184,7 +191,7 @@ public class ShanzhuHabitCheckinServiceImpl extends ServiceImpl<ShanzhuHabitChec
                 .distinct()
                 .toList();
         if (goalIds.isEmpty()) {
-            return Map.of();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
@@ -203,7 +210,7 @@ public class ShanzhuHabitCheckinServiceImpl extends ServiceImpl<ShanzhuHabitChec
                 .distinct()
                 .toList();
         if (subGoalIds.isEmpty()) {
-            return Map.of();
+            return new HashMap<>();
         }
 
         QueryWrapper<ShanzhuSubGoal> queryWrapper = new QueryWrapper<>();
