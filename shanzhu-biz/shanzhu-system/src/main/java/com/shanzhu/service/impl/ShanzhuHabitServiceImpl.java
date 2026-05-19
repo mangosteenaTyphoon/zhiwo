@@ -34,6 +34,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -155,14 +156,18 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
             todayVO.setGoalId(habit.getGoalId());
             todayVO.setSubGoalId(habit.getSubGoalId());
 
-            ShanzhuGoal goal = goalMap.get(habit.getGoalId());
-            if (goal != null) {
-                todayVO.setGoalTitle(goal.getTitle());
+            if (StringUtils.hasText(habit.getGoalId())) {
+                ShanzhuGoal goal = goalMap.get(habit.getGoalId());
+                if (goal != null) {
+                    todayVO.setGoalTitle(goal.getTitle());
+                }
             }
 
-            ShanzhuSubGoal subGoal = subGoalMap.get(habit.getSubGoalId());
-            if (subGoal != null) {
-                todayVO.setSubGoalTitle(subGoal.getTitle());
+            if (StringUtils.hasText(habit.getSubGoalId())) {
+                ShanzhuSubGoal subGoal = subGoalMap.get(habit.getSubGoalId());
+                if (subGoal != null) {
+                    todayVO.setSubGoalTitle(subGoal.getTitle());
+                }
             }
 
             ShanzhuHabitCheckin todayCheckin = todayCheckinMap.get(habit.getId());
@@ -298,14 +303,18 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
             ShanzhuHabitVO habitVO = new ShanzhuHabitVO();
             BeanUtils.copyProperties(habit, habitVO);
 
-            ShanzhuGoal goal = goalMap.get(habit.getGoalId());
-            if (goal != null) {
-                habitVO.setGoalTitle(goal.getTitle());
+            if (StringUtils.hasText(habit.getGoalId())) {
+                ShanzhuGoal goal = goalMap.get(habit.getGoalId());
+                if (goal != null) {
+                    habitVO.setGoalTitle(goal.getTitle());
+                }
             }
 
-            ShanzhuSubGoal subGoal = subGoalMap.get(habit.getSubGoalId());
-            if (subGoal != null) {
-                habitVO.setSubGoalTitle(subGoal.getTitle());
+            if (StringUtils.hasText(habit.getSubGoalId())) {
+                ShanzhuSubGoal subGoal = subGoalMap.get(habit.getSubGoalId());
+                if (subGoal != null) {
+                    habitVO.setSubGoalTitle(subGoal.getTitle());
+                }
             }
 
             ShanzhuHabitCheckin todayCheckin = todayCheckinMap.get(habit.getId());
@@ -335,7 +344,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (goalIds.isEmpty()) {
-            return Map.of();
+            return Collections.emptyMap();
         }
 
         QueryWrapper<ShanzhuGoal> queryWrapper = new QueryWrapper<>();
@@ -354,7 +363,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (subGoalIds.isEmpty()) {
-            return Map.of();
+            return Collections.emptyMap();
         }
 
         QueryWrapper<ShanzhuSubGoal> queryWrapper = new QueryWrapper<>();
@@ -373,7 +382,7 @@ public class ShanzhuHabitServiceImpl extends ServiceImpl<ShanzhuHabitMapper, Sha
                 .distinct()
                 .toList();
         if (habitIds.isEmpty()) {
-            return Map.of();
+            return Collections.emptyMap();
         }
 
         QueryWrapper<ShanzhuHabitCheckin> queryWrapper = new QueryWrapper<>();
