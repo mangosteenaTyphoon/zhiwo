@@ -1,14 +1,11 @@
 package com.shanzhu.model.dto;
 
-import com.shanzhu.common.model.dto.BasePageDTO;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class ShanzhuTodoQueryDTO extends BasePageDTO {
+public class ShanzhuTodoQueryDTO {
     /**
      * 关键词
      */
@@ -38,4 +35,14 @@ public class ShanzhuTodoQueryDTO extends BasePageDTO {
      * 优先级
      */
     private Integer priority;
+
+    /**
+     * 当前页数
+     */
+    private Long pageNum;
+
+    /**
+     * 每页记录数
+     */
+    private Long pageSize;
 }
