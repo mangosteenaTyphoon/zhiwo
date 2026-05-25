@@ -52,4 +52,9 @@ public interface ShanzhuTodoService {
      * 归档Todo
      */
     void archiveTodo(String id);
+
+    /**
+     * 将Todo转为任务
+     */
+    String convertToTask(String id);
 }

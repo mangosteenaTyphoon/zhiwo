@@ -179,6 +179,10 @@
                             <InboxOutlined/>
                             移回收集箱
                           </a-menu-item>
+                          <a-menu-item v-if="todo.status !== 'converted'" @click="handleConvertToTask(todo)">
+                            <CheckSquareOutlined/>
+                            转为任务
+                          </a-menu-item>
                           <a-menu-item @click="openEditTodoModal(todo)">
                             <EditOutlined/>
                             编辑
@@ -334,6 +338,7 @@ import {message, Modal} from "ant-design-vue";
 import {
   CalendarOutlined,
   CheckOutlined,
+  CheckSquareOutlined,
   DeleteOutlined,
   EditOutlined,
   InboxOutlined,
@@ -350,6 +355,7 @@ import type {BaseModalActiveType} from "@/api/global/Type.ts";
 import {
   archiveTodo,
   completeTodo,
+  convertTodoToTask,
   deleteTodo,
   moveToInbox,
   moveToToday,
@@ -641,6 +647,28 @@ const handleMoveToInbox = async (todo: ShanzhuTodoVO) => {
   } else {
     message.error(response.msg || "操作失败");
   }
+};
+
+const handleConvertToTask = async (todo: ShanzhuTodoVO) => {
+  if (!todo.id) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认转为任务？",
+    content: `将「${todo.title || '-'}」转为正式任务，进入任务中心执行。`,
+    okText: "确认转换",
+    cancelText: "取消",
+    onOk: async () => {
+      const response = await convertTodoToTask(todo.id || "");
+      if (response.code === 200) {
+        message.success("已转为任务");
+        await refreshTodoData();
+      } else {
+        message.error(response.msg || "转换失败");
+      }
+    }
+  });
 };
 
 const confirmDeleteTodo = (todo: ShanzhuTodoVO) => {

@@ -84,4 +84,10 @@ public class ShanzhuTodoController extends ApiResponseController {
         shanzhuTodoService.archiveTodo(id);
         return success();
     }
+
+    @Operation(summary = "Todo转任务")
+    @PostMapping("{id}/convert-task")
+    public ApiResponseModel<String> convertToTask(@PathVariable("id") @NotBlank(message = "请选择Todo") String id) {
+        return success(shanzhuTodoService.convertToTask(id));
+    }
 }

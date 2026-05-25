@@ -7,14 +7,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanzhu.entity.ShanzhuGoal;
 import com.shanzhu.entity.ShanzhuSubGoal;
+import com.shanzhu.entity.ShanzhuTask;
 import com.shanzhu.entity.ShanzhuTodo;
 import com.shanzhu.mapper.ShanzhuGoalMapper;
 import com.shanzhu.mapper.ShanzhuSubGoalMapper;
 import com.shanzhu.mapper.ShanzhuTodoMapper;
+import com.shanzhu.model.dto.ShanzhuTaskSaveDTO;
 import com.shanzhu.model.dto.ShanzhuTodoQueryDTO;
 import com.shanzhu.model.dto.ShanzhuTodoSaveDTO;
 import com.shanzhu.model.vo.ShanzhuTodoVO;
 import com.shanzhu.security.manager.LoginUserContext;
+import com.shanzhu.service.ShanzhuTaskService;
 import com.shanzhu.service.ShanzhuTodoService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +48,9 @@ public class ShanzhuTodoServiceImpl extends ServiceImpl<ShanzhuTodoMapper, Shanz
 
     @Resource
     private ShanzhuSubGoalMapper shanzhuSubGoalMapper;
+
+    @Resource
+    private ShanzhuTaskService shanzhuTaskService;
 
     @Override
     public IPage<ShanzhuTodoVO> queryTodoPage(ShanzhuTodoQueryDTO queryDTO) {
@@ -139,6 +145,34 @@ public class ShanzhuTodoServiceImpl extends ServiceImpl<ShanzhuTodoMapper, Shanz
         ShanzhuTodo todo = new ShanzhuTodo();
         todo.setStatus(ARCHIVED_STATUS);
         updateTodoById(id, todo);
+    }
+
+    @Override
+    public String convertToTask(String id) {
+        ShanzhuTodo todo = queryCurrentUserTodo(id);
+        if (todo == null) {
+            return null;
+        }
+
+        ShanzhuTaskSaveDTO taskSaveDTO = new ShanzhuTaskSaveDTO();
+        taskSaveDTO.setGoalId(todo.getGoalId());
+        taskSaveDTO.setSubGoalId(todo.getSubGoalId());
+        taskSaveDTO.setTitle(todo.getTitle());
+        taskSaveDTO.setDescription(todo.getDescription());
+        taskSaveDTO.setPriority(todo.getPriority());
+        taskSaveDTO.setPlannedDate(todo.getPlannedDate());
+        taskSaveDTO.setDeadline(todo.getDeadline());
+        taskSaveDTO.setEstimatedMinutes(todo.getEstimatedMinutes());
+        taskSaveDTO.setSortOrder(todo.getSortOrder());
+
+        String taskId = shanzhuTaskService.saveTask(taskSaveDTO);
+        if (StringUtils.hasText(taskId)) {
+            ShanzhuTodo updateTodo = new ShanzhuTodo();
+            updateTodo.setStatus(CONVERTED_STATUS);
+            updateTodo.setTaskId(taskId);
+            updateTodoById(id, updateTodo);
+        }
+        return taskId;
     }
 
     private void updateTodoById(String id, ShanzhuTodo todo) {

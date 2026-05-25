@@ -103,3 +103,14 @@ export const archiveTodo = (id: string) => {
     method: 'post'
   })
 }
+
+/**
+ * Todo转任务
+ * @param id
+ */
+export const convertTodoToTask = (id: string) => {
+  return request<string>({
+    url: 'shanzhu/todo/' + id + '/convert-task',
+    method: 'post'
+  })
+}
