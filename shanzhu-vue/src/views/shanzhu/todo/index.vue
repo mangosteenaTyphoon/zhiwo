@@ -35,7 +35,7 @@
             @search="handleQuickAdd"
         >
           <template #enterButton>
-            <a-button type="primary">
+            <a-button type="primary" @click="handleQuickAdd">
               <template #icon>
                 <PlusOutlined/>
               </template>
@@ -43,6 +43,20 @@
             </a-button>
           </template>
         </a-input-search>
+        <a-flex justify="center" :gap="16" style="margin-top: 12px">
+          <a-button type="link" size="small" @click="handleQuickAddToToday">
+            <template #icon>
+              <CalendarOutlined/>
+            </template>
+            添加并设为今日待办
+          </a-button>
+          <a-button type="link" size="small" @click="router.push('/shanzhu/today-work')">
+            <template #icon>
+              <DesktopOutlined/>
+            </template>
+            前往今日工作台
+          </a-button>
+        </a-flex>
       </a-card>
 
       <!-- 筛选区 -->
@@ -340,6 +354,7 @@ import {
   CheckOutlined,
   CheckSquareOutlined,
   DeleteOutlined,
+  DesktopOutlined,
   EditOutlined,
   InboxOutlined,
   MoreOutlined,
@@ -551,6 +566,35 @@ const handleQuickAdd = async () => {
     });
     if (response.code === 200) {
       message.success("已添加到收集箱");
+      quickAddTitle.value = "";
+      await refreshTodoData();
+    } else {
+      message.error(response.msg || "添加失败");
+    }
+  } finally {
+    quickAddLoading.value = false;
+  }
+};
+
+const handleQuickAddToToday = async () => {
+  if (!quickAddTitle.value.trim()) {
+    message.warning("请输入内容");
+    return;
+  }
+
+  quickAddLoading.value = true;
+  try {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const response = await saveTodo({
+      title: quickAddTitle.value.trim(),
+      status: todayStatus,
+      plannedDate: `${year}-${month}-${day}`
+    });
+    if (response.code === 200) {
+      message.success("已添加到今日待办");
       quickAddTitle.value = "";
       await refreshTodoData();
     } else {

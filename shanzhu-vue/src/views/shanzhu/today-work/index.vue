@@ -15,6 +15,12 @@
               </template>
               刷新
             </a-button>
+            <a-button @click="router.push('/shanzhu/todo')">
+              <template #icon>
+                <InboxOutlined/>
+              </template>
+              收集箱
+            </a-button>
             <a-dropdown>
               <a-button>
                 <template #icon>
@@ -266,6 +272,10 @@
                       </a-button>
                       <template #overlay>
                         <a-menu>
+                          <a-menu-item @click="openEditTodoModal(item)">
+                            <EditOutlined/>
+                            编辑
+                          </a-menu-item>
                           <a-menu-item v-if="item.status !== 'done'" @click="handleMoveToInbox(item)">
                             <InboxOutlined/>
                             移回收集箱
@@ -273,6 +283,11 @@
                           <a-menu-item @click="handleConvertToTask(item)">
                             <CheckSquareOutlined/>
                             转为任务
+                          </a-menu-item>
+                          <a-menu-divider/>
+                          <a-menu-item danger @click="confirmDeleteTodo(item)">
+                            <DeleteOutlined/>
+                            删除
                           </a-menu-item>
                         </a-menu>
                       </template>
@@ -290,11 +305,11 @@
     <a-modal
         v-model:open="quickAddModal.open"
         :confirm-loading="quickAddModal.saveLoading"
-        title="快速添加 Todo"
+        :title="quickAddModal.title"
         width="480px"
-        ok-text="添 加"
+        :ok-text="editingTodoId ? '保 存' : '添 加'"
         cancel-text="取 消"
-        @ok="handleQuickAdd"
+        @ok="editingTodoId ? handleEditTodo() : handleQuickAdd()"
     >
       <a-form ref="quickAddFormRef" :colon="false" :model="quickAddForm" :rules="quickAddRules">
         <a-form-item label="内容" name="title">
@@ -326,6 +341,8 @@ import {useRouter} from "vue-router";
 import {
   CalendarOutlined,
   CheckSquareOutlined,
+  DeleteOutlined,
+  EditOutlined,
   EyeOutlined,
   InboxOutlined,
   MoreOutlined,
@@ -343,7 +360,7 @@ import {updateTaskStatus} from "@/api/shanzhu/task/Task.ts";
 import type {ShanzhuHabitTodayVO} from "@/api/shanzhu/habit/type/Habit.ts";
 import {cancelHabitCheckin, saveHabitCheckin} from "@/api/shanzhu/habit/Habit.ts";
 import type {ShanzhuTodoVO} from "@/api/shanzhu/todo/type/Todo.ts";
-import {completeTodo, convertTodoToTask, moveToInbox, saveTodo, uncompleteTodo} from "@/api/shanzhu/todo/Todo.ts";
+import {completeTodo, convertTodoToTask, deleteTodo, moveToInbox, saveTodo, uncompleteTodo} from "@/api/shanzhu/todo/Todo.ts";
 
 const router = useRouter();
 const loading = ref(false);
@@ -658,6 +675,7 @@ const quickAddRules: Record<string, Rule[]> = {
 
 const openQuickAddTodo = () => {
   quickAddForm.value = {title: "", goalId: undefined};
+  quickAddModal.title = "快速添加 Todo";
   quickAddModal.open = true;
 };
 
@@ -681,6 +699,65 @@ const handleQuickAdd = async () => {
   } finally {
     quickAddModal.saveLoading = false;
   }
+};
+
+// 编辑 Todo
+const editingTodoId = ref<string>("");
+const openEditTodoModal = (todo: ShanzhuTodoVO) => {
+  editingTodoId.value = todo.id || "";
+  quickAddForm.value = {
+    title: todo.title || "",
+    goalId: todo.goalId
+  };
+  quickAddModal.title = "编辑 Todo";
+  quickAddModal.open = true;
+};
+
+const handleEditTodo = async () => {
+  await quickAddFormRef.value?.validate();
+
+  quickAddModal.saveLoading = true;
+  try {
+    const response = await saveTodo({
+      id: editingTodoId.value,
+      title: quickAddForm.value.title,
+      goalId: quickAddForm.value.goalId,
+      status: "today"
+    });
+    if (response.code === 200) {
+      message.success("已保存");
+      quickAddModal.open = false;
+      editingTodoId.value = "";
+      await refreshData();
+    } else {
+      message.error(response.msg || "保存失败");
+    }
+  } finally {
+    quickAddModal.saveLoading = false;
+  }
+};
+
+const confirmDeleteTodo = (todo: ShanzhuTodoVO) => {
+  if (!todo.id) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "确认删除 Todo？",
+    content: `删除后，「${todo.title || '-'}」将不再展示。`,
+    okText: "确认删除",
+    cancelText: "取消",
+    okType: "danger",
+    onOk: async () => {
+      const response = await deleteTodo(todo.id || "");
+      if (response.code === 200) {
+        message.success("删除成功");
+        await refreshData();
+      } else {
+        message.error(response.msg || "删除失败");
+      }
+    }
+  });
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
