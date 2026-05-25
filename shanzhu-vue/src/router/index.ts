@@ -104,6 +104,19 @@ const routers = [
         },
         children: [
           {
+            path: '/shanzhu/today-work',
+            component: () => import("@/views/shanzhu/today-work/index.vue"),
+            name: 'ShanzhuTodayWork',
+            meta: {
+              label: "今日工作台",
+              icon: "DesktopOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
             path: '/shanzhu/dashboard',
             component: () => import("@/views/shanzhu/dashboard/index.vue"),
             name: 'ShanzhuDashboard',
