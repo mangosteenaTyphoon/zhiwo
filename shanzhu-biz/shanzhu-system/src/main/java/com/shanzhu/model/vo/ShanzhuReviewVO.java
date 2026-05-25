@@ -94,6 +94,26 @@ public class ShanzhuReviewVO {
          * 平均任务完成效率，实际耗时 / 预计耗时
          */
         private double averageEfficiencyRate;
+
+        /**
+         * 新增 Todo 数
+         */
+        private long newTodoCount;
+
+        /**
+         * 完成 Todo 数
+         */
+        private long completedTodoCount;
+
+        /**
+         * 转任务 Todo 数
+         */
+        private long convertedTodoCount;
+
+        /**
+         * 长期未处理 Todo 数（超过7天）
+         */
+        private long longPendingTodoCount;
     }
 
     @Data
@@ -279,5 +299,28 @@ public class ShanzhuReviewVO {
          * 建议内容
          */
         private String suggestionContent;
+    }
+
+    @Data
+    public static class TodoStats {
+        /**
+         * Todo 状态
+         */
+        private String status;
+
+        /**
+         * 状态名称
+         */
+        private String statusName;
+
+        /**
+         * 数量
+         */
+        private long count;
+
+        /**
+         * 占比
+         */
+        private double ratio;
     }
 }

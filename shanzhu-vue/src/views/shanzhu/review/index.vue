@@ -11,6 +11,18 @@
             <a-segmented v-model:value="reviewQuery.reviewType" :options="reviewTypeOptions" @change="handleReviewTypeChange"/>
             <a-range-picker v-model:value="dateRange" value-format="YYYY-MM-DD" @change="handleDateRangeChange"/>
             <a-button type="primary" :loading="pageLoading" @click="initReview">生成复盘</a-button>
+            <a-button @click="goToTodo">
+              <template #icon>
+                <InboxOutlined/>
+              </template>
+              收集箱
+            </a-button>
+            <a-button @click="goToTodayWork">
+              <template #icon>
+                <DesktopOutlined/>
+              </template>
+              工作台
+            </a-button>
           </a-space>
         </a-flex>
       </a-card>
@@ -205,6 +217,14 @@
 
           <a-col :xs="24" :xl="12">
             <a-card :bordered="false" title="目标调整建议">
+              <template #extra>
+                <a-button type="primary" size="small" @click="handleGenerateTodo()">
+                  <template #icon>
+                    <PlusOutlined/>
+                  </template>
+                  生成跟进 Todo
+                </a-button>
+              </template>
               <a-empty v-if="review.adjustmentSuggestions.length === 0" description="暂无需要调整的目标"/>
               <a-list v-else :data-source="review.adjustmentSuggestions">
                 <template #renderItem="{ item }">
@@ -220,6 +240,9 @@
                         {{ item.suggestionContent }}
                       </template>
                     </a-list-item-meta>
+                    <a-button type="link" size="small" @click="handleGenerateTodo(item.suggestionContent)">
+                      生成 Todo
+                    </a-button>
                   </a-list-item>
                 </template>
               </a-list>
@@ -259,7 +282,9 @@
 
 <script setup lang="ts">
 import {computed, onMounted, reactive, ref} from "vue";
-import {message} from "ant-design-vue";
+import {message, Modal} from "ant-design-vue";
+import {useRouter} from "vue-router";
+import {DesktopOutlined, InboxOutlined, PlusOutlined} from "@ant-design/icons-vue";
 import {queryReviewSummary} from "@/api/shanzhu/review/Review.ts";
 import type {ShanzhuReview, ShanzhuReviewQuery, TaskEfficiencyTrend} from "@/api/shanzhu/review/type/Review.ts";
 import {
@@ -272,7 +297,9 @@ import type {
   ShanzhuHabitStatsVO,
   ShanzhuHabitVO
 } from "@/api/shanzhu/habit/type/Habit.ts";
+import {saveTodo} from "@/api/shanzhu/todo/Todo.ts";
 
+const router = useRouter();
 const pageLoading = ref(false);
 const dateRange = ref<string[]>([]);
 const habitList = ref<ShanzhuHabitVO[]>([]);
@@ -303,7 +330,11 @@ const review = reactive<ShanzhuReview>({
     completedGoalCount: 0,
     totalEstimatedMinutes: 0,
     totalActualMinutes: 0,
-    averageEfficiencyRate: 0
+    averageEfficiencyRate: 0,
+    newTodoCount: 0,
+    completedTodoCount: 0,
+    convertedTodoCount: 0,
+    longPendingTodoCount: 0
   },
   categoryInvestmentStats: [],
   tagAnalysisStats: [],
@@ -434,6 +465,20 @@ const overviewCards = computed(() => [
     suffix: '',
     color: '#722ed1',
     description: '实际耗时 / 预计耗时'
+  },
+  {
+    title: '新增 Todo',
+    value: review.overview.newTodoCount || 0,
+    suffix: '个',
+    color: '#13c2c2',
+    description: `完成 ${review.overview.completedTodoCount || 0} / 转任务 ${review.overview.convertedTodoCount || 0}`
+  },
+  {
+    title: '长期未处理',
+    value: review.overview.longPendingTodoCount || 0,
+    suffix: '个',
+    color: review.overview.longPendingTodoCount > 0 ? '#f5222d' : '#8c8c8c',
+    description: '超过7天未处理'
   }
 ]);
 
@@ -570,6 +615,35 @@ const calculateReviewDays = (startDate?: string, endDate?: string) => {
 
 const calculateEfficiencyPercent = (item: TaskEfficiencyTrend) => {
   return Math.round(((item.actualMinutes || 0) / maxActualMinutes.value) * 100);
+};
+
+const handleGenerateTodo = (suggestionContent?: string) => {
+  const defaultContent = suggestionContent || "根据复盘结果，需要跟进的事项";
+  Modal.confirm({
+    title: "生成 Todo",
+    content: "将复盘建议转为 Todo，进入收集箱后续处理",
+    okText: "确认生成",
+    cancelText: "取消",
+    onOk: async () => {
+      const response = await saveTodo({
+        title: defaultContent,
+        status: "inbox"
+      });
+      if (response.code === 200) {
+        message.success("已生成 Todo，请前往收集箱查看");
+      } else {
+        message.error(response.msg || "生成失败");
+      }
+    }
+  });
+};
+
+const goToTodo = () => {
+  router.push("/shanzhu/todo");
+};
+
+const goToTodayWork = () => {
+  router.push("/shanzhu/today-work");
 };
 
 onMounted(() => {

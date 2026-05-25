@@ -7,12 +7,14 @@ import com.shanzhu.entity.ShanzhuGoalProgress;
 import com.shanzhu.entity.ShanzhuTag;
 import com.shanzhu.entity.ShanzhuTagRelation;
 import com.shanzhu.entity.ShanzhuTask;
+import com.shanzhu.entity.ShanzhuTodo;
 import com.shanzhu.mapper.ShanzhuCategoryMapper;
 import com.shanzhu.mapper.ShanzhuGoalMapper;
 import com.shanzhu.mapper.ShanzhuGoalProgressMapper;
 import com.shanzhu.mapper.ShanzhuTagMapper;
 import com.shanzhu.mapper.ShanzhuTagRelationMapper;
 import com.shanzhu.mapper.ShanzhuTaskMapper;
+import com.shanzhu.mapper.ShanzhuTodoMapper;
 import com.shanzhu.model.dto.ShanzhuReviewQueryDTO;
 import com.shanzhu.model.vo.ShanzhuReviewVO;
 import com.shanzhu.security.manager.LoginUserContext;
@@ -61,6 +63,13 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
     @Resource
     private ShanzhuTagRelationMapper shanzhuTagRelationMapper;
 
+    @Resource
+    private ShanzhuTodoMapper shanzhuTodoMapper;
+
+    private static final String DONE_STATUS = "done";
+    private static final String CONVERTED_STATUS = "converted";
+    private static final long LONG_PENDING_DAYS = 7;
+
     @Override
     public ShanzhuReviewVO queryReview(ShanzhuReviewQueryDTO queryDTO) {
         ReviewPeriod reviewPeriod = resolveReviewPeriod(queryDTO);
@@ -68,6 +77,7 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
         List<ShanzhuTask> tasks = queryCurrentUserTasks();
         List<ShanzhuTask> completedTasksInPeriod = filterCompletedTasksInPeriod(tasks, reviewPeriod);
         List<ShanzhuGoalProgress> progressRecords = queryProgressRecords(reviewPeriod);
+        List<ShanzhuTodo> todos = queryCurrentUserTodos();
         Map<String, ShanzhuGoal> goalMap = goals.stream().collect(Collectors.toMap(ShanzhuGoal::getId, Function.identity()));
         Map<String, ShanzhuCategory> categoryMap = queryCategoryMap(goals);
         Map<String, List<ShanzhuTask>> goalIdToCompletedTasks = completedTasksInPeriod.stream()
@@ -81,7 +91,7 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
         reviewVO.setReviewType(reviewPeriod.reviewType());
         reviewVO.setStartDate(reviewPeriod.startDate());
         reviewVO.setEndDate(reviewPeriod.endDate());
-        fillOverview(reviewVO.getOverview(), goals, completedTasksInPeriod, progressRecords);
+        fillOverview(reviewVO.getOverview(), goals, completedTasksInPeriod, progressRecords, todos, reviewPeriod);
         reviewVO.setCategoryInvestmentStats(buildCategoryInvestmentStats(completedTasksInPeriod, goals, categoryMap, goalMap));
         reviewVO.setTagAnalysisStats(buildTagAnalysisStats(completedTasksInPeriod));
         reviewVO.setTaskEfficiencyTrends(buildTaskEfficiencyTrends(completedTasksInPeriod, reviewPeriod));
@@ -143,6 +153,14 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
         return shanzhuGoalProgressMapper.selectList(queryWrapper);
     }
 
+    private List<ShanzhuTodo> queryCurrentUserTodos() {
+        QueryWrapper<ShanzhuTodo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(ShanzhuTodo::getUserId, LoginUserContext.getUserId())
+                .eq(ShanzhuTodo::getDelFlag, NORMAL_FLAG);
+        return shanzhuTodoMapper.selectList(queryWrapper);
+    }
+
     private Map<String, ShanzhuCategory> queryCategoryMap(List<ShanzhuGoal> goals) {
         List<String> categoryIds = goals.stream()
                 .map(ShanzhuGoal::getCategoryId)
@@ -164,13 +182,36 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
     private void fillOverview(ShanzhuReviewVO.ReviewOverview overview,
                               List<ShanzhuGoal> goals,
                               List<ShanzhuTask> completedTasks,
-                              List<ShanzhuGoalProgress> progressRecords) {
+                              List<ShanzhuGoalProgress> progressRecords,
+                              List<ShanzhuTodo> todos,
+                              ReviewPeriod reviewPeriod) {
         Set<String> progressedGoalIds = progressRecords.stream()
                 .map(ShanzhuGoalProgress::getGoalId)
                 .filter(StringUtils::hasText)
                 .collect(Collectors.toSet());
         long totalEstimatedMinutes = completedTasks.stream().mapToLong(task -> safeMinutes(task.getEstimatedMinutes())).sum();
         long totalActualMinutes = completedTasks.stream().mapToLong(task -> safeMinutes(task.getActualMinutes())).sum();
+
+        // Todo 统计
+        long newTodoCount = todos.stream()
+                .filter(todo -> todo.getCreateTime() != null)
+                .filter(todo -> isDateInPeriod(todo.getCreateTime().toLocalDate(), reviewPeriod))
+                .count();
+        long completedTodoCount = todos.stream()
+                .filter(todo -> DONE_STATUS.equals(todo.getStatus()))
+                .filter(todo -> todo.getUpdateTime() != null)
+                .filter(todo -> isDateInPeriod(todo.getUpdateTime().toLocalDate(), reviewPeriod))
+                .count();
+        long convertedTodoCount = todos.stream()
+                .filter(todo -> CONVERTED_STATUS.equals(todo.getStatus()))
+                .filter(todo -> todo.getUpdateTime() != null)
+                .filter(todo -> isDateInPeriod(todo.getUpdateTime().toLocalDate(), reviewPeriod))
+                .count();
+        long longPendingTodoCount = todos.stream()
+                .filter(todo -> !DONE_STATUS.equals(todo.getStatus()) && !CONVERTED_STATUS.equals(todo.getStatus()))
+                .filter(todo -> todo.getCreateTime() != null)
+                .filter(todo -> todo.getCreateTime().toLocalDate().isBefore(LocalDate.now().minusDays(LONG_PENDING_DAYS)))
+                .count();
 
         overview.setCompletedTaskCount(completedTasks.size());
         overview.setProgressRecordCount(progressRecords.size());
@@ -179,6 +220,10 @@ public class ShanzhuReviewServiceImpl implements ShanzhuReviewService {
         overview.setTotalEstimatedMinutes(totalEstimatedMinutes);
         overview.setTotalActualMinutes(totalActualMinutes);
         overview.setAverageEfficiencyRate(calculateRatio(totalActualMinutes, totalEstimatedMinutes));
+        overview.setNewTodoCount(newTodoCount);
+        overview.setCompletedTodoCount(completedTodoCount);
+        overview.setConvertedTodoCount(convertedTodoCount);
+        overview.setLongPendingTodoCount(longPendingTodoCount);
     }
 
     private List<ShanzhuReviewVO.CategoryInvestmentStats> buildCategoryInvestmentStats(List<ShanzhuTask> completedTasks,
