@@ -15,6 +15,31 @@
               </template>
               刷新
             </a-button>
+            <a-dropdown>
+              <a-button>
+                <template #icon>
+                  <ThunderboltOutlined/>
+                </template>
+                快捷操作
+              </a-button>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item :disabled="pendingHabits.length === 0" @click="confirmCheckinAllHabits">
+                    <CalendarOutlined/>
+                    一键打卡全部习惯 ({{ pendingHabits.length }})
+                  </a-menu-item>
+                  <a-menu-item :disabled="pendingTodos.length === 0" @click="confirmCompleteAllTodos">
+                    <CheckSquareOutlined/>
+                    一键完成全部Todo ({{ pendingTodos.length }})
+                  </a-menu-item>
+                  <a-menu-divider/>
+                  <a-menu-item @click="openQuickAddTodo">
+                    <PlusOutlined/>
+                    快速添加 Todo (N)
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
             <a-button type="primary" @click="openQuickAddTodo">
               <template #icon>
                 <PlusOutlined/>
@@ -102,7 +127,11 @@
           </a-flex>
         </template>
         <a-spin :spinning="loading">
-          <a-empty v-if="tasks.length === 0" description="今日暂无任务"/>
+          <a-empty v-if="tasks.length === 0" description="今日暂无任务">
+            <a-button type="primary" size="small" @click="router.push('/shanzhu/task')">
+              前往任务中心
+            </a-button>
+          </a-empty>
           <a-list v-else :data-source="tasks" :split="false">
             <template #renderItem="{ item }">
               <a-list-item class="today-list-item" :class="{ 'item-completed': item.status === 'completed' }">
@@ -157,7 +186,11 @@
           </a-flex>
         </template>
         <a-spin :spinning="loading">
-          <a-empty v-if="habits.length === 0" description="今日暂无习惯打卡"/>
+          <a-empty v-if="habits.length === 0" description="今日暂无习惯打卡">
+            <a-button type="primary" size="small" @click="router.push('/shanzhu/habit')">
+              前往习惯打卡
+            </a-button>
+          </a-empty>
           <a-list v-else :data-source="habits" :split="false">
             <template #renderItem="{ item }">
               <a-list-item class="today-list-item" :class="{ 'item-completed': item.todayChecked }">
@@ -199,7 +232,11 @@
           </a-flex>
         </template>
         <a-spin :spinning="loading">
-          <a-empty v-if="todos.length === 0" description="今日暂无Todo"/>
+          <a-empty v-if="todos.length === 0" description="今日暂无Todo">
+            <a-button type="primary" size="small" @click="openQuickAddTodo">
+              快速添加 Todo
+            </a-button>
+          </a-empty>
           <a-list v-else :data-source="todos" :split="false">
             <template #renderItem="{ item }">
               <a-list-item class="today-list-item" :class="{ 'item-completed': item.status === 'done' }">
@@ -282,7 +319,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
 import type {FormInstance, Rule} from "ant-design/vue/es/form";
 import {message, Modal} from "ant-design-vue";
 import {useRouter} from "vue-router";
@@ -293,7 +330,8 @@ import {
   InboxOutlined,
   MoreOutlined,
   PlusOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  ThunderboltOutlined
 } from "@ant-design/icons-vue";
 import {queryGoalPage} from "@/api/shanzhu/goal/Goal.ts";
 import type {ShanzhuGoalVO} from "@/api/shanzhu/goal/type/Goal.ts";
@@ -328,6 +366,9 @@ const todayCompletionRate = computed(() => {
   const completed = (overview.value.taskCompletedCount || 0) + (overview.value.habitCheckedCount || 0) + (overview.value.todoCompletedCount || 0);
   return total > 0 ? Math.round((completed / total) * 100) : 0;
 });
+
+const pendingHabits = computed(() => habits.value.filter(h => !h.todayChecked));
+const pendingTodos = computed(() => todos.value.filter(t => t.status !== "done"));
 
 const calculatePercent = (completed?: number, total?: number) => {
   const c = completed || 0;
@@ -508,6 +549,92 @@ const openTaskDetail = (task: ShanzhuTaskVO) => {
   }
 };
 
+const confirmCheckinAllHabits = () => {
+  if (pendingHabits.value.length === 0) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "一键打卡全部习惯",
+    content: `将一键打卡 ${pendingHabits.value.length} 个习惯，确认继续？`,
+    okText: "确认打卡",
+    cancelText: "取消",
+    onOk: async () => {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const habit of pendingHabits.value) {
+        if (!habit.id) {
+          continue;
+        }
+        try {
+          const response = await saveHabitCheckin({
+            habitId: habit.id,
+            checkinDate: getTodayString(),
+            actualValue: habit.targetValue
+          });
+          if (response.code === 200) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        message.success(`成功打卡 ${successCount} 个习惯`);
+      }
+      if (failCount > 0) {
+        message.error(`${failCount} 个习惯打卡失败`);
+      }
+      await refreshData();
+    }
+  });
+};
+
+const confirmCompleteAllTodos = () => {
+  if (pendingTodos.value.length === 0) {
+    return;
+  }
+
+  Modal.confirm({
+    title: "一键完成全部 Todo",
+    content: `将一键完成 ${pendingTodos.value.length} 个 Todo，确认继续？`,
+    okText: "确认完成",
+    cancelText: "取消",
+    onOk: async () => {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const todo of pendingTodos.value) {
+        if (!todo.id) {
+          continue;
+        }
+        try {
+          const response = await completeTodo(todo.id);
+          if (response.code === 200) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        message.success(`成功完成 ${successCount} 个 Todo`);
+      }
+      if (failCount > 0) {
+        message.error(`${failCount} 个 Todo 完成失败`);
+      }
+      await refreshData();
+    }
+  });
+};
+
 const getTodayString = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -556,9 +683,26 @@ const handleQuickAdd = async () => {
   }
 };
 
+const handleKeydown = (event: KeyboardEvent) => {
+  // 按 N 键快速打开添加弹窗（不在输入框中时）
+  if (event.key === "n" || event.key === "N") {
+    const target = event.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      return;
+    }
+    event.preventDefault();
+    openQuickAddTodo();
+  }
+};
+
 onMounted(async () => {
   await loadGoalOptions();
   await refreshData();
+  document.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
 });
 </script>
 
