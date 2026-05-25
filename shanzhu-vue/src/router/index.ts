@@ -156,6 +156,19 @@ const routers = [
             }
           },
           {
+            path: '/shanzhu/todo',
+            component: () => import("@/views/shanzhu/todo/index.vue"),
+            name: 'ShanzhuTodo',
+            meta: {
+              label: "收集箱",
+              icon: "InboxOutlined",
+              cache: false,
+              affix: false,
+              viewTab: true,
+              visible: true
+            }
+          },
+          {
             path: '/shanzhu/habit',
             component: () => import("@/views/shanzhu/habit/index.vue"),
             name: 'ShanzhuHabit',
