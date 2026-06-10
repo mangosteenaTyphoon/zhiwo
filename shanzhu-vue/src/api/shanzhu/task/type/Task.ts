@@ -54,6 +54,10 @@ export interface ShanzhuTask {
    */
   sortOrder?: number;
   /**
+   * 分类ID
+   */
+  categoryId?: string;
+  /**
    * 标签ID列表
    */
   tagIds?: string[];
