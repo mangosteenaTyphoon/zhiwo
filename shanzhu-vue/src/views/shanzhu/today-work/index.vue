@@ -1,307 +1,293 @@
 <template>
   <div class="shanzhu-today-work-page">
-    <a-flex :gap="16" vertical>
-      <!-- 页面标题 -->
-      <a-card :bordered="false" class="today-work-header">
-        <a-flex justify="space-between" align="center" wrap="wrap" :gap="12">
-          <div>
-            <a-typography-title :level="3" class="page-title">今日工作台</a-typography-title>
-            <a-typography-text type="secondary">{{ todayDate }}</a-typography-text>
-          </div>
-          <a-space>
-            <a-button @click="refreshData">
-              <template #icon>
-                <ReloadOutlined/>
-              </template>
-              刷新
-            </a-button>
-            <a-button @click="router.push('/shanzhu/todo')">
-              <template #icon>
-                <InboxOutlined/>
-              </template>
-              收集箱
-            </a-button>
-            <a-dropdown>
-              <a-button>
-                <template #icon>
-                  <ThunderboltOutlined/>
-                </template>
-                快捷操作
-              </a-button>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item :disabled="pendingHabits.length === 0" @click="confirmCheckinAllHabits">
-                    <CalendarOutlined/>
-                    一键打卡全部习惯 ({{ pendingHabits.length }})
-                  </a-menu-item>
-                  <a-menu-item :disabled="pendingTodos.length === 0" @click="confirmCompleteAllTodos">
-                    <CheckSquareOutlined/>
-                    一键完成全部Todo ({{ pendingTodos.length }})
-                  </a-menu-item>
-                  <a-menu-divider/>
-                  <a-menu-item @click="openQuickAddTodo">
-                    <PlusOutlined/>
-                    快速添加 Todo (N)
-                  </a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
-            <a-button type="primary" @click="openQuickAddTodo">
-              <template #icon>
+    <div class="today-hero">
+      <div class="today-hero-main">
+        <div class="today-eyebrow">Today Workspace</div>
+        <h2 class="today-page-title">今日工作台</h2>
+        <p class="today-page-desc">{{ todayDate }} · 聚合今天要推进的任务、习惯和 Todo。</p>
+      </div>
+      <div class="today-hero-actions">
+        <a-button class="today-secondary-btn" shape="round" @click="refreshData">
+          <template #icon>
+            <ReloadOutlined/>
+          </template>
+          刷新
+        </a-button>
+        <a-button class="today-secondary-btn" shape="round" @click="router.push('/shanzhu/todo')">
+          <template #icon>
+            <InboxOutlined/>
+          </template>
+          收集箱
+        </a-button>
+        <a-dropdown>
+          <a-button class="today-secondary-btn" shape="round">
+            <template #icon>
+              <ThunderboltOutlined/>
+            </template>
+            快捷操作
+          </a-button>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item :disabled="pendingHabits.length === 0" @click="confirmCheckinAllHabits">
+                <CalendarOutlined/>
+                一键打卡全部习惯 ({{ pendingHabits.length }})
+              </a-menu-item>
+              <a-menu-item :disabled="pendingTodos.length === 0" @click="confirmCompleteAllTodos">
+                <CheckSquareOutlined/>
+                一键完成全部 Todo ({{ pendingTodos.length }})
+              </a-menu-item>
+              <a-menu-divider/>
+              <a-menu-item @click="openQuickAddTodo">
                 <PlusOutlined/>
-              </template>
-              快速添加
-            </a-button>
-          </a-space>
-        </a-flex>
-      </a-card>
+                快速添加 Todo (N)
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+        <a-button type="primary" shape="round" size="large" @click="openQuickAddTodo">
+          <template #icon>
+            <PlusOutlined/>
+          </template>
+          快速添加
+        </a-button>
+      </div>
+    </div>
 
-      <!-- 概览统计 -->
-      <a-row :gutter="[16, 16]">
-        <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic
-                title="今日任务"
-                :value="overview.taskCompletedCount || 0"
-                :suffix="`/ ${overview.taskTotalCount || 0}`"
-                :value-style="{ color: '#1890ff' }"
-            />
-            <a-progress
-                :percent="calculatePercent(overview.taskCompletedCount, overview.taskTotalCount)"
-                size="small"
-                :show-info="false"
-            />
-          </a-card>
-        </a-col>
-        <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic
-                title="今日习惯"
-                :value="overview.habitCheckedCount || 0"
-                :suffix="`/ ${overview.habitTotalCount || 0}`"
-                :value-style="{ color: '#52c41a' }"
-            />
-            <a-progress
-                :percent="calculatePercent(overview.habitCheckedCount, overview.habitTotalCount)"
-                size="small"
-                :show-info="false"
-                status="success"
-            />
-          </a-card>
-        </a-col>
-        <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic
-                title="今日Todo"
-                :value="overview.todoCompletedCount || 0"
-                :suffix="`/ ${overview.todoTotalCount || 0}`"
-                :value-style="{ color: '#fa8c16' }"
-            />
-            <a-progress
-                :percent="calculatePercent(overview.todoCompletedCount, overview.todoTotalCount)"
-                size="small"
-                :show-info="false"
-                status="warning"
-            />
-          </a-card>
-        </a-col>
-        <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic
-                title="今日完成度"
-                :value="todayCompletionRate"
-                suffix="%"
-                :value-style="{ color: todayCompletionRate >= 80 ? '#52c41a' : todayCompletionRate >= 50 ? '#fa8c16' : '#f5222d' }"
-            />
-            <a-progress
-                :percent="todayCompletionRate"
-                size="small"
-                :show-info="false"
-                :status="todayCompletionRate >= 80 ? 'success' : todayCompletionRate >= 50 ? 'normal' : 'exception'"
-            />
-          </a-card>
-        </a-col>
-      </a-row>
+    <div class="today-overview">
+      <div class="today-focus-card">
+        <div class="today-focus-ring" :class="{ 'today-focus-ring-low': todayCompletionRate < 50 }">
+          <span>{{ todayCompletionRate }}%</span>
+          <small>今日完成度</small>
+        </div>
+        <div class="today-focus-info">
+          <h3>今天的执行进度</h3>
+          <p>先清空今日 Todo，再处理高优任务，最后补齐习惯打卡。</p>
+          <a-progress
+              :percent="todayCompletionRate"
+              :show-info="false"
+              :status="todayCompletionRate >= 80 ? 'success' : todayCompletionRate >= 50 ? 'normal' : 'exception'"
+          />
+        </div>
+      </div>
 
-      <!-- 今日任务 -->
-      <a-card :bordered="false" class="today-section-card">
+      <div class="today-stat-grid">
+        <div class="today-stat-card today-stat-blue">
+          <span class="today-stat-label">今日任务</span>
+          <strong>{{ overview.taskCompletedCount || 0 }}/{{ overview.taskTotalCount || 0 }}</strong>
+          <a-progress
+              :percent="calculatePercent(overview.taskCompletedCount, overview.taskTotalCount)"
+              size="small"
+              :show-info="false"
+          />
+        </div>
+        <div class="today-stat-card today-stat-green">
+          <span class="today-stat-label">今日习惯</span>
+          <strong>{{ overview.habitCheckedCount || 0 }}/{{ overview.habitTotalCount || 0 }}</strong>
+          <a-progress
+              :percent="calculatePercent(overview.habitCheckedCount, overview.habitTotalCount)"
+              size="small"
+              :show-info="false"
+              status="success"
+          />
+        </div>
+        <div class="today-stat-card today-stat-orange">
+          <span class="today-stat-label">今日 Todo</span>
+          <strong>{{ overview.todoCompletedCount || 0 }}/{{ overview.todoTotalCount || 0 }}</strong>
+          <a-progress
+              :percent="calculatePercent(overview.todoCompletedCount, overview.todoTotalCount)"
+              size="small"
+              :show-info="false"
+              status="warning"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="today-board">
+      <a-card :bordered="false" class="today-section-card today-task-card">
         <template #title>
-          <a-flex align="center" :gap="8">
-            <CheckSquareOutlined/>
+          <div class="today-section-title">
+            <span class="today-section-icon">✅</span>
             <span>今日任务</span>
-            <a-tag color="blue">{{ tasks.length }}</a-tag>
-          </a-flex>
+            <em>{{ tasks.length }}</em>
+          </div>
+        </template>
+        <template #extra>
+          <a-button type="link" size="small" @click="router.push('/shanzhu/task')">任务中心</a-button>
         </template>
         <a-spin :spinning="loading">
           <a-empty v-if="tasks.length === 0" description="今日暂无任务">
-            <a-button type="primary" size="small" @click="router.push('/shanzhu/task')">
+            <a-button type="primary" shape="round" size="small" @click="router.push('/shanzhu/task')">
               前往任务中心
             </a-button>
           </a-empty>
-          <a-list v-else :data-source="tasks" :split="false">
-            <template #renderItem="{ item }">
-              <a-list-item class="today-list-item" :class="{ 'item-completed': item.status === 'completed' }">
-                <a-flex justify="space-between" align="center" :gap="12" style="width: 100%">
-                  <a-flex align="center" :gap="12" style="flex: 1; min-width: 0">
-                    <a-checkbox
-                        :checked="item.status === 'completed'"
-                        @change="() => toggleTaskComplete(item)"
-                    />
-                    <div style="flex: 1; min-width: 0">
-                      <div class="item-title" :class="{ 'title-completed': item.status === 'completed' }">
-                        {{ item.title }}
-                      </div>
-                      <div class="item-meta">
-                        <span v-if="item.goalTitle">目标：{{ item.goalTitle }}</span>
-                        <span v-if="item.estimatedMinutes">预计 {{ item.estimatedMinutes }} 分钟</span>
-                      </div>
-                    </div>
-                  </a-flex>
-                  <a-space>
-                    <a-tag v-if="item.priority" :color="getPriorityColor(item.priority)">
-                      {{ getPriorityLabel(item.priority) }}
-                    </a-tag>
-                    <a-dropdown>
-                      <a-button type="text" size="small">
-                        <MoreOutlined/>
-                      </a-button>
-                      <template #overlay>
-                        <a-menu>
-                          <a-menu-item @click="openTaskDetail(item)">
-                            <EyeOutlined/>
-                            查看详情
-                          </a-menu-item>
-                        </a-menu>
-                      </template>
-                    </a-dropdown>
-                  </a-space>
-                </a-flex>
-              </a-list-item>
-            </template>
-          </a-list>
+          <div v-else class="today-list">
+            <div
+                v-for="item in tasks"
+                :key="item.id"
+                class="today-list-item"
+                :class="{ 'item-completed': item.status === 'completed' }"
+            >
+              <a-checkbox
+                  class="today-checkbox"
+                  :checked="item.status === 'completed'"
+                  @change="() => toggleTaskComplete(item)"
+              />
+              <div class="today-item-main">
+                <div class="item-title" :class="{ 'title-completed': item.status === 'completed' }">
+                  {{ item.title }}
+                </div>
+                <div class="item-meta">
+                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.estimatedMinutes">⏱ {{ item.estimatedMinutes }} 分钟</span>
+                </div>
+              </div>
+              <div class="today-item-actions">
+                <span v-if="item.priority" class="today-priority-chip" :class="'today-priority-' + item.priority">
+                  {{ getPriorityLabel(item.priority) }}
+                </span>
+                <a-dropdown>
+                  <a-button type="text" size="small" class="today-more-btn">
+                    <MoreOutlined/>
+                  </a-button>
+                  <template #overlay>
+                    <a-menu>
+                      <a-menu-item @click="openTaskDetail(item)">
+                        <EyeOutlined/>
+                        查看详情
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
+              </div>
+            </div>
+          </div>
         </a-spin>
       </a-card>
 
-      <!-- 今日习惯 -->
-      <a-card :bordered="false" class="today-section-card">
+      <a-card :bordered="false" class="today-section-card today-habit-card">
         <template #title>
-          <a-flex align="center" :gap="8">
-            <CalendarOutlined/>
+          <div class="today-section-title">
+            <span class="today-section-icon">🌱</span>
             <span>今日习惯</span>
-            <a-tag color="green">{{ habits.length }}</a-tag>
-          </a-flex>
+            <em>{{ habits.length }}</em>
+          </div>
+        </template>
+        <template #extra>
+          <a-button type="link" size="small" @click="router.push('/shanzhu/habit')">习惯打卡</a-button>
         </template>
         <a-spin :spinning="loading">
           <a-empty v-if="habits.length === 0" description="今日暂无习惯打卡">
-            <a-button type="primary" size="small" @click="router.push('/shanzhu/habit')">
+            <a-button type="primary" shape="round" size="small" @click="router.push('/shanzhu/habit')">
               前往习惯打卡
             </a-button>
           </a-empty>
-          <a-list v-else :data-source="habits" :split="false">
-            <template #renderItem="{ item }">
-              <a-list-item class="today-list-item" :class="{ 'item-completed': item.todayChecked }">
-                <a-flex justify="space-between" align="center" :gap="12" style="width: 100%">
-                  <a-flex align="center" :gap="12" style="flex: 1; min-width: 0">
-                    <a-checkbox
-                        :checked="item.todayChecked"
-                        @change="() => toggleHabitCheckin(item)"
-                    />
-                    <div style="flex: 1; min-width: 0">
-                      <div class="item-title" :class="{ 'title-completed': item.todayChecked }">
-                        {{ item.title }}
-                      </div>
-                      <div class="item-meta">
-                        <span v-if="item.goalTitle">目标：{{ item.goalTitle }}</span>
-                        <span v-if="item.targetValue">目标值：{{ item.targetValue }}{{ item.unit || '' }}</span>
-                      </div>
-                    </div>
-                  </a-flex>
-                  <a-space>
-                    <a-tag :color="item.todayChecked ? 'success' : 'default'">
-                      {{ item.todayChecked ? '已打卡' : '待打卡' }}
-                    </a-tag>
-                  </a-space>
-                </a-flex>
-              </a-list-item>
-            </template>
-          </a-list>
+          <div v-else class="today-list">
+            <div
+                v-for="item in habits"
+                :key="item.id"
+                class="today-list-item"
+                :class="{ 'item-completed': item.todayChecked }"
+            >
+              <a-checkbox
+                  class="today-checkbox"
+                  :checked="item.todayChecked"
+                  @change="() => toggleHabitCheckin(item)"
+              />
+              <div class="today-item-main">
+                <div class="item-title" :class="{ 'title-completed': item.todayChecked }">
+                  {{ item.title }}
+                </div>
+                <div class="item-meta">
+                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.targetValue">目标值 {{ item.targetValue }}{{ item.unit || '' }}</span>
+                </div>
+              </div>
+              <div class="today-item-actions">
+                <span class="today-status-chip" :class="{ 'today-status-done': item.todayChecked }">
+                  {{ item.todayChecked ? '已打卡' : '待打卡' }}
+                </span>
+              </div>
+            </div>
+          </div>
         </a-spin>
       </a-card>
 
-      <!-- 今日Todo -->
-      <a-card :bordered="false" class="today-section-card">
+      <a-card :bordered="false" class="today-section-card today-todo-card">
         <template #title>
-          <a-flex align="center" :gap="8">
-            <InboxOutlined/>
-            <span>今日Todo</span>
-            <a-tag color="orange">{{ todos.length }}</a-tag>
-          </a-flex>
+          <div class="today-section-title">
+            <span class="today-section-icon">📥</span>
+            <span>今日 Todo</span>
+            <em>{{ todos.length }}</em>
+          </div>
+        </template>
+        <template #extra>
+          <a-button type="link" size="small" @click="openQuickAddTodo">快速添加</a-button>
         </template>
         <a-spin :spinning="loading">
-          <a-empty v-if="todos.length === 0" description="今日暂无Todo">
-            <a-button type="primary" size="small" @click="openQuickAddTodo">
+          <a-empty v-if="todos.length === 0" description="今日暂无 Todo">
+            <a-button type="primary" shape="round" size="small" @click="openQuickAddTodo">
               快速添加 Todo
             </a-button>
           </a-empty>
-          <a-list v-else :data-source="todos" :split="false">
-            <template #renderItem="{ item }">
-              <a-list-item class="today-list-item" :class="{ 'item-completed': item.status === 'done' }">
-                <a-flex justify="space-between" align="center" :gap="12" style="width: 100%">
-                  <a-flex align="center" :gap="12" style="flex: 1; min-width: 0">
-                    <a-checkbox
-                        :checked="item.status === 'done'"
-                        @change="() => toggleTodoComplete(item)"
-                    />
-                    <div style="flex: 1; min-width: 0">
-                      <div class="item-title" :class="{ 'title-completed': item.status === 'done' }">
-                        {{ item.title }}
-                      </div>
-                      <div class="item-meta">
-                        <span v-if="item.goalTitle">目标：{{ item.goalTitle }}</span>
-                        <span v-if="item.estimatedMinutes">预计 {{ item.estimatedMinutes }} 分钟</span>
-                      </div>
-                    </div>
-                  </a-flex>
-                  <a-space>
-                    <a-tag v-if="item.priority" :color="getPriorityColor(item.priority)">
-                      {{ getPriorityLabel(item.priority) }}
-                    </a-tag>
-                    <a-dropdown>
-                      <a-button type="text" size="small">
-                        <MoreOutlined/>
-                      </a-button>
-                      <template #overlay>
-                        <a-menu>
-                          <a-menu-item @click="openEditTodoModal(item)">
-                            <EditOutlined/>
-                            编辑
-                          </a-menu-item>
-                          <a-menu-item v-if="item.status !== 'done'" @click="handleMoveToInbox(item)">
-                            <InboxOutlined/>
-                            移回收集箱
-                          </a-menu-item>
-                          <a-menu-item @click="handleConvertToTask(item)">
-                            <CheckSquareOutlined/>
-                            转为任务
-                          </a-menu-item>
-                          <a-menu-divider/>
-                          <a-menu-item danger @click="confirmDeleteTodo(item)">
-                            <DeleteOutlined/>
-                            删除
-                          </a-menu-item>
-                        </a-menu>
-                      </template>
-                    </a-dropdown>
-                  </a-space>
-                </a-flex>
-              </a-list-item>
-            </template>
-          </a-list>
+          <div v-else class="today-list">
+            <div
+                v-for="item in todos"
+                :key="item.id"
+                class="today-list-item"
+                :class="{ 'item-completed': item.status === 'done' }"
+            >
+              <a-checkbox
+                  class="today-checkbox"
+                  :checked="item.status === 'done'"
+                  @change="() => toggleTodoComplete(item)"
+              />
+              <div class="today-item-main">
+                <div class="item-title" :class="{ 'title-completed': item.status === 'done' }">
+                  {{ item.title }}
+                </div>
+                <div class="item-meta">
+                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.estimatedMinutes">⏱ {{ item.estimatedMinutes }} 分钟</span>
+                </div>
+              </div>
+              <div class="today-item-actions">
+                <span v-if="item.priority" class="today-priority-chip" :class="'today-priority-' + item.priority">
+                  {{ getPriorityLabel(item.priority) }}
+                </span>
+                <a-dropdown>
+                  <a-button type="text" size="small" class="today-more-btn">
+                    <MoreOutlined/>
+                  </a-button>
+                  <template #overlay>
+                    <a-menu>
+                      <a-menu-item @click="openEditTodoModal(item)">
+                        <EditOutlined/>
+                        编辑
+                      </a-menu-item>
+                      <a-menu-item v-if="item.status !== 'done'" @click="handleMoveToInbox(item)">
+                        <InboxOutlined/>
+                        移回收集箱
+                      </a-menu-item>
+                      <a-menu-item @click="handleConvertToTask(item)">
+                        <CheckSquareOutlined/>
+                        转为任务
+                      </a-menu-item>
+                      <a-menu-divider/>
+                      <a-menu-item danger @click="confirmDeleteTodo(item)">
+                        <DeleteOutlined/>
+                        删除
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
+              </div>
+            </div>
+          </div>
         </a-spin>
       </a-card>
-    </a-flex>
+    </div>
 
-    <!-- 快速添加Todo弹窗 -->
     <a-modal
         v-model:open="quickAddModal.open"
         :confirm-loading="quickAddModal.saveLoading"
@@ -785,53 +771,488 @@ onUnmounted(() => {
 
 <style scoped>
 .shanzhu-today-work-page {
-  width: 100%;
+  max-width: 1360px;
+  min-height: calc(100vh - 120px);
+  margin: 0 auto;
+  padding: 36px 48px 56px;
+  overflow-x: hidden;
 }
 
-.today-work-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Header */
+.today-hero {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 96% 18%, rgba(250, 173, 20, 0.13), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
 }
 
-.today-work-header .page-title,
-.today-work-header .ant-typography-secondary {
+.today-hero-main {
+  min-width: 0;
+}
+
+.today-eyebrow {
+  margin-bottom: 8px;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.today-page-title {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 30px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+}
+
+.today-page-desc {
+  margin: 8px 0 0;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 14px;
+}
+
+.today-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.today-secondary-btn {
+  height: 38px;
+  border-color: rgba(15, 35, 80, 0.08);
+  background: rgba(255, 255, 255, 0.74);
+  color: rgba(0, 0, 0, 0.68);
+  font-weight: 650;
+}
+
+.today-hero-actions :deep(.ant-btn-primary) {
+  min-width: 112px;
+  height: 42px;
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
+}
+
+/* Overview */
+.today-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.today-focus-card,
+.today-stat-card,
+.today-section-card {
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.04);
+}
+
+.today-focus-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.10), transparent 30%),
+    rgba(255, 255, 255, 0.94);
+}
+
+.today-focus-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
+    linear-gradient(135deg, rgba(22, 119, 255, 0.92), rgba(82, 196, 26, 0.82));
+  box-shadow: 0 18px 34px rgba(22, 119, 255, 0.20);
   color: #fff;
 }
 
+.today-focus-ring-low {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
+    linear-gradient(135deg, rgba(250, 140, 22, 0.92), rgba(255, 77, 79, 0.78));
+}
+
+.today-focus-ring span {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.today-focus-ring small {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.today-focus-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.today-focus-info h3 {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.84);
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.today-focus-info p {
+  margin: 8px 0 14px;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.today-focus-info :deep(.ant-progress-inner),
+.today-stat-card :deep(.ant-progress-inner) {
+  background: rgba(15, 35, 80, 0.06);
+}
+
+.today-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.today-stat-card {
+  padding: 18px;
+}
+
+.today-stat-label {
+  display: block;
+  margin-bottom: 9px;
+  color: rgba(0, 0, 0, 0.44);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.today-stat-card strong {
+  display: block;
+  margin-bottom: 14px;
+  color: rgba(0, 0, 0, 0.84);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.today-stat-blue strong {
+  color: #1677ff;
+}
+
+.today-stat-green strong {
+  color: #389e0d;
+}
+
+.today-stat-orange strong {
+  color: #d46b08;
+}
+
+/* Board */
+.today-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
 .today-section-card {
-  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.today-section-card :deep(.ant-card-head) {
+  min-height: 58px;
+  border-bottom-color: rgba(15, 35, 80, 0.06);
+}
+
+.today-section-card :deep(.ant-card-head-title) {
+  min-width: 0;
+}
+
+.today-section-card :deep(.ant-card-body) {
+  padding: 0;
+}
+
+.today-section-card :deep(.ant-card-extra .ant-btn) {
+  border-radius: 999px;
+  color: rgba(0, 0, 0, 0.48);
+  font-weight: 650;
+}
+
+.today-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: rgba(0, 0, 0, 0.84);
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.today-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  background: rgba(22, 119, 255, 0.08);
+}
+
+.today-section-title em {
+  min-width: 22px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.06);
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+}
+
+.today-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .today-list-item {
-  padding: 12px 16px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.90), rgba(248, 251, 255, 0.72));
+  transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.today-list-item:last-child {
+  border-bottom: none;
 }
 
 .today-list-item:hover {
-  background-color: #f5f5f5;
+  z-index: 2;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.07);
+  transform: translateY(-1px);
+}
+
+.today-checkbox {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.today-item-main {
+  min-width: 0;
+  flex: 1;
 }
 
 .item-completed {
-  opacity: 0.7;
+  background:
+    linear-gradient(135deg, rgba(250, 255, 250, 0.88), rgba(246, 255, 237, 0.66));
+  opacity: 0.78;
 }
 
 .item-title {
+  display: -webkit-box;
+  margin-bottom: 5px;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.84);
   font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-weight: 720;
+  line-height: 22px;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .title-completed {
+  color: rgba(0, 0, 0, 0.38);
   text-decoration: line-through;
-  color: var(--lihua-text-color-secondary);
 }
 
 .item-meta {
-  color: var(--lihua-text-color-secondary);
-  font-size: var(--lihua-font-size-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 54px;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .item-meta span {
-  margin-right: 12px;
+  max-width: 180px;
+  padding: 3px 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.045);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.today-priority-chip,
+.today-status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.055);
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.today-priority-1 {
+  background: rgba(255, 77, 79, 0.10);
+  color: #cf1322;
+}
+
+.today-priority-2 {
+  background: rgba(250, 173, 20, 0.12);
+  color: #d48806;
+}
+
+.today-priority-3 {
+  background: rgba(22, 119, 255, 0.08);
+  color: #1677ff;
+}
+
+.today-status-done {
+  background: rgba(82, 196, 26, 0.12);
+  color: #389e0d;
+}
+
+.today-more-btn {
+  border-radius: 999px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.today-more-btn:hover {
+  background: rgba(22, 119, 255, 0.08);
+  color: #1677ff;
+}
+
+.today-section-card :deep(.ant-empty) {
+  padding: 56px 18px;
+}
+
+@media (max-width: 1200px) {
+  .shanzhu-today-work-page {
+    padding: 28px 28px 48px;
+  }
+
+  .today-overview,
+  .today-board {
+    grid-template-columns: 1fr;
+  }
+
+  .today-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .today-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .today-hero-actions {
+    justify-content: flex-start;
+  }
+
+  .today-focus-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .today-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .shanzhu-today-work-page {
+    padding: 18px 14px 36px;
+  }
+
+  .today-hero {
+    padding: 22px 20px;
+    border-radius: 22px;
+  }
+
+  .today-page-title {
+    font-size: 26px;
+  }
+
+  .today-hero-actions :deep(.ant-btn) {
+    flex: 1;
+  }
+
+  .today-focus-ring {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+  }
+
+  .today-focus-ring span {
+    font-size: 24px;
+  }
+
+  .today-list-item {
+    gap: 10px;
+    padding: 15px 14px;
+  }
+
+  .today-item-actions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .today-priority-chip,
+  .today-status-chip {
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>
