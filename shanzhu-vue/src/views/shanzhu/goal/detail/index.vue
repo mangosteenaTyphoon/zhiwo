@@ -3,79 +3,87 @@
     <a-spin :spinning="pageLoading">
       <a-flex :gap="16" vertical>
         <a-card :bordered="false" class="goal-overview-card">
-          <a-flex justify="space-between" align="flex-start" wrap="wrap" :gap="16">
-            <div class="goal-overview-main">
-              <a-space size="small" wrap>
-                <a-button type="link" size="small" @click="goBack">返回目标列表</a-button>
-                <a-tag :color="goalDetail?.categoryColor || 'blue'">{{ goalDetail?.categoryName || '未分类' }}</a-tag>
-                <a-tag :color="getGoalStatusOption(goalDetail?.status).color">
+          <div class="goal-hero">
+            <div class="goal-hero-main">
+              <div class="goal-hero-nav">
+                <a-button class="goal-back-btn" shape="round" @click="goBack">← 返回目标列表</a-button>
+                <span class="goal-chip goal-chip-category">{{ goalDetail?.categoryName || '未分类' }}</span>
+                <span class="goal-chip" :class="'goal-chip-status-' + goalDetail?.status">
                   {{ getGoalStatusOption(goalDetail?.status).label }}
-                </a-tag>
-              </a-space>
-              <a-typography-title :level="3" class="goal-title">
-                {{ goalDetail?.title || '目标详情' }}
-              </a-typography-title>
-              <a-typography-paragraph class="goal-description">
-                {{ goalDetail?.description || '暂无目标描述' }}
-              </a-typography-paragraph>
-            </div>
-            <a-space wrap>
-              <a-button @click="openCreateTaskModal">
-                <template #icon>
-                  <PlusOutlined/>
-                </template>
-                新增任务
-              </a-button>
-              <a-button type="primary" @click="openCreateSubGoalModal">
-                <template #icon>
-                  <PlusOutlined/>
-                </template>
-                新增子目标
-              </a-button>
-            </a-space>
-          </a-flex>
+                </span>
+              </div>
+              <h2 class="goal-title">{{ goalDetail?.title || '目标详情' }}</h2>
+              <p class="goal-description">{{ goalDetail?.description || '暂无目标描述' }}</p>
 
-          <a-row :gutter="[16, 16]" class="goal-stat-row">
-            <a-col :xs="24" :md="6">
-              <a-card size="small" class="goal-stat-card">
-                <a-statistic title="目标进度" :value="goalDetail?.progress || 0" suffix="%"/>
-                <a-progress :percent="goalDetail?.progress || 0" size="small"/>
-              </a-card>
+              <div class="goal-meta">
+                <span>开始 {{ goalDetail?.startDate || '-' }}</span>
+                <span>截止 {{ goalDetail?.deadline || '-' }}</span>
+                <span>{{ getGoalPriorityLabel(goalDetail?.priority) }}优先级</span>
+              </div>
+
+              <div class="goal-tags">
+                <span v-for="tag in goalDetail?.tags" :key="tag.id" class="goal-tag">{{ tag.name }}</span>
+                <span v-if="!goalDetail?.tags || goalDetail.tags.length === 0" class="goal-tag">暂无标签</span>
+              </div>
+            </div>
+
+            <div class="goal-hero-side">
+              <div class="goal-progress-orb">
+                <span>{{ goalDetail?.progress || 0 }}%</span>
+                <small>目标进度</small>
+              </div>
+              <a-space wrap>
+                <a-button shape="round" @click="openCreateTaskModal">
+                  <template #icon>
+                    <PlusOutlined/>
+                  </template>
+                  新增任务
+                </a-button>
+                <a-button type="primary" shape="round" @click="openCreateSubGoalModal">
+                  <template #icon>
+                    <PlusOutlined/>
+                  </template>
+                  新增子目标
+                </a-button>
+              </a-space>
+            </div>
+          </div>
+
+          <a-progress class="goal-hero-progress" :percent="goalDetail?.progress || 0" :show-info="false"/>
+
+          <a-row :gutter="[14, 14]" class="goal-stat-row">
+            <a-col :xs="12" :md="6">
+              <div class="goal-stat-card">
+                <span class="goal-stat-label">子目标</span>
+                <strong>{{ goalDetail?.subGoalCount ?? subGoalList.length }}</strong>
+                <small>已完成 {{ completedSubGoalCount }}</small>
+              </div>
             </a-col>
-            <a-col :xs="24" :md="6">
-              <a-card size="small" class="goal-stat-card">
-                <a-statistic title="子目标数量" :value="goalDetail?.subGoalCount ?? subGoalList.length"/>
-              </a-card>
+            <a-col :xs="12" :md="6">
+              <div class="goal-stat-card">
+                <span class="goal-stat-label">任务</span>
+                <strong>{{ goalDetail?.totalTaskCount ?? taskList.length }}</strong>
+                <small>全部行动项</small>
+              </div>
             </a-col>
-            <a-col :xs="24" :md="6">
-              <a-card size="small" class="goal-stat-card">
-                <a-statistic title="任务数量" :value="goalDetail?.totalTaskCount ?? taskList.length"/>
-              </a-card>
+            <a-col :xs="12" :md="6">
+              <div class="goal-stat-card">
+                <span class="goal-stat-label">完成任务</span>
+                <strong>{{ completedTaskCount }}</strong>
+                <small>持续推进中</small>
+              </div>
             </a-col>
-            <a-col :xs="24" :md="6">
-              <a-card size="small" class="goal-stat-card">
-                <a-statistic title="已完成任务" :value="completedTaskCount"/>
-              </a-card>
+            <a-col :xs="12" :md="6">
+              <div class="goal-stat-card">
+                <span class="goal-stat-label">进展记录</span>
+                <strong>{{ goalProgressList.length }}</strong>
+                <small>复盘痕迹</small>
+              </div>
             </a-col>
           </a-row>
-
-          <a-divider/>
-
-          <a-flex justify="space-between" wrap="wrap" :gap="12" class="goal-meta">
-            <span>开始日期：{{ goalDetail?.startDate || '-' }}</span>
-            <span>截止日期：{{ goalDetail?.deadline || '-' }}</span>
-            <span>优先级：{{ getGoalPriorityLabel(goalDetail?.priority) }}</span>
-          </a-flex>
-
-          <a-space size="small" wrap class="goal-tags">
-            <a-tag v-for="tag in goalDetail?.tags" :key="tag.id" :color="tag.color || 'blue'">
-              {{ tag.name }}
-            </a-tag>
-            <a-tag v-if="!goalDetail?.tags || goalDetail.tags.length === 0">暂无标签</a-tag>
-          </a-space>
         </a-card>
 
-        <a-card :bordered="false" title="进展记录">
+        <a-card :bordered="false" class="goal-section-card" title="📈 进展记录">
           <template #extra>
             <a-button type="primary" size="small" @click="openCreateProgressModal">
               <template #icon>
@@ -112,7 +120,7 @@
           </a-spin>
         </a-card>
 
-        <a-card :bordered="false" title="关联习惯">
+        <a-card :bordered="false" class="goal-section-card" title="🌱 关联习惯">
           <template #extra>
             <a-button type="link" size="small" @click="openHabitPage">查看全部习惯</a-button>
           </template>
@@ -179,7 +187,7 @@
           </a-spin>
         </a-card>
 
-        <a-card :bordered="false" title="子目标列表">
+        <a-card :bordered="false" class="goal-section-card" title="🎯 子目标列表">
           <a-empty v-if="subGoalList.length === 0" description="暂无子目标，先新增一个拆解项吧"/>
           <a-row v-else :gutter="[16, 16]">
             <a-col v-for="subGoal in subGoalList" :key="subGoal.id" :xs="24" :lg="12">
@@ -291,7 +299,7 @@
           </a-row>
         </a-card>
 
-        <a-card :bordered="false" title="未归属子目标任务">
+        <a-card :bordered="false" class="goal-section-card" title="📌 未归属子目标任务">
           <template #extra>
             <a-button type="primary" size="small" @click="openCreateTaskModal()">
               <template #icon>
@@ -1033,148 +1041,434 @@ onMounted(() => {
 
 <style scoped>
 .shanzhu-goal-detail-page {
-  width: 100%;
+  max-width: 1360px;
+  min-height: calc(100vh - 120px);
+  margin: 0 auto;
+  padding: 36px 48px 56px;
+  overflow-x: hidden;
 }
 
-.goal-overview-main {
+.shanzhu-goal-detail-page :deep(.ant-card) {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.04);
+}
+
+.shanzhu-goal-detail-page :deep(.ant-card-head) {
+  min-height: 58px;
+  border-bottom-color: rgba(15, 35, 80, 0.06);
+}
+
+.shanzhu-goal-detail-page :deep(.ant-card-head-title) {
+  color: rgba(0, 0, 0, 0.84);
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.shanzhu-goal-detail-page :deep(.ant-btn) {
+  font-weight: 650;
+}
+
+.goal-overview-card {
+  overflow: hidden;
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 96% 14%, rgba(82, 196, 26, 0.11), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
+}
+
+.goal-overview-card :deep(.ant-card-body) {
+  padding: 28px;
+}
+
+.goal-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.goal-hero-main {
   min-width: 0;
   flex: 1;
 }
 
+.goal-hero-nav,
+.goal-meta,
+.goal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-back-btn {
+  height: 30px;
+  border-color: rgba(15, 35, 80, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(0, 0, 0, 0.58);
+}
+
+.goal-chip,
+.goal-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 180px;
+  min-height: 26px;
+  padding: 4px 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.055);
+  color: rgba(0, 0, 0, 0.56);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-chip-category {
+  background: rgba(22, 119, 255, 0.09);
+  color: #1677ff;
+}
+
+.goal-chip-status-in_progress {
+  background: rgba(22, 119, 255, 0.10);
+  color: #1677ff;
+}
+
+.goal-chip-status-completed {
+  background: rgba(82, 196, 26, 0.12);
+  color: #389e0d;
+}
+
+.goal-chip-status-paused {
+  background: rgba(250, 173, 20, 0.13);
+  color: #d48806;
+}
+
+.goal-chip-status-cancelled {
+  background: rgba(255, 77, 79, 0.10);
+  color: #cf1322;
+}
+
 .goal-title {
-  margin-top: 12px;
-  margin-bottom: 8px;
+  display: -webkit-box;
+  max-width: 820px;
+  margin: 18px 0 10px;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 30px;
+  font-weight: 850;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .goal-description {
-  max-width: 760px;
-  margin-bottom: 0;
-  color: var(--lihua-text-color-secondary);
-}
-
-.goal-stat-row {
-  margin-top: 16px;
-}
-
-.goal-stat-card {
-  height: 100%;
+  display: -webkit-box;
+  max-width: 820px;
+  margin: 0;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.50);
+  font-size: 14px;
+  line-height: 22px;
+  word-break: break-word;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .goal-meta {
-  color: var(--lihua-text-color-secondary);
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.goal-meta span {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .goal-tags {
   margin-top: 12px;
 }
 
-.progress-list-item {
-  padding-right: 0;
-  padding-left: 0;
+.goal-tag {
+  background: rgba(114, 46, 209, 0.08);
+  color: #722ed1;
 }
 
-.progress-main {
-  min-width: 0;
-  flex: 1;
+.goal-hero-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex-shrink: 0;
 }
 
-.progress-title {
+.goal-progress-orb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
+    linear-gradient(135deg, rgba(22, 119, 255, 0.92), rgba(82, 196, 26, 0.82));
+  box-shadow: 0 18px 34px rgba(22, 119, 255, 0.20);
+  color: #fff;
+}
+
+.goal-progress-orb span {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.goal-progress-orb small {
   margin-top: 8px;
-  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.progress-content {
-  margin-bottom: 0;
-  color: var(--lihua-text-color-secondary);
+.goal-hero-progress {
+  margin: 22px 0 4px;
 }
 
-.sub-goal-card {
+.goal-hero-progress :deep(.ant-progress-inner) {
+  background: rgba(15, 35, 80, 0.06);
+}
+
+.goal-stat-row {
+  margin-top: 18px;
+}
+
+.goal-stat-card {
   height: 100%;
-  border-radius: var(--lihua-radius-md);
+  padding: 16px;
+  border: 1px solid rgba(15, 35, 80, 0.055);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
 }
 
-.goal-habit-card {
-  height: 100%;
-  border-radius: var(--lihua-radius-md);
+.goal-stat-label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, 0.44);
+  font-size: 12px;
+  font-weight: 750;
 }
 
-.goal-habit-main {
-  min-width: 0;
-  flex: 1;
+.goal-stat-card strong {
+  display: block;
+  color: rgba(0, 0, 0, 0.84);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
 }
 
-.goal-habit-title {
+.goal-stat-card small {
+  display: block;
   margin-top: 8px;
-  margin-bottom: 4px;
+  color: rgba(0, 0, 0, 0.40);
+  font-size: 12px;
+  font-weight: 650;
 }
 
-.goal-habit-description {
-  margin-bottom: 0;
-  color: var(--lihua-text-color-secondary);
+.goal-section-card {
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  overflow: hidden;
 }
 
-.goal-habit-meta {
-  color: var(--lihua-text-color-secondary);
-  font-size: var(--lihua-font-size-sm);
+.goal-section-card :deep(.ant-card-extra .ant-btn) {
+  border-radius: 999px;
 }
 
+.goal-section-card :deep(.ant-empty) {
+  padding: 36px 0;
+}
+
+.progress-list-item,
 .task-list-item {
-  padding-right: 0;
-  padding-left: 0;
+  padding: 16px 0;
 }
 
-.task-main {
+.progress-list-item:not(:last-child),
+.task-list-item:not(:last-child) {
+  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+}
+
+.progress-main,
+.task-main,
+.goal-habit-main,
+.sub-goal-title-wrap {
   min-width: 0;
   flex: 1;
 }
 
-.task-title {
-  margin-top: 8px;
-  margin-bottom: 4px;
+.progress-title,
+.task-title,
+.goal-habit-title,
+.sub-goal-title {
+  display: -webkit-box;
+  margin: 8px 0 4px;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.84);
+  font-weight: 760;
+  line-height: 24px;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.progress-content,
+.task-description,
+.goal-habit-description,
+.sub-goal-description {
+  display: -webkit-box;
+  min-height: 22px;
+  margin-bottom: 0;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 13px;
+  line-height: 21px;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .task-description {
   margin-bottom: 8px;
-  color: var(--lihua-text-color-secondary);
 }
 
-.task-meta {
-  color: var(--lihua-text-color-secondary);
-  font-size: var(--lihua-font-size-sm);
+.goal-habit-card,
+.sub-goal-card {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 251, 255, 0.76));
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.goal-habit-card:hover,
+.sub-goal-card:hover {
+  box-shadow: 0 18px 36px rgba(15, 35, 80, 0.09);
+  transform: translateY(-1px);
+}
+
+.goal-habit-card :deep(.ant-card-body),
+.sub-goal-card :deep(.ant-card-body) {
+  padding: 18px;
+}
+
+.goal-habit-meta,
+.task-meta,
+.sub-goal-meta {
+  color: rgba(0, 0, 0, 0.46);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.goal-habit-meta span,
+.task-meta span,
+.sub-goal-meta span {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.045);
 }
 
 .task-status-select {
   width: 120px;
 }
 
-.sub-goal-title-wrap {
-  min-width: 0;
-}
-
-.sub-goal-title {
-  margin-bottom: 4px;
-}
-
-.sub-goal-description {
-  min-height: 44px;
-  margin-bottom: 0;
-  color: var(--lihua-text-color-secondary);
+.task-status-select :deep(.ant-select-selector),
+.sub-goal-control :deep(.ant-select-selector),
+.sub-goal-control :deep(.ant-input-number),
+.sub-goal-control {
+  border-radius: 12px;
 }
 
 .sub-goal-control {
   width: 100%;
 }
 
-.sub-goal-meta {
-  color: var(--lihua-text-color-secondary);
-  font-size: var(--lihua-font-size-sm);
-}
-
 .sub-goal-task-divider {
   margin: 4px 0;
+  border-color: rgba(15, 35, 80, 0.06);
 }
 
 .sub-goal-task-empty {
   margin: 8px 0;
+}
+
+@media (max-width: 1200px) {
+  .shanzhu-goal-detail-page {
+    padding: 28px 28px 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .goal-hero {
+    flex-direction: column;
+  }
+
+  .goal-hero-side {
+    align-items: flex-start;
+  }
+
+  .goal-progress-orb {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+  }
+
+  .goal-progress-orb span {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .shanzhu-goal-detail-page {
+    padding: 18px 14px 36px;
+  }
+
+  .goal-overview-card :deep(.ant-card-body) {
+    padding: 22px 18px;
+  }
+
+  .goal-title {
+    font-size: 25px;
+  }
+
+  .goal-hero-side :deep(.ant-space) {
+    width: 100%;
+  }
+
+  .goal-hero-side :deep(.ant-btn) {
+    flex: 1;
+  }
+
+  .goal-stat-card {
+    padding: 14px;
+  }
+
+  .goal-stat-card strong {
+    font-size: 21px;
+  }
+
+  .task-status-select {
+    width: 100%;
+  }
 }
 </style>

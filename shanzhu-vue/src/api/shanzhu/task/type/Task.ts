@@ -69,10 +69,6 @@ export interface ShanzhuTaskVO extends ShanzhuTask {
    */
   goalTitle?: string;
   /**
-   * 分类ID
-   */
-  categoryId?: string;
-  /**
    * 分类名称
    */
   categoryName?: string;

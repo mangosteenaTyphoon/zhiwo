@@ -1,26 +1,44 @@
 <template>
   <div class="shanzhu-habit-page">
-    <a-flex :gap="16" vertical>
-      <a-row :gutter="[16, 16]">
+    <a-flex :gap="18" vertical>
+      <div class="habit-hero">
+        <div>
+          <div class="habit-eyebrow">Habit Tracker</div>
+          <h2 class="habit-page-title">习惯打卡</h2>
+          <p class="habit-page-desc">把持续行动变成可复盘的数据，每天完成一点点。</p>
+        </div>
+        <a-button type="primary" shape="round" size="large" @click="openCreateHabitModal">
+          <template #icon>
+            <PlusOutlined/>
+          </template>
+          新建习惯
+        </a-button>
+      </div>
+
+      <a-row :gutter="[16, 16]" class="habit-stat-grid">
         <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic title="今日待打卡" :value="habitStats.todayTotalCount || 0" suffix="个"/>
-          </a-card>
+          <div class="habit-stat-card habit-stat-card-blue">
+            <span class="habit-stat-label">今日待打卡</span>
+            <strong>{{ habitStats.todayTotalCount || 0 }}<small>个</small></strong>
+          </div>
         </a-col>
         <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic title="今日已打卡" :value="habitStats.todayCheckedCount || 0" suffix="个" :value-style="{ color: '#52c41a' }"/>
-          </a-card>
+          <div class="habit-stat-card habit-stat-card-green">
+            <span class="habit-stat-label">今日已打卡</span>
+            <strong>{{ habitStats.todayCheckedCount || 0 }}<small>个</small></strong>
+          </div>
         </a-col>
         <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic title="周期完成率" :value="habitStats.currentPeriodCompletionRate || 0" suffix="%"/>
-          </a-card>
+          <div class="habit-stat-card habit-stat-card-purple">
+            <span class="habit-stat-label">周期完成率</span>
+            <strong>{{ habitStats.currentPeriodCompletionRate || 0 }}<small>%</small></strong>
+          </div>
         </a-col>
         <a-col :xs="24" :sm="12" :lg="6">
-          <a-card :bordered="false">
-            <a-statistic title="最长连续打卡" :value="habitStats.maxContinuousDays || 0" suffix="天"/>
-          </a-card>
+          <div class="habit-stat-card habit-stat-card-orange">
+            <span class="habit-stat-label">最长连续打卡</span>
+            <strong>{{ habitStats.maxContinuousDays || 0 }}<small>天</small></strong>
+          </div>
         </a-col>
       </a-row>
 
@@ -29,14 +47,8 @@
           <a-flex justify="space-between" align="center" wrap="wrap" :gap="12">
             <div>
               <a-typography-title :level="4" class="habit-section-title">今日打卡</a-typography-title>
-              <a-typography-text type="secondary">把持续性行动沉淀为可复盘的事实数据</a-typography-text>
+              <a-typography-text type="secondary">聚焦今天该完成的习惯，打卡后会同步更新统计。</a-typography-text>
             </div>
-            <a-button type="primary" @click="openCreateHabitModal">
-              <template #icon>
-                <PlusOutlined/>
-              </template>
-              新建习惯
-            </a-button>
           </a-flex>
         </template>
 
@@ -729,24 +741,238 @@ onMounted(async () => {
 <style scoped>
 .shanzhu-habit-page {
   width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 28px 24px 56px;
+}
+
+.habit-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 96% 18%, rgba(82, 196, 26, 0.12), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
+}
+
+.habit-eyebrow {
+  margin-bottom: 8px;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.habit-page-title {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 30px;
+  font-weight: 850;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+
+.habit-page-desc {
+  margin: 8px 0 0;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 14px;
+}
+
+.habit-hero :deep(.ant-btn-primary) {
+  min-width: 128px;
+  height: 42px;
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
+}
+
+.habit-stat-grid {
+  margin-top: 2px;
+}
+
+.habit-stat-card {
+  position: relative;
+  min-height: 112px;
+  padding: 22px 24px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  box-shadow: 0 16px 36px rgba(15, 35, 80, 0.06), 0 1px 2px rgba(15, 35, 80, 0.04);
+}
+
+.habit-stat-card::after {
+  content: "";
+  position: absolute;
+  right: -26px;
+  top: -30px;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  opacity: 0.12;
+}
+
+.habit-stat-card-blue::after {
+  background: #1677ff;
+}
+
+.habit-stat-card-green::after {
+  background: #52c41a;
+}
+
+.habit-stat-card-purple::after {
+  background: #722ed1;
+}
+
+.habit-stat-card-orange::after {
+  background: #fa8c16;
+}
+
+.habit-stat-label {
+  display: block;
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.46);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.habit-stat-card strong {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 30px;
+  font-weight: 850;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.habit-stat-card small {
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.habit-stat-card-green strong {
+  color: #52c41a;
+}
+
+.habit-stat-card-purple strong {
+  color: #722ed1;
+}
+
+.habit-stat-card-orange strong {
+  color: #fa8c16;
 }
 
 .habit-section-title {
   margin-bottom: 4px;
+  color: rgba(0, 0, 0, 0.86);
+  font-weight: 800 !important;
+  letter-spacing: -0.3px;
+}
+
+.habit-today-card,
+.habit-filter-card,
+.habit-list-card {
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+}
+
+.habit-today-card :deep(.ant-card-head),
+.habit-list-card :deep(.ant-card-head) {
+  min-height: auto;
+  padding: 20px 24px;
+  border-bottom-color: rgba(15, 35, 80, 0.06);
+}
+
+.habit-today-card :deep(.ant-card-body),
+.habit-list-card :deep(.ant-card-body) {
+  padding: 24px;
 }
 
 .today-habit-card {
   height: 100%;
-  border: 1px solid transparent;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  background: linear-gradient(135deg, #fff, rgba(248, 251, 255, 0.92));
+  box-shadow: 0 10px 26px rgba(15, 35, 80, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.today-habit-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(22, 119, 255, 0.18);
+  box-shadow: 0 16px 34px rgba(15, 35, 80, 0.08);
 }
 
 .today-habit-card-checked {
-  border-color: #b7eb8f;
-  background: #f6ffed;
+  border-color: rgba(82, 196, 26, 0.24);
+  background: linear-gradient(135deg, #f6ffed, rgba(255, 255, 255, 0.95));
+}
+
+.habit-filter-card {
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.045);
+}
+
+.habit-filter-card :deep(.ant-card-body) {
+  padding: 20px 24px 4px;
+}
+
+.habit-filter-card :deep(.ant-form-item-label > label) {
+  color: rgba(0, 0, 0, 0.58);
+  font-weight: 650;
+}
+
+.habit-filter-card :deep(.ant-input),
+.habit-filter-card :deep(.ant-select-selector) {
+  border-radius: 12px;
+  background: rgba(247, 249, 252, 0.86);
+  border-color: rgba(15, 35, 80, 0.08) !important;
+}
+
+.habit-filter-card :deep(.ant-input:hover),
+.habit-filter-card :deep(.ant-select-selector:hover) {
+  border-color: rgba(22, 119, 255, 0.20) !important;
+  background: #fff;
+}
+
+.habit-filter-card :deep(.ant-btn) {
+  border-radius: 12px;
+  min-width: 86px;
+}
+
+.habit-list-card :deep(.ant-card-actions),
+.habit-list-card :deep(.ant-card-footer) {
+  background: transparent;
 }
 
 .habit-card {
   height: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  background: linear-gradient(135deg, #fff, rgba(249, 251, 255, 0.92));
+  box-shadow: 0 10px 26px rgba(15, 35, 80, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.habit-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(22, 119, 255, 0.18);
+  box-shadow: 0 18px 38px rgba(15, 35, 80, 0.08);
+}
+
+.habit-card :deep(.ant-card-body),
+.today-habit-card :deep(.ant-card-body) {
+  padding: 18px;
 }
 
 .habit-main {
@@ -757,17 +983,86 @@ onMounted(async () => {
 .habit-title {
   margin-top: 8px;
   margin-bottom: 4px;
+  color: rgba(0, 0, 0, 0.86);
+  font-weight: 750 !important;
 }
 
 .habit-description,
 .habit-note {
   margin-bottom: 0;
-  color: var(--lihua-text-color-secondary);
+  color: rgba(0, 0, 0, 0.48);
+  line-height: 1.7;
 }
 
-.habit-meta,
+.habit-meta {
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 12px;
+}
+
+.habit-meta span {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.04);
+}
+
 .habit-date {
-  color: var(--lihua-text-color-secondary);
-  font-size: var(--lihua-font-size-sm);
+  max-width: 220px;
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.habit-card :deep(.ant-progress-bg) {
+  height: 7px !important;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1677ff, #52c41a);
+}
+
+.habit-card :deep(.ant-tag),
+.today-habit-card :deep(.ant-tag) {
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-weight: 600;
+}
+
+.habit-card :deep(.ant-btn-link) {
+  padding-inline: 2px;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .shanzhu-habit-page {
+    padding: 20px 16px 40px;
+  }
+
+  .habit-hero {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .habit-page-title {
+    font-size: 26px;
+  }
+
+  .habit-hero :deep(.ant-btn-primary) {
+    width: 100%;
+  }
+
+  .habit-today-card :deep(.ant-card-head),
+  .habit-list-card :deep(.ant-card-head),
+  .habit-today-card :deep(.ant-card-body),
+  .habit-list-card :deep(.ant-card-body) {
+    padding: 18px;
+  }
+
+  .habit-date {
+    max-width: 100%;
+  }
 }
 </style>

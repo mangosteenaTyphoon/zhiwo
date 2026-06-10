@@ -3,14 +3,18 @@
     <!-- 顶部：标题 + 操作按钮 -->
     <div class="task-header">
       <div class="task-header-top">
-        <h2 class="task-page-title">任务中心</h2>
+        <div>
+          <div class="task-eyebrow">Task Center</div>
+          <h2 class="task-page-title">任务中心</h2>
+          <p class="task-page-desc">聚焦目标拆解后的行动项，优先处理今天和逾期任务。</p>
+        </div>
         <a-space>
-          <a-button type="text" @click="router.push('/shanzhu/goal')">
+          <a-button class="task-secondary-btn" @click="router.push('/shanzhu/goal')">
             🎯 目标管理
           </a-button>
-          <a-button type="primary" shape="round" @click="openCreateTaskModal">
+          <a-button type="primary" shape="round" size="large" @click="openCreateTaskModal">
             <template #icon><PlusOutlined/></template>
-            新建
+            新建任务
           </a-button>
         </a-space>
       </div>
@@ -50,7 +54,7 @@
       <div class="task-main">
         <div class="task-body">
           <a-spin :spinning="tableLoading">
-            <div v-if="taskList.length === 0" class="task-empty">
+            <div v-if="!tableLoading && taskList.length === 0" class="task-empty">
               <a-empty description="暂无任务">
                 <a-button type="primary" shape="round" @click="openCreateTaskModal">
                   <template #icon><PlusOutlined/></template>
@@ -58,7 +62,7 @@
                 </a-button>
               </a-empty>
             </div>
-            <TransitionGroup v-else name="task-list-anim" tag="div" class="task-list">
+            <TransitionGroup v-else-if="taskList.length > 0" name="task-list-anim" tag="div" class="task-list">
               <div
                   v-for="(task, index) in taskList"
                   :key="task.id"
@@ -67,7 +71,7 @@
                     'task-item-done': task.status === 'completed',
                     'task-item-high': task.priority === 3 && task.status !== 'completed'
                   }"
-                  :style="{ animationDelay: index * 0.04 + 's' }"
+                  :style="{ '--anim-order': index }"
               >
                 <div class="task-item-check" @click="task.status !== 'completed' ? handleQuickComplete(task) : null">
                   <div class="task-checkbox" :class="{ 'task-checkbox-checked': task.status === 'completed' }">
@@ -358,7 +362,7 @@ const defaultTaskForm = (): ShanzhuTask => ({
 const taskQuery = ref<ShanzhuTaskQuery>(defaultTaskQuery());
 const taskList = ref<ShanzhuTaskVO[]>([]);
 const taskPagination = reactive({current: 1, pageSize: 10, total: 0});
-const taskStats = reactive({notStarted: 0, inProgress: 0, completed: 0, paused: 0, cancelled: 0, today: 0, overdue: 0});
+const taskStats = reactive({total: 0, notStarted: 0, inProgress: 0, completed: 0, paused: 0, cancelled: 0, today: 0, overdue: 0});
 const goalOptions = ref<ShanzhuGoalVO[]>([]);
 const tableLoading = ref(false);
 const taskFormRef = ref<FormInstance>();
@@ -373,7 +377,7 @@ const taskRules: Record<string, Rule[]> = {
 const activeTab = ref<string>("all");
 
 const statusTabs = computed(() => [
-  {label: "全部", value: "all", count: taskPagination.total},
+  {label: "全部", value: "all", count: taskStats.total},
   {label: "今日", value: "today", count: taskStats.today},
   {label: "逾期", value: "overdue", count: taskStats.overdue},
   {label: "进行中", value: "in_progress", count: taskStats.inProgress},
@@ -385,7 +389,7 @@ const getTaskStatusOption = (status?: string) => {
   return taskStatusOptions.find(item => item.value === status) || taskStatusOptions[0];
 };
 
-const filterGoalOption = (input: string, option?: { label?: string; value?: string; children?: string }) => {
+const filterGoalOption = (input: string, option?: { children?: string }) => {
   const keyword = input.toLowerCase();
   return String(option?.children || "").toLowerCase().includes(keyword);
 };
@@ -410,6 +414,7 @@ const loadTaskStats = async () => {
     ]);
     if (allRes.code === 200) {
       const allTasks = allRes.data || [];
+      taskStats.total = allTasks.length;
       taskStats.notStarted = allTasks.filter(item => item.status === "not_started").length;
       taskStats.inProgress = allTasks.filter(item => item.status === "in_progress").length;
       taskStats.completed = allTasks.filter(item => item.status === "completed").length;
@@ -472,14 +477,6 @@ const handleSearchChange = () => {
   searchTimer = setTimeout(() => {
     loadTaskList(1, taskPagination.pageSize);
   }, 400);
-};
-
-const resetQuery = () => {
-  taskQuery.value = defaultTaskQuery();
-  taskPagination.current = 1;
-  taskPagination.pageSize = 10;
-  taskPagination.total = 0;
-  loadTaskList(1, taskPagination.pageSize);
 };
 
 const openCreateTaskModal = () => {
@@ -561,55 +558,109 @@ onMounted(async () => {
 
 <style scoped>
 .shanzhu-task-page {
-  max-width: 1440px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 32px 48px;
+  padding: 36px 48px 56px;
+  min-height: calc(100vh - 120px);
+  overflow-x: hidden;
 }
 
 /* Header */
 .task-header {
-  margin-bottom: 24px;
+  position: relative;
+  z-index: 2;
+  padding: 26px 28px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.10), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
 }
 
 .task-header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
+}
+
+.task-eyebrow {
+  margin-bottom: 8px;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .task-page-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: 850;
   color: rgba(0, 0, 0, 0.88);
   margin: 0;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+
+.task-page-desc {
+  margin: 8px 0 0;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 14px;
+}
+
+.task-secondary-btn {
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(15, 35, 80, 0.08);
+  color: rgba(0, 0, 0, 0.68);
+  font-weight: 600;
+}
+
+.task-header-top :deep(.ant-btn-primary) {
+  min-width: 122px;
+  height: 42px;
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
 }
 
 /* Toolbar */
 .task-toolbar {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
   gap: 16px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 28px rgba(15, 35, 80, 0.04);
+  backdrop-filter: blur(12px);
 }
 
 .task-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
 }
 
 .task-tab {
-  padding: 6px 14px;
+  min-height: 34px;
+  padding: 7px 14px;
   border: none;
-  background: none;
-  color: rgba(0, 0, 0, 0.55);
+  background: transparent;
+  color: rgba(0, 0, 0, 0.54);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -617,51 +668,58 @@ onMounted(async () => {
 }
 
 .task-tab:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.75);
+  background: rgba(22, 119, 255, 0.06);
+  color: rgba(0, 0, 0, 0.78);
 }
 
 .task-tab-active {
-  background: rgba(22, 119, 255, 0.08);
+  background: #eaf3ff;
   color: #1677ff;
+  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06);
 }
 
 .task-tab-count {
   font-size: 11px;
+  font-weight: 700;
   background: rgba(0, 0, 0, 0.06);
-  padding: 1px 6px;
-  border-radius: 10px;
-  min-width: 18px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  min-width: 20px;
   text-align: center;
 }
 
 .task-tab-active .task-tab-count {
-  background: rgba(22, 119, 255, 0.12);
+  background: rgba(22, 119, 255, 0.14);
   color: #1677ff;
 }
 
 .task-search {
-  width: 200px;
+  width: 220px;
   flex-shrink: 0;
 }
 
 .task-search :deep(.ant-input-affix-wrapper) {
-  border-radius: 8px;
-  background: #f7f8fa;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(247, 248, 250, 0.92);
   border-color: transparent;
 }
 
 .task-search :deep(.ant-input-affix-wrapper:hover),
 .task-search :deep(.ant-input-affix-wrapper-focused) {
   background: #fff;
-  border-color: #d9d9d9;
+  border-color: rgba(22, 119, 255, 0.20);
+  box-shadow: 0 6px 16px rgba(22, 119, 255, 0.08);
 }
 
 /* Content Layout */
 .task-content {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 32px;
+  gap: 28px;
   align-items: flex-start;
+  overflow: visible;
 }
 
 .task-main {
@@ -671,16 +729,16 @@ onMounted(async () => {
 
 /* Body */
 .task-body {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-height: 240px;
   overflow: hidden;
-  min-height: 200px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
 }
 
 .task-empty {
-  padding: 80px 20px;
+  padding: 88px 20px;
 }
 
 /* List */
@@ -690,12 +748,16 @@ onMounted(async () => {
 }
 
 .task-item {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: background-color 0.15s;
   gap: 14px;
+  padding: 18px 22px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(248, 251, 255, 0.72));
+  transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .task-item:last-child {
@@ -703,7 +765,10 @@ onMounted(async () => {
 }
 
 .task-item:hover {
-  background-color: #fafbfc;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.96));
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.065);
+  transform: translateY(-1px);
 }
 
 .task-item:hover .task-item-actions {
@@ -711,17 +776,23 @@ onMounted(async () => {
 }
 
 .task-item-done {
-  opacity: 0.55;
-  background-color: #fcfcfc;
+  opacity: 0.62;
+  background: rgba(248, 250, 252, 0.88);
 }
 
 .task-item-done:hover {
-  background-color: #f9f9f9;
+  background: rgba(248, 250, 252, 0.98);
 }
 
-.task-item-high {
-  border-left: 3px solid #ff4d4f;
-  padding-left: 17px;
+.task-item-high::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 999px;
+  background: #ff4d4f;
 }
 
 /* Checkbox */
@@ -757,14 +828,19 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .task-item-title {
-  font-size: 14px;
-  font-weight: 500;
+  display: -webkit-box;
+  overflow: hidden;
   color: rgba(0, 0, 0, 0.85);
-  line-height: 24px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 22px;
   word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .task-item-title-done {
@@ -774,83 +850,105 @@ onMounted(async () => {
 }
 
 .task-item-desc {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.4);
-  margin-top: 2px;
-  white-space: nowrap;
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 4px;
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 12px;
+  line-height: 20px;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .task-item-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 7px;
+  min-width: 0;
+  margin-top: 9px;
 }
 
 .task-tag {
-  font-size: 11px;
-  padding: 1px 8px;
-  border-radius: 4px;
   display: inline-flex;
   align-items: center;
-  line-height: 18px;
+  max-width: 180px;
+  min-height: 22px;
+  padding: 2px 9px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-tag-red {
-  background: #fff1f0;
+  background: rgba(255, 77, 79, 0.10);
   color: #cf1322;
+  border-color: rgba(255, 77, 79, 0.10);
 }
 
 .task-tag-blue {
-  background: #e6f4ff;
+  background: rgba(22, 119, 255, 0.10);
   color: #0958d9;
+  border-color: rgba(22, 119, 255, 0.10);
 }
 
 .task-tag-date {
-  background: #f0f5ff;
+  background: rgba(47, 84, 235, 0.09);
   color: #1d39c4;
+  border-color: rgba(47, 84, 235, 0.08);
 }
 
 .task-tag-goal {
-  background: #f6ffed;
+  background: rgba(82, 196, 26, 0.10);
   color: #389e0d;
+  border-color: rgba(82, 196, 26, 0.10);
 }
 
 .task-tag-category {
-  background: #fff7e6;
-  color: #d46b08;
+  background: rgba(250, 173, 20, 0.13);
+  color: #ad6800;
+  border-color: rgba(250, 173, 20, 0.12);
 }
 
 .task-tag-custom {
-  background: #f0f5ff;
-  color: #1d39c4;
+  background: rgba(114, 46, 209, 0.08);
+  color: #531dab;
+  border-color: rgba(114, 46, 209, 0.08);
 }
 
 .task-tag-status {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.045);
+  color: rgba(0, 0, 0, 0.48);
+  border-color: rgba(0, 0, 0, 0.035);
 }
 
 .task-tag-status-in_progress {
-  background: #e6f4ff;
+  background: rgba(22, 119, 255, 0.10);
   color: #0958d9;
+  border-color: rgba(22, 119, 255, 0.10);
 }
 
 .task-tag-status-completed {
-  background: #f6ffed;
+  background: rgba(82, 196, 26, 0.10);
   color: #389e0d;
+  border-color: rgba(82, 196, 26, 0.10);
 }
 
 .task-tag-status-paused {
-  background: #fffbe6;
-  color: #d48806;
+  background: rgba(250, 219, 20, 0.18);
+  color: #ad6800;
+  border-color: rgba(250, 219, 20, 0.14);
 }
 
 .task-tag-status-cancelled {
-  background: #fff1f0;
+  background: rgba(255, 77, 79, 0.10);
   color: #cf1322;
+  border-color: rgba(255, 77, 79, 0.10);
 }
 
 /* Right area */
@@ -858,13 +956,21 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 6px;
+  width: 118px;
   flex-shrink: 0;
 }
 
 .task-item-time {
+  max-width: 118px;
+  padding: 2px 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.045);
+  color: rgba(0, 0, 0, 0.42);
   font-size: 11px;
-  color: rgba(0, 0, 0, 0.35);
+  line-height: 18px;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -904,28 +1010,50 @@ onMounted(async () => {
 }
 
 .sidebar-card {
-  background: #fff;
-  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.08), transparent 32%),
+    rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 38px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.035);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-card::after {
+  content: "";
+  position: absolute;
+  right: -34px;
+  bottom: -34px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: rgba(22, 119, 255, 0.055);
+  pointer-events: none;
 }
 
 .sidebar-card-tip {
-  background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(250, 173, 20, 0.12), transparent 32%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 252, 255, 0.90));
+  border-color: rgba(250, 173, 20, 0.10);
 }
 
 .sidebar-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.65);
+  position: relative;
+  z-index: 1;
   margin: 0 0 16px 0;
-  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.72);
+  font-size: 13px;
+  font-weight: 800;
   letter-spacing: 0.5px;
 }
 
 .sidebar-stats {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -965,10 +1093,11 @@ onMounted(async () => {
 }
 
 .stat-row-warn {
-  background: #fff2f0;
   margin: -2px -8px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: rgba(255, 77, 79, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 77, 79, 0.06);
 }
 
 .stat-divider {
@@ -978,27 +1107,34 @@ onMounted(async () => {
 }
 
 .sidebar-actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 
 .sidebar-actions :deep(.ant-btn) {
-  text-align: left;
-  border-radius: 8px;
-  height: 38px;
+  height: 40px;
+  border-color: rgba(15, 35, 80, 0.06);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.66);
+  color: rgba(0, 0, 0, 0.66);
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.65);
-  border-color: rgba(0, 0, 0, 0.08);
+  font-weight: 650;
+  text-align: left;
 }
 
 .sidebar-actions :deep(.ant-btn:hover) {
   color: #1677ff;
-  border-color: #1677ff;
-  background: rgba(22, 119, 255, 0.04);
+  border-color: rgba(22, 119, 255, 0.20);
+  background: rgba(22, 119, 255, 0.06);
+  transform: translateY(-1px);
 }
 
 .sidebar-tips {
+  position: relative;
+  z-index: 1;
   margin: 0;
   padding: 0 0 0 18px;
   list-style: none;
@@ -1035,6 +1171,20 @@ onMounted(async () => {
     padding: 20px 16px;
   }
 
+  .task-header-top,
+  .task-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .task-header-top :deep(.ant-space) {
+    justify-content: flex-start;
+  }
+
+  .task-search {
+    width: 100%;
+  }
+
   .task-content {
     flex-direction: column;
   }
@@ -1048,7 +1198,68 @@ onMounted(async () => {
 
   .sidebar-card {
     flex: 1;
-    min-width: 200px;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .task-header {
+    padding: 22px 20px;
+    border-radius: 22px;
+  }
+
+  .task-page-title {
+    font-size: 26px;
+  }
+
+  .task-header-top :deep(.ant-space) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-header-top :deep(.ant-space-item),
+  .task-header-top :deep(.ant-btn) {
+    width: 100%;
+  }
+
+  .task-tabs {
+    padding-bottom: 2px;
+  }
+
+  .task-item {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .task-item-body {
+    width: calc(100% - 36px);
+    flex-basis: calc(100% - 36px);
+  }
+
+  .task-item-right {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 34px;
+  }
+
+  .task-item-actions {
+    opacity: 1;
+  }
+
+  .task-tag {
+    max-width: 100%;
+  }
+
+  .task-sidebar {
+    flex-direction: column;
+  }
+
+  .sidebar-card {
+    min-width: 0;
   }
 }
 
@@ -1057,6 +1268,7 @@ onMounted(async () => {
 /* 列表项入场：渐入 + 上移 */
 .task-list-anim-enter-active {
   animation: taskSlideIn 0.35s ease-out both;
+  animation-delay: calc(var(--anim-order, 0) * 0.04s);
 }
 
 .task-list-anim-leave-active {
