@@ -1,45 +1,24 @@
 <template>
   <div class="shanzhu-goal-page">
-    <div class="goal-header">
-      <div class="goal-header-top">
-        <div>
-          <div class="goal-eyebrow">Goal Studio</div>
-          <h2 class="goal-page-title">目标列表</h2>
-          <p class="goal-page-desc">把长期方向拆成可见进度，持续跟踪每一个重要目标。</p>
-        </div>
-        <a-space>
-          <a-button class="goal-secondary-btn" @click="router.push('/shanzhu/task')">
-            <RiseOutlined style="margin-right: 4px;"/> 任务中心
-          </a-button>
-          <a-button type="primary" @click="openCreateModal">
-            <template #icon><PlusOutlined/></template>
-            新建目标
-          </a-button>
-        </a-space>
+    <!-- 顶部栏：标题 + 统计 + 操作 -->
+    <div class="goal-topbar">
+      <h2 class="goal-page-title">目标</h2>
+      <div class="goal-topbar-stats">
+        <span class="goal-mini-stat"><strong>{{ goalOverview.total }}</strong> 全部</span>
+        <span class="goal-mini-stat"><strong class="c-blue">{{ goalOverview.inProgress }}</strong> 进行中</span>
+        <span class="goal-mini-stat"><strong class="c-green">{{ goalOverview.completed }}</strong> 已完成</span>
+        <span class="goal-mini-stat"><strong>{{ goalOverview.avgProgress }}%</strong> 平均</span>
+      </div>
+      <div class="goal-topbar-actions">
+        <a-button size="small" @click="router.push('/shanzhu/task')">任务中心</a-button>
+        <a-button type="primary" size="small" @click="openCreateModal">
+          <template #icon><PlusOutlined/></template>
+          新建
+        </a-button>
       </div>
     </div>
 
-    <!-- 指标统计条 -->
-    <div class="goal-stats-bar">
-      <div class="goal-stat-card">
-        <span class="goal-stat-num goal-stat-blue">{{ goalOverview.total }}</span>
-        <span class="goal-stat-lbl">全部目标</span>
-      </div>
-      <div class="goal-stat-card">
-        <span class="goal-stat-num">{{ goalOverview.inProgress }}</span>
-        <span class="goal-stat-lbl">进行中</span>
-      </div>
-      <div class="goal-stat-card">
-        <span class="goal-stat-num goal-stat-green">{{ goalOverview.completed }}</span>
-        <span class="goal-stat-lbl">已完成</span>
-      </div>
-      <div class="goal-stat-card">
-        <span class="goal-stat-num">{{ goalOverview.avgProgress }}<small>%</small></span>
-        <span class="goal-stat-lbl">平均进度</span>
-      </div>
-    </div>
-
-    <!-- 操作栏：标签页 + 搜索 + 筛选 -->
+    <!-- 操作栏：Tab + 搜索 + 筛选 -->
     <div class="goal-action-bar">
       <div class="goal-tabs">
         <button
@@ -505,110 +484,71 @@ onMounted(() => {
 <style scoped>
 /* ===== 页面容器 ===== */
 .shanzhu-goal-page {
-  max-width: 1200px;
+  max-width: 1100px;
   min-height: calc(100vh - 120px);
   margin: 0 auto;
-  padding: 28px 40px 56px;
+  padding: 20px 32px 48px;
   overflow-x: hidden;
 }
 
-/* ===== Header ===== */
-.goal-header {
-  position: relative;
-  z-index: 2;
-  padding: 20px 24px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.goal-header-top {
+/* ===== Topbar ===== */
+.goal-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.goal-eyebrow {
-  margin-bottom: 4px;
-  color: rgba(0, 0, 0, 0.28);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+  gap: 20px;
+  padding: 0 0 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .goal-page-title {
   margin: 0;
   color: rgba(0, 0, 0, 0.88);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
 }
 
-.goal-page-desc {
-  margin: 4px 0 0;
-  color: rgba(0, 0, 0, 0.40);
-  font-size: 13px;
-}
-
-.goal-secondary-btn {
-  height: 36px;
-  border-color: rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  background: #fff;
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.goal-header-top :deep(.ant-btn-primary) {
-  height: 36px;
-  border-radius: 8px;
-  box-shadow: none;
-  font-weight: 600;
-}
-
-/* ===== 指标统计条 ===== */
-.goal-stats-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.goal-stat-card {
+.goal-topbar-stats {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 16px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
-  background: #fff;
+  gap: 16px;
+  flex: 1;
 }
 
-.goal-stat-num {
-  color: rgba(0, 0, 0, 0.82);
-  font-size: 28px;
-  font-weight: 800;
-  font-feature-settings: "tnum";
-  line-height: 1;
-}
-
-.goal-stat-num small {
-  font-size: 16px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.35);
-}
-
-.goal-stat-blue { color: #1677ff; }
-.goal-stat-green { color: #52c41a; }
-
-.goal-stat-lbl {
+.goal-mini-stat {
   color: rgba(0, 0, 0, 0.40);
   font-size: 12px;
   font-weight: 600;
+}
+
+.goal-mini-stat strong {
+  color: rgba(0, 0, 0, 0.78);
+  font-size: 14px;
+  font-weight: 800;
+  font-feature-settings: "tnum";
+  margin-right: 2px;
+}
+
+.goal-mini-stat strong.c-blue { color: #1677ff; }
+.goal-mini-stat strong.c-green { color: #52c41a; }
+
+.goal-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.goal-topbar-actions :deep(.ant-btn) {
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.goal-topbar-actions :deep(.ant-btn-primary) {
+  box-shadow: none;
 }
 
 /* ===== 操作栏 ===== */
@@ -797,31 +737,35 @@ onMounted(() => {
 .goal-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f7f7f8;
+}px;
 }
 
 .goal-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 18px 20px 16px;
+  padding: 14px 16px 12px;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
+  transition: border-color 0.15s, box-shadow 0.2s;
   animation: goalFadeUp 0.3s ease both;
   animation-delay: calc(var(--anim-order) * 0.03s);
 }
 
 .goal-card:hover {
-  border-color: rgba(0, 0, 0, 0.10);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
+  border-color: rgba(22, 119, 255, 0.20);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .goal-card-done {
-  background: #fcfff8;
+  background: #fafff5;
+  border-color: rgba(82, 196, 26, 0.12);
 }
 
 .goal-card-high {
@@ -833,7 +777,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .goal-card-status {
@@ -909,31 +853,31 @@ onMounted(() => {
 .goal-card-title {
   display: -webkit-box;
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: rgba(0, 0, 0, 0.85);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
   word-break: break-word;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
 .goal-card-desc {
   display: -webkit-box;
   overflow: hidden;
-  margin-bottom: 14px;
-  color: rgba(0, 0, 0, 0.38);
+  margin-bottom: 10px;
+  color: rgba(0, 0, 0, 0.35);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
   word-break: break-word;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
 /* 进度区域 */
 .goal-card-progress {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .goal-card-progress-info {
@@ -1092,19 +1036,20 @@ onMounted(() => {
 /* ===== Responsive ===== */
 @media (max-width: 960px) {
   .shanzhu-goal-page {
-    padding: 20px 20px 40px;
+    padding: 16px 16px 36px;
   }
-  .goal-header-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .goal-topbar {
+    flex-wrap: wrap;
   }
-  .goal-stats-bar {
-    grid-template-columns: repeat(2, 1fr);
+  .goal-topbar-stats {
+    order: 3;
+    width: 100%;
+    margin-top: 4px;
   }
   .goal-action-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
   .goal-action-right {
     justify-content: space-between;
@@ -1116,21 +1061,15 @@ onMounted(() => {
 
 @media (max-width: 640px) {
   .shanzhu-goal-page {
-    padding: 16px 12px 32px;
+    padding: 12px 10px 28px;
   }
   .goal-grid {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
+    padding: 6px;
   }
-  .goal-stats-bar {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .goal-stat-num {
-    font-size: 22px;
-  }
-  .goal-card-title {
-    font-size: 14px;
+  .goal-topbar-stats {
+    gap: 10px;
   }
 }
 </style>
