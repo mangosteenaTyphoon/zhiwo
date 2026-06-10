@@ -656,11 +656,11 @@ onMounted(() => {
 .goal-header {
   position: relative;
   z-index: 2;
-  padding: 26px 28px;
-  margin-bottom: 18px;
+  padding: 20px 28px;
+  margin-bottom: 12px;
   overflow: hidden;
   border: 1px solid rgba(22, 119, 255, 0.08);
-  border-radius: 26px;
+  border-radius: 22px;
   background:
     radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
     radial-gradient(circle at 96% 18%, rgba(82, 196, 26, 0.10), transparent 28%),
@@ -687,16 +687,16 @@ onMounted(() => {
 .goal-page-title {
   margin: 0;
   color: rgba(0, 0, 0, 0.88);
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 850;
   line-height: 1.2;
-  letter-spacing: -0.7px;
+  letter-spacing: -0.5px;
 }
 
 .goal-page-desc {
-  margin: 8px 0 0;
+  margin: 5px 0 0;
   color: rgba(0, 0, 0, 0.48);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .goal-secondary-btn {
@@ -720,14 +720,13 @@ onMounted(() => {
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
-  padding: 8px;
+  margin-bottom: 10px;
+  padding: 6px 8px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 10px 28px rgba(15, 35, 80, 0.04);
+  box-shadow: 0 6px 18px rgba(15, 35, 80, 0.03);
   backdrop-filter: blur(12px);
 }
 
@@ -784,10 +783,9 @@ onMounted(() => {
 .goal-filter-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 12px 18px;
-  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.04);
 }
 
 .goal-filter-toggle {
@@ -827,8 +825,9 @@ onMounted(() => {
 }
 
 .goal-search-float {
-  width: 240px;
+  width: 200px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .goal-search-float :deep(.ant-input-affix-wrapper) {
@@ -936,26 +935,28 @@ onMounted(() => {
 .goal-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 0;
+  gap: 8px;
+  padding: 10px 10px;
 }
 
 .goal-item {
   position: relative;
   display: flex;
   padding: 0;
-  margin: 0 8px;
   overflow: hidden;
+  border: 1px solid rgba(15, 35, 80, 0.05);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  transition: background-color 0.18s ease, box-shadow 0.22s ease, transform 0.18s ease;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(15, 35, 80, 0.04);
+  transition: background-color 0.18s ease, box-shadow 0.22s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
 .goal-item:hover {
   z-index: 2;
+  border-color: rgba(22, 119, 255, 0.12);
   background: #fff;
-  box-shadow: 0 8px 28px rgba(15, 35, 80, 0.09);
-  transform: translateY(-1px);
+  box-shadow: 0 10px 32px rgba(15, 35, 80, 0.10);
+  transform: translateY(-2px);
 }
 
 .goal-item-done {
@@ -1185,7 +1186,7 @@ onMounted(() => {
 /* ===== 分段式进度轨道 ===== */
 .goal-track-bar {
   position: relative;
-  height: 8px;
+  height: 7px;
   margin-bottom: 14px;
   overflow: hidden;
   border-radius: 999px;
@@ -1193,9 +1194,11 @@ onMounted(() => {
 }
 
 .goal-track-fill {
+  min-width: 7px;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #1677ff, #52c41a);
+  box-shadow: 0 1px 4px rgba(22, 119, 255, 0.25);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1274,12 +1277,18 @@ onMounted(() => {
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.goal-item:hover .goal-item-actions {
+  opacity: 1;
 }
 
 .goal-detail-btn,
 .goal-action-btn {
   border-radius: 999px;
-  color: rgba(0, 0, 0, 0.40);
+  color: rgba(0, 0, 0, 0.45);
   font-weight: 650;
 }
 
