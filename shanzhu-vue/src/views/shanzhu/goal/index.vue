@@ -7,6 +7,11 @@
           <div class="goal-eyebrow">Goal Studio</div>
           <h2 class="goal-page-title">目标管理</h2>
           <p class="goal-page-desc">把长期方向拆成可见进度，用目标牵引每日行动。</p>
+          <div class="goal-header-metrics">
+            <span><strong>{{ goalOverview.inProgress }}</strong> 进行中</span>
+            <span><strong>{{ goalOverview.completed }}</strong> 已完成</span>
+            <span><strong>{{ goalOverview.avgProgress }}%</strong> 平均进度</span>
+          </div>
         </div>
         <a-space>
           <a-button class="goal-secondary-btn" @click="router.push('/shanzhu/task')">
@@ -130,6 +135,7 @@
                 </div>
 
                 <div class="goal-item-right">
+                  <span class="goal-item-progress-text">{{ goal.progress || 0 }}%</span>
                   <span v-if="goal.deadline" class="goal-item-date">
                     <ClockCircleOutlined/> {{ goal.deadline }}
                   </span>
@@ -189,6 +195,9 @@
           <div class="goal-overview-row">
             <span>平均进度</span>
             <strong>{{ goalOverview.avgProgress }}%</strong>
+          </div>
+          <div class="goal-overview-progress">
+            <div class="goal-overview-progress-fill" :style="{ width: goalOverview.avgProgress + '%' }"></div>
           </div>
         </div>
 
@@ -533,606 +542,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== 页面容器 ===== */
-.shanzhu-goal-page {
-  max-width: 1100px;
-  min-height: calc(100vh - 120px);
-  margin: 0 auto;
-  padding: 20px 32px 48px;
-  overflow-x: hidden;
-}
-
-/* ===== Topbar ===== */
-.goal-topbar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 0 0 14px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.goal-page-title {
-  margin: 0;
-  color: rgba(0, 0, 0, 0.88);
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  flex-shrink: 0;
-}
-
-.goal-topbar-stats {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-}
-
-.goal-mini-stat {
-  color: rgba(0, 0, 0, 0.40);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.goal-mini-stat strong {
-  color: rgba(0, 0, 0, 0.78);
-  font-size: 14px;
-  font-weight: 800;
-  font-feature-settings: "tnum";
-  margin-right: 2px;
-}
-
-.goal-mini-stat strong.c-blue { color: #1677ff; }
-.goal-mini-stat strong.c-green { color: #52c41a; }
-
-.goal-topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.goal-topbar-actions :deep(.ant-btn) {
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.goal-topbar-actions :deep(.ant-btn-primary) {
-  box-shadow: none;
-}
-
-/* ===== 操作栏 ===== */
-.goal-action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.goal-tabs {
-  display: flex;
-  gap: 2px;
-  overflow-x: auto;
-}
-
-.goal-tab {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 32px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: rgba(0, 0, 0, 0.50);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.goal-tab:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.75);
-}
-
-.goal-tab-active {
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.88);
-}
-
-.goal-tab-count {
-  min-width: 18px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.goal-tab-active .goal-tab-count {
-  background: rgba(0, 0, 0, 0.10);
-}
-
-.goal-action-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.goal-search-wrap {
-  width: 180px;
-}
-
-.goal-search-wrap :deep(.ant-input-affix-wrapper) {
-  height: 32px;
-  border-color: rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  background: #fff;
-  font-size: 13px;
-}
-
-.goal-filter-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  background: #fff;
-  color: rgba(0, 0, 0, 0.50);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.goal-filter-btn:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  color: rgba(0, 0, 0, 0.78);
-}
-
-.goal-filter-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ff4d4f;
-}
-
-/* ===== 筛选面板 ===== */
-.goal-filter-panel {
-  margin-bottom: 16px;
-  overflow: hidden;
-  animation: goalSlideDown 0.2s ease;
-}
-
-.goal-filter-inner {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 10px;
-  background: #fafafa;
-}
-
-.goal-filter-item {
-  min-width: 0;
-  flex: 1;
-}
-
-.goal-filter-label {
-  display: block;
-  margin-bottom: 4px;
-  color: rgba(0, 0, 0, 0.40);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.goal-filter-item :deep(.ant-select-selector) {
-  border-radius: 8px;
-}
-
-.goal-filter-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-/* ===== 空状态 ===== */
-.goal-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.goal-empty-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.03);
-  color: rgba(0, 0, 0, 0.18);
-  font-size: 28px;
-}
-
-.goal-empty-title {
-  margin: 0 0 6px;
-  color: rgba(0, 0, 0, 0.72);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.goal-empty-desc {
-  margin: 0 0 20px;
-  color: rgba(0, 0, 0, 0.38);
-  font-size: 13px;
-}
-
-/* ===== 卡片网格 ===== */
-.goal-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #f7f7f8;
-}
-
-.goal-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 14px 16px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 10px;
-  background: #fff;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.2s;
-  animation: goalFadeUp 0.3s ease both;
-  animation-delay: calc(var(--anim-order) * 0.03s);
-}
-
-.goal-card:hover {
-  border-color: rgba(22, 119, 255, 0.20);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
-.goal-card-done {
-  background: #fafff5;
-  border-color: rgba(82, 196, 26, 0.12);
-}
-
-.goal-card-high {
-  border-left: 3px solid #ff4d4f;
-}
-
-/* 卡片顶部 */
-.goal-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.goal-card-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.gc-status-completed {
-  background: rgba(82, 196, 26, 0.10);
-  color: #389e0d;
-}
-
-.gc-status-in_progress {
-  background: rgba(22, 119, 255, 0.08);
-  color: #1677ff;
-}
-
-.gc-status-not_started {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.45);
-}
-
-.gc-status-paused {
-  background: rgba(250, 173, 20, 0.10);
-  color: #d48806;
-}
-
-.gc-status-cancelled {
-  background: rgba(255, 77, 79, 0.08);
-  color: #cf1322;
-}
-
-.goal-card-actions {
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.goal-card:hover .goal-card-actions {
-  opacity: 1;
-}
-
-.goal-card-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: rgba(0, 0, 0, 0.35);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.goal-card-more:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.65);
-}
-
-/* 卡片主体 */
-.goal-card-body {
-  flex: 1;
-  min-height: 0;
-}
-
-.goal-card-title {
-  display: -webkit-box;
-  overflow: hidden;
-  margin-bottom: 2px;
-  color: rgba(0, 0, 0, 0.85);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.4;
-  word-break: break-word;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-}
-
-.goal-card-desc {
-  display: -webkit-box;
-  overflow: hidden;
-  margin-bottom: 10px;
-  color: rgba(0, 0, 0, 0.35);
-  font-size: 12px;
-  line-height: 1.4;
-  word-break: break-word;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-}
-
-/* 进度区域 */
-.goal-card-progress {
-  margin-bottom: 10px;
-}
-
-.goal-card-progress-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.goal-card-progress-label {
-  color: rgba(0, 0, 0, 0.35);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.goal-card-progress-value {
-  color: rgba(0, 0, 0, 0.72);
-  font-size: 12px;
-  font-weight: 800;
-  font-feature-settings: "tnum";
-}
-
-.goal-card-bar {
-  height: 4px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.goal-card-bar-fill {
-  height: 100%;
-  min-width: 4px;
-  border-radius: 999px;
-  background: #1677ff;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.goal-card-done .goal-card-bar-fill {
-  background: #52c41a;
-}
-
-.goal-card-high .goal-card-bar-fill {
-  background: #ff4d4f;
-}
-
-/* 卡片底部 */
-.goal-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.goal-card-tags {
-  display: flex;
-  gap: 4px;
-  overflow: hidden;
-}
-
-.gc-tag {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100px;
-  padding: 2px 8px;
-  overflow: hidden;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.gc-tag-cat {
-  background: rgba(22, 119, 255, 0.06);
-  color: #4096ff;
-}
-
-.gc-tag-custom {
-  background: rgba(114, 46, 209, 0.06);
-  color: #9254de;
-}
-
-.gc-tag-more {
-  background: rgba(0, 0, 0, 0.03);
-  color: rgba(0, 0, 0, 0.30);
-}
-
-.goal-card-deadline {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: rgba(0, 0, 0, 0.30);
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* 高优标记 */
-.goal-card-priority {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  color: #ff4d4f;
-  font-size: 12px;
-}
-
-.goal-card:hover .goal-card-priority {
-  display: none;
-}
-
-/* 分页 */
-.goal-pagination {
-  display: flex;
-  justify-content: center;
-  padding: 20px 0 8px;
-}
-
-/* ===== 动画 ===== */
-.goal-card-anim-enter-active,
-.goal-card-anim-leave-active {
-  transition: all 0.2s ease;
-}
-
-.goal-card-anim-enter-from,
-.goal-card-anim-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.goal-card-anim-move {
-  transition: transform 0.2s ease;
-}
-
-@keyframes goalFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes goalSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 960px) {
-  .shanzhu-goal-page {
-    padding: 16px 16px 36px;
-  }
-  .goal-topbar {
-    flex-wrap: wrap;
-  }
-  .goal-topbar-stats {
-    order: 3;
-    width: 100%;
-    margin-top: 4px;
-  }
-  .goal-action-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .goal-action-right {
-    justify-content: space-between;
-  }
-  .goal-search-wrap {
-    flex: 1;
-  }
-}
-
-@media (max-width: 640px) {
-  .shanzhu-goal-page {
-    padding: 12px 10px 28px;
-  }
-  .goal-grid {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    padding: 6px;
-  }
-  .goal-topbar-stats {
-    gap: 10px;
-  }
-}
-
+/* ===== Goal page refined layout ===== */
 /* ===== Goal page restored layout override ===== */
 .shanzhu-goal-page {
-  max-width: 1160px;
-  padding: 28px 28px 56px;
+  max-width: 1360px;
+  min-height: calc(100vh - 120px);
+  margin: 0 auto;
+  padding: 36px 48px 56px;
+  overflow-x: hidden;
 }
 
 .goal-header {
   position: relative;
   z-index: 2;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   padding: 28px 30px;
   overflow: hidden;
   border: 1px solid rgba(22, 119, 255, 0.08);
@@ -1182,9 +605,38 @@ onMounted(() => {
 }
 
 .goal-page-desc {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: rgba(0, 0, 0, 0.48);
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.goal-header-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.goal-header-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 5px 12px;
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 12px;
+  font-weight: 650;
+  backdrop-filter: blur(10px);
+}
+
+.goal-header-metrics strong {
+  color: #1677ff;
+  font-size: 14px;
+  font-weight: 850;
+  font-feature-settings: "tnum";
 }
 
 .goal-secondary-btn {
@@ -1249,7 +701,7 @@ onMounted(() => {
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 22px;
+  gap: 28px;
 }
 
 .goal-main {
@@ -1480,6 +932,14 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.goal-item-progress-text {
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1;
+  font-feature-settings: "tnum";
+}
+
 .goal-item-date {
   display: inline-flex;
   align-items: center;
@@ -1504,7 +964,7 @@ onMounted(() => {
 
 .goal-sidebar {
   display: flex;
-  width: 268px;
+  width: 286px;
   flex-shrink: 0;
   flex-direction: column;
   gap: 14px;
@@ -1555,6 +1015,22 @@ onMounted(() => {
 
 .goal-overview-green strong {
   color: #52c41a;
+}
+
+.goal-overview-progress {
+  height: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.06);
+}
+
+.goal-overview-progress-fill {
+  min-width: 8px;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1677ff, #52c41a);
+  transition: width 0.5s ease;
 }
 
 .goal-sidebar-actions {
