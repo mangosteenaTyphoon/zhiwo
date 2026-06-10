@@ -741,7 +741,6 @@ onMounted(() => {
   padding: 10px;
   border-radius: 12px;
   background: #f7f7f8;
-}px;
 }
 
 .goal-card {
