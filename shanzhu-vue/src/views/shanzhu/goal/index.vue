@@ -1,3 +1,24 @@
+<template>
+  <div class="shanzhu-goal-page">
+    <div class="goal-header">
+      <div class="goal-header-top">
+        <div>
+          <div class="goal-eyebrow">Goal Studio</div>
+          <h2 class="goal-page-title">目标列表</h2>
+          <p class="goal-page-desc">把长期方向拆成可见进度，持续跟踪每一个重要目标。</p>
+        </div>
+        <a-space>
+          <a-button class="goal-secondary-btn" @click="router.push('/shanzhu/task')">
+            <RiseOutlined style="margin-right: 4px;"/> 任务中心
+          </a-button>
+          <a-button type="primary" @click="openCreateModal">
+            <template #icon><PlusOutlined/></template>
+            新建目标
+          </a-button>
+        </a-space>
+      </div>
+    </div>
+
     <!-- 指标统计条 -->
     <div class="goal-stats-bar">
       <div class="goal-stat-card">
