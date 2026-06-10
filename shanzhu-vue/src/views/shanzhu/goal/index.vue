@@ -7,11 +7,6 @@
           <div class="goal-eyebrow">Goal Studio</div>
           <h2 class="goal-page-title">目标管理</h2>
           <p class="goal-page-desc">把长期方向拆成可见进度，用目标牵引每日行动。</p>
-          <div class="goal-header-metrics">
-            <span><strong>{{ goalOverview.inProgress }}</strong> 进行中</span>
-            <span><strong>{{ goalOverview.completed }}</strong> 已完成</span>
-            <span><strong>{{ goalOverview.avgProgress }}%</strong> 平均进度</span>
-          </div>
         </div>
         <a-space>
           <a-button class="goal-secondary-btn" @click="router.push('/shanzhu/task')">
@@ -135,7 +130,6 @@
                 </div>
 
                 <div class="goal-item-right">
-                  <span class="goal-item-progress-text">{{ goal.progress || 0 }}%</span>
                   <span v-if="goal.deadline" class="goal-item-date">
                     <ClockCircleOutlined/> {{ goal.deadline }}
                   </span>
@@ -543,39 +537,37 @@ onMounted(() => {
 
 <style scoped>
 /* ===== Goal page refined layout ===== */
-/* ===== Goal page restored layout override ===== */
 .shanzhu-goal-page {
-  max-width: 1360px;
+  max-width: 1180px;
   min-height: calc(100vh - 120px);
   margin: 0 auto;
-  padding: 36px 48px 56px;
+  padding: 30px 34px 56px;
   overflow-x: hidden;
 }
 
 .goal-header {
   position: relative;
   z-index: 2;
-  margin-bottom: 18px;
-  padding: 28px 30px;
+  margin-bottom: 16px;
+  padding: 24px 26px;
   overflow: hidden;
   border: 1px solid rgba(22, 119, 255, 0.08);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 18% 0%, rgba(22, 119, 255, 0.18), transparent 34%),
-    radial-gradient(circle at 100% 8%, rgba(114, 46, 209, 0.14), transparent 34%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.94));
-  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07);
+    radial-gradient(circle at 0% 0%, rgba(22, 119, 255, 0.10), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(247, 250, 255, 0.94));
+  box-shadow: 0 16px 38px rgba(15, 35, 80, 0.055);
 }
 
 .goal-header::after {
   content: "";
   position: absolute;
-  right: -54px;
-  bottom: -66px;
-  width: 170px;
-  height: 170px;
+  right: -48px;
+  bottom: -72px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
-  background: rgba(22, 119, 255, 0.08);
+  background: rgba(22, 119, 255, 0.055);
 }
 
 .goal-header-top {
@@ -598,45 +590,17 @@ onMounted(() => {
 
 .goal-page-title {
   margin: 0;
-  font-size: 26px;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 24px;
   font-weight: 850;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
+  line-height: 1.18;
+  letter-spacing: -0.45px;
 }
 
 .goal-page-desc {
   margin: 8px 0 0;
   color: rgba(0, 0, 0, 0.48);
   font-size: 14px;
-}
-
-.goal-header-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.goal-header-metrics span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 30px;
-  padding: 5px 12px;
-  border: 1px solid rgba(22, 119, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.58);
-  color: rgba(0, 0, 0, 0.48);
-  font-size: 12px;
-  font-weight: 650;
-  backdrop-filter: blur(10px);
-}
-
-.goal-header-metrics strong {
-  color: #1677ff;
-  font-size: 14px;
-  font-weight: 850;
-  font-feature-settings: "tnum";
 }
 
 .goal-secondary-btn {
@@ -701,7 +665,7 @@ onMounted(() => {
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 28px;
+  gap: 22px;
 }
 
 .goal-main {
@@ -714,8 +678,8 @@ onMounted(() => {
   overflow: hidden;
   border: 1px solid rgba(15, 35, 80, 0.06);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 34px rgba(15, 35, 80, 0.055), 0 1px 2px rgba(15, 35, 80, 0.04);
 }
 
 .goal-list {
@@ -731,9 +695,9 @@ onMounted(() => {
   padding: 18px 22px;
   overflow: hidden;
   border-bottom: 1px solid rgba(15, 35, 80, 0.055);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 251, 255, 0.78));
+  background: rgba(255, 255, 255, 0.98);
   transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-  animation: goalFadeUp 0.36s ease both;
+  animation: goalFadeUp 0.30s ease both;
   animation-delay: calc(var(--anim-order) * 0.025s);
 }
 
@@ -743,8 +707,8 @@ onMounted(() => {
 
 .goal-item:hover {
   z-index: 1;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(247, 251, 255, 0.98));
-  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.065);
+  background: rgba(248, 251, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(15, 35, 80, 0.055);
   transform: translateY(-1px);
 }
 
@@ -769,18 +733,18 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   flex-shrink: 0;
   border: 1px solid rgba(22, 119, 255, 0.10);
-  border-radius: 18px;
-  background: rgba(22, 119, 255, 0.06);
+  border-radius: 16px;
+  background: rgba(22, 119, 255, 0.055);
   color: #1677ff;
   cursor: pointer;
 }
 
 .goal-progress-number {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 850;
   line-height: 1;
   font-feature-settings: "tnum";
@@ -928,16 +892,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
-  width: 116px;
+  width: 104px;
   flex-shrink: 0;
-}
-
-.goal-item-progress-text {
-  color: rgba(0, 0, 0, 0.82);
-  font-size: 18px;
-  font-weight: 850;
-  line-height: 1;
-  font-feature-settings: "tnum";
 }
 
 .goal-item-date {
@@ -964,18 +920,18 @@ onMounted(() => {
 
 .goal-sidebar {
   display: flex;
-  width: 286px;
+  width: 264px;
   flex-shrink: 0;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .goal-sidebar-card {
-  padding: 18px;
-  border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 16px 38px rgba(15, 35, 80, 0.06);
+  padding: 16px;
+  border: 1px solid rgba(15, 35, 80, 0.055);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(15, 35, 80, 0.045);
 }
 
 .goal-sidebar-title {
@@ -1046,9 +1002,7 @@ onMounted(() => {
 }
 
 .goal-tip-card {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(250, 173, 20, 0.14), transparent 44%),
-    rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .goal-tip-list {
