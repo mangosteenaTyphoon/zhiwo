@@ -539,16 +539,17 @@ onMounted(() => {
 /* ===== Goal page refined layout ===== */
 .shanzhu-goal-page {
   position: relative;
-  max-width: 1280px;
+  width: min(100%, 1240px);
   min-height: calc(100vh - 120px);
   margin: 0 auto;
-  padding: 28px 36px 56px;
+  padding: 24px 32px 52px;
   overflow-x: hidden;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at 18% 0%, rgba(22, 119, 255, 0.05), transparent 28%),
-    linear-gradient(180deg, #f7f9fc 0%, #ffffff 42%);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #f6f8fb 0%, #ffffff 46%);
+  box-shadow: 0 0 0 100vmax #f6f8fb;
+  clip-path: inset(0 -100vmax);
   isolation: isolate;
+  transform: translateZ(0);
 }
 
 .shanzhu-goal-page::before {
@@ -556,24 +557,26 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: -1;
-  border-radius: 28px;
-  background: #ffffff;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.045), transparent 26%),
+    linear-gradient(180deg, #f6f8fb 0%, #ffffff 44%);
   pointer-events: none;
 }
 
 .goal-header {
   position: relative;
   z-index: 2;
-  margin-bottom: 16px;
-  padding: 24px 28px;
+  margin-bottom: 14px;
+  padding: 22px 26px;
   overflow: hidden;
-  border: 1px solid rgba(22, 119, 255, 0.08);
-  border-radius: 24px;
+  border: 1px solid rgba(22, 119, 255, 0.07);
+  border-radius: 22px;
   background:
-    radial-gradient(circle at 14% 0%, rgba(22, 119, 255, 0.10), transparent 30%),
-    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.08), transparent 26%),
-    linear-gradient(135deg, #ffffff, #f7fbff);
-  box-shadow: 0 12px 32px rgba(15, 35, 80, 0.055);
+    radial-gradient(circle at 14% 0%, rgba(22, 119, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.06), transparent 24%),
+    linear-gradient(135deg, #ffffff, #f8fbff);
+  box-shadow: 0 10px 26px rgba(15, 35, 80, 0.045);
 }
 
 .goal-header-top {
@@ -597,10 +600,10 @@ onMounted(() => {
 .goal-page-title {
   margin: 0;
   color: rgba(0, 0, 0, 0.88);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 850;
-  line-height: 1.2;
-  letter-spacing: -0.7px;
+  line-height: 1.18;
+  letter-spacing: -0.6px;
 }
 
 .goal-page-desc {
@@ -630,13 +633,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-  padding: 8px;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 7px;
   border: 1px solid rgba(15, 35, 80, 0.055);
-  border-radius: 16px;
+  border-radius: 15px;
   background: #ffffff;
-  box-shadow: 0 8px 22px rgba(15, 35, 80, 0.035);
+  box-shadow: 0 6px 18px rgba(15, 35, 80, 0.032);
 }
 
 .goal-tabs {
@@ -794,9 +797,9 @@ onMounted(() => {
   min-height: 240px;
   overflow: hidden;
   border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 20px;
+  border-radius: 18px;
   background: #ffffff;
-  box-shadow: 0 12px 30px rgba(15, 35, 80, 0.05), 0 1px 2px rgba(15, 35, 80, 0.035);
+  box-shadow: 0 10px 24px rgba(15, 35, 80, 0.045), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .goal-empty {
@@ -839,10 +842,10 @@ onMounted(() => {
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 18px 22px;
+  gap: 12px;
+  padding: 14px 18px;
   overflow: hidden;
-  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+  border-bottom: 1px solid rgba(15, 35, 80, 0.052);
   background: #ffffff;
   transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   animation: goalFadeUp 0.30s ease both;
@@ -878,22 +881,22 @@ onMounted(() => {
 
 .goal-progress-ring {
   display: flex;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(22, 119, 255, 0.10);
-  border-radius: 16px;
-  background: rgba(22, 119, 255, 0.06);
+  border-radius: 14px;
+  background: rgba(22, 119, 255, 0.055);
   color: #1677ff;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
 .goal-progress-number {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 850;
   line-height: 1;
   font-feature-settings: "tnum";
@@ -922,9 +925,9 @@ onMounted(() => {
   display: -webkit-box;
   overflow: hidden;
   color: rgba(0, 0, 0, 0.86);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 750;
-  line-height: 22px;
+  line-height: 21px;
   word-break: break-word;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -943,11 +946,11 @@ onMounted(() => {
 }
 
 .goal-item-track {
-  height: 6px;
-  margin-top: 10px;
+  height: 5px;
+  margin-top: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(15, 35, 80, 0.06);
+  background: rgba(15, 35, 80, 0.055);
 }
 
 .goal-item-track-fill {
@@ -965,9 +968,9 @@ onMounted(() => {
 .goal-item-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .goal-tag {
@@ -975,8 +978,8 @@ onMounted(() => {
   align-items: center;
   gap: 3px;
   max-width: 150px;
-  min-height: 22px;
-  padding: 2px 9px;
+  min-height: 20px;
+  padding: 1px 8px;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -1040,8 +1043,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
-  width: 104px;
+  gap: 10px;
+  width: 96px;
   flex-shrink: 0;
 }
 
@@ -1071,22 +1074,22 @@ onMounted(() => {
   position: sticky;
   top: 80px;
   display: flex;
-  width: 286px;
+  width: 270px;
   flex-shrink: 0;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .goal-sidebar-card {
   position: relative;
   overflow: hidden;
-  padding: 18px;
-  border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 20px;
+  padding: 16px;
+  border: 1px solid rgba(15, 35, 80, 0.055);
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.055), transparent 30%),
+    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.045), transparent 28%),
     #ffffff;
-  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.05), 0 1px 2px rgba(15, 35, 80, 0.035);
+  box-shadow: 0 10px 22px rgba(15, 35, 80, 0.042), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .goal-sidebar-card::after {
