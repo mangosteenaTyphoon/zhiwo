@@ -1,273 +1,278 @@
 <template>
   <div class="shanzhu-dashboard-page">
-    <a-flex :gap="16" vertical>
-      <a-card :bordered="false" class="dashboard-header-card">
-        <a-flex justify="space-between" align="center" wrap="wrap" :gap="12">
-          <div>
-            <a-typography-title :level="4" class="dashboard-title">目标任务仪表盘</a-typography-title>
-            <a-typography-text type="secondary">聚合目标、任务、习惯和进展记录数据，快速识别执行状态和风险</a-typography-text>
+    <div class="dashboard-hero">
+      <div>
+        <div class="dashboard-eyebrow">Growth Dashboard</div>
+        <h2 class="dashboard-page-title">目标仪表盘</h2>
+        <p class="dashboard-page-desc">聚合目标、任务、习惯和风险数据，快速判断今天该把精力放在哪里。</p>
+      </div>
+      <a-button type="primary" shape="round" size="large" :loading="pageLoading" @click="initDashboard">
+        <template #icon>
+          <RedoOutlined/>
+        </template>
+        刷新数据
+      </a-button>
+    </div>
+
+    <a-spin :spinning="pageLoading">
+      <div class="dashboard-overview-grid">
+        <div
+            v-for="item in overviewCards"
+            :key="item.title"
+            class="overview-card"
+            :style="{ '--card-color': item.color }"
+        >
+          <div class="overview-card-top">
+            <span>{{ item.title }}</span>
+            <em>{{ item.suffix }}</em>
           </div>
-          <a-button type="primary" :loading="pageLoading" @click="initDashboard">
-            <template #icon>
-              <RedoOutlined/>
-            </template>
-            刷 新
-          </a-button>
-        </a-flex>
-      </a-card>
+          <strong>{{ item.value }}</strong>
+          <p>{{ item.description }}</p>
+        </div>
+      </div>
 
-      <a-spin :spinning="pageLoading">
-        <a-row :gutter="[16, 16]">
-          <a-col v-for="item in overviewCards" :key="item.title" :xs="24" :sm="12" :lg="6">
-            <a-card :bordered="false" class="overview-card">
-              <a-statistic :title="item.title" :value="item.value" :value-style="{ color: item.color }">
-                <template #suffix>
-                  <span class="overview-suffix">{{ item.suffix }}</span>
-                </template>
-              </a-statistic>
-              <a-typography-text type="secondary">{{ item.description }}</a-typography-text>
-            </a-card>
-          </a-col>
-        </a-row>
+      <div class="dashboard-main-grid">
+        <a-card :bordered="false" class="dashboard-panel habit-summary-panel">
+          <template #title>
+            <div class="dashboard-panel-title">
+              <span>🌱</span>
+              <strong>习惯打卡统计</strong>
+            </div>
+          </template>
+          <div class="habit-summary">
+            <div class="habit-progress-ring">
+              <span>{{ formatHabitPercent(habitStats.currentPeriodCompletionRate) }}%</span>
+              <small>周期完成率</small>
+            </div>
+            <div class="habit-summary-stats">
+              <div>
+                <span>今日已打卡</span>
+                <strong>{{ habitStats.todayCheckedCount || 0 }}/{{ habitStats.todayTotalCount || 0 }}</strong>
+              </div>
+              <div>
+                <span>周期已完成</span>
+                <strong>{{ habitStats.currentPeriodCompletedHabitCount || 0 }}</strong>
+              </div>
+              <div>
+                <span>最长连续</span>
+                <strong>{{ habitStats.maxContinuousDays || 0 }} 天</strong>
+              </div>
+            </div>
+          </div>
+          <a-progress
+              :percent="formatHabitPercent(habitStats.currentPeriodCompletionRate)"
+              :show-info="false"
+              size="small"
+          />
+        </a-card>
 
-        <a-row :gutter="[16, 16]" class="dashboard-section">
-          <a-col :xs="24" :xl="10">
-            <a-card :bordered="false" title="习惯打卡统计">
-              <a-row :gutter="[12, 12]">
-                <a-col :span="12">
-                  <a-statistic title="今日待打卡" :value="habitStats.todayTotalCount || 0"/>
-                </a-col>
-                <a-col :span="12">
-                  <a-statistic title="今日已打卡" :value="habitStats.todayCheckedCount || 0" :value-style="{ color: '#52c41a' }"/>
-                </a-col>
-                <a-col :span="12">
-                  <a-statistic title="周期已完成" :value="habitStats.currentPeriodCompletedHabitCount || 0"/>
-                </a-col>
-                <a-col :span="12">
-                  <a-statistic title="最长连续" :value="habitStats.maxContinuousDays || 0" suffix="天"/>
-                </a-col>
-              </a-row>
-
-              <a-divider/>
-
-              <a-flex vertical :gap="8">
-                <a-flex justify="space-between" align="center">
-                  <a-typography-text type="secondary">当前周期完成率</a-typography-text>
-                  <a-typography-text strong>{{ formatHabitPercent(habitStats.currentPeriodCompletionRate) }}%</a-typography-text>
-                </a-flex>
-                <a-progress :percent="formatHabitPercent(habitStats.currentPeriodCompletionRate)" size="small"/>
-              </a-flex>
-            </a-card>
-          </a-col>
-
-          <a-col :xs="24" :xl="14">
-            <a-card :bordered="false" title="今日习惯打卡">
-              <template #extra>
-                <a-button type="link" size="small" @click="openHabitPage">查看全部</a-button>
-              </template>
-              <a-empty v-if="todayHabits.length === 0" description="今日暂无待打卡习惯"/>
-              <a-list v-else :data-source="todayHabits" size="small">
-                <template #renderItem="{ item }">
-                  <a-list-item class="habit-list-item">
-                    <a-list-item-meta>
-                      <template #title>
-                        <a-space size="small" wrap>
-                          <span>{{ item.title }}</span>
-                          <a-tag :color="item.todayChecked ? 'success' : 'processing'">
-                            {{ item.todayChecked ? '已打卡' : '待打卡' }}
-                          </a-tag>
-                          <a-tag v-if="item.goalTitle" color="blue">{{ item.goalTitle }}</a-tag>
-                        </a-space>
-                      </template>
-                      <template #description>
-                        目标值：{{ formatHabitTargetValue(item.targetValue, item.unit) }}
-                        <template v-if="item.note">，备注：{{ item.note }}</template>
-                      </template>
-                    </a-list-item-meta>
-                    <template #actions>
-                      <a-button
-                          v-if="item.todayChecked"
-                          type="link"
-                          size="small"
-                          danger
-                          @click="confirmCancelHabitCheckin(item)"
-                      >
-                        取消打卡
-                      </a-button>
-                      <a-button
-                          v-else
-                          type="link"
-                          size="small"
-                          @click="handleQuickHabitCheckin(item)"
-                      >
-                        快速打卡
-                      </a-button>
-                    </template>
-                  </a-list-item>
-                </template>
-              </a-list>
-            </a-card>
-          </a-col>
-        </a-row>
-
-        <a-row :gutter="[16, 16]" class="dashboard-section">
-          <a-col :xs="24" :xl="14">
-            <a-card :bordered="false" title="分类目标和任务分布">
-              <a-empty v-if="dashboard.categoryStats.length === 0" description="暂无分类统计数据"/>
-              <a-table
-                  v-else
-                  :columns="categoryColumns"
-                  :data-source="dashboard.categoryStats"
-                  :pagination="false"
-                  row-key="categoryId"
-                  size="middle"
-              >
-                <template #bodyCell="{ column, record }">
-                  <template v-if="column.key === 'categoryName'">
-                    <a-tag :color="record.categoryColor || 'blue'">{{ record.categoryName || '未分类' }}</a-tag>
-                  </template>
-                  <template v-if="column.key === 'goalCompletionRate'">
-                    <a-progress :percent="calculatePercent(record.completedGoalCount, record.goalCount)" size="small"/>
-                  </template>
-                  <template v-if="column.key === 'taskCompletionRate'">
-                    <a-progress :percent="calculatePercent(record.completedTaskCount, record.taskCount)" size="small"/>
-                  </template>
-                </template>
-              </a-table>
-            </a-card>
-          </a-col>
-
-          <a-col :xs="24" :xl="10">
-            <a-card :bordered="false" title="本周本月完成情况">
-              <a-row :gutter="[12, 12]">
-                <a-col :span="8">
-                  <a-statistic title="今日完成" :value="dashboard.timeStats.todayCompletedTaskCount"/>
-                </a-col>
-                <a-col :span="8">
-                  <a-statistic title="本周完成" :value="dashboard.timeStats.weekCompletedTaskCount"/>
-                </a-col>
-                <a-col :span="8">
-                  <a-statistic title="本月完成" :value="dashboard.timeStats.monthCompletedTaskCount"/>
-                </a-col>
-              </a-row>
-
-              <a-divider/>
-
-              <a-flex vertical :gap="12">
-                <div
-                    v-for="item in dashboard.timeStats.recentSevenDayTaskCompletionTrend"
-                    :key="item.date"
-                    class="trend-row"
-                >
-                  <a-flex justify="space-between" align="center" :gap="12">
-                    <span class="trend-date">{{ item.date }}</span>
-                    <a-progress
-                        class="trend-progress"
-                        :percent="calculateTrendPercent(item.completedTaskCount)"
-                        :format="() => `${item.completedTaskCount} 个`"
-                    />
-                  </a-flex>
+        <a-card :bordered="false" class="dashboard-panel today-habit-panel">
+          <template #title>
+            <div class="dashboard-panel-title">
+              <span>✅</span>
+              <strong>今日习惯打卡</strong>
+              <em>{{ todayHabits.length }}</em>
+            </div>
+          </template>
+          <template #extra>
+            <a-button type="link" size="small" @click="openHabitPage">查看全部</a-button>
+          </template>
+          <a-empty v-if="todayHabits.length === 0" description="今日暂无待打卡习惯"/>
+          <div v-else class="today-habit-list">
+            <div
+                v-for="item in todayHabits"
+                :key="item.id"
+                class="habit-list-item"
+                :class="{ 'habit-list-item-done': item.todayChecked }"
+            >
+              <div class="habit-list-main">
+                <div class="habit-title-row">
+                  <span class="habit-title">{{ item.title }}</span>
+                  <span class="habit-status-chip" :class="{ 'habit-status-done': item.todayChecked }">
+                    {{ item.todayChecked ? '已打卡' : '待打卡' }}
+                  </span>
                 </div>
-              </a-flex>
-            </a-card>
-          </a-col>
-        </a-row>
+                <div class="habit-meta">
+                  <span>目标值 {{ formatHabitTargetValue(item.targetValue, item.unit) }}</span>
+                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.note">备注 {{ item.note }}</span>
+                </div>
+              </div>
+              <a-button
+                  v-if="item.todayChecked"
+                  type="text"
+                  size="small"
+                  danger
+                  class="habit-action-btn"
+                  @click="confirmCancelHabitCheckin(item)"
+              >
+                取消
+              </a-button>
+              <a-button
+                  v-else
+                  type="primary"
+                  size="small"
+                  ghost
+                  shape="round"
+                  @click="handleQuickHabitCheckin(item)"
+              >
+                打卡
+              </a-button>
+            </div>
+          </div>
+        </a-card>
+      </div>
 
-        <a-row :gutter="[16, 16]" class="dashboard-section">
-          <a-col :xs="24" :xl="12">
-            <a-card :bordered="false" title="逾期目标">
-              <a-empty v-if="dashboard.riskStats.overdueGoals.length === 0" description="暂无逾期目标"/>
-              <a-list v-else :data-source="dashboard.riskStats.overdueGoals">
-                <template #renderItem="{ item }">
-                  <a-list-item>
-                    <a-list-item-meta>
-                      <template #title>
-                        <a-space size="small" wrap>
-                          <span>{{ item.title }}</span>
-                          <a-tag :color="item.categoryColor || 'blue'">{{ item.categoryName || '未分类' }}</a-tag>
-                        </a-space>
-                      </template>
-                      <template #description>
-                        截止 {{ item.deadline || '-' }}，已逾期 {{ item.overdueDays }} 天，当前进度 {{ item.progress || 0 }}%
-                      </template>
-                    </a-list-item-meta>
-                  </a-list-item>
-                </template>
-              </a-list>
-            </a-card>
-          </a-col>
+      <div class="dashboard-insight-grid">
+        <a-card :bordered="false" class="dashboard-panel category-panel">
+          <template #title>
+            <div class="dashboard-panel-title">
+              <span>📊</span>
+              <strong>分类目标和任务分布</strong>
+            </div>
+          </template>
+          <a-empty v-if="dashboard.categoryStats.length === 0" description="暂无分类统计数据"/>
+          <div v-else class="category-list">
+            <div
+                v-for="record in dashboard.categoryStats"
+                :key="record.categoryId || record.categoryName"
+                class="category-item"
+            >
+              <div class="category-item-header">
+                <span class="category-chip" :style="{ '--category-color': record.categoryColor || '#1677ff' }">
+                  {{ record.categoryName || '未分类' }}
+                </span>
+                <span class="category-count">
+                  目标 {{ record.goalCount || 0 }} · 任务 {{ record.taskCount || 0 }}
+                </span>
+              </div>
+              <div class="category-progress-row">
+                <span>目标完成</span>
+                <a-progress
+                    :percent="calculatePercent(record.completedGoalCount, record.goalCount)"
+                    size="small"
+                />
+              </div>
+              <div class="category-progress-row">
+                <span>任务完成</span>
+                <a-progress
+                    :percent="calculatePercent(record.completedTaskCount, record.taskCount)"
+                    size="small"
+                    status="success"
+                />
+              </div>
+            </div>
+          </div>
+        </a-card>
 
-          <a-col :xs="24" :xl="12">
-            <a-card :bordered="false" title="逾期任务">
-              <a-empty v-if="dashboard.riskStats.overdueTasks.length === 0" description="暂无逾期任务"/>
-              <a-list v-else :data-source="dashboard.riskStats.overdueTasks">
-                <template #renderItem="{ item }">
-                  <a-list-item>
-                    <a-list-item-meta>
-                      <template #title>
-                        <a-space size="small" wrap>
-                          <span>{{ item.title }}</span>
-                          <a-tag color="red">逾期 {{ item.overdueDays }} 天</a-tag>
-                        </a-space>
-                      </template>
-                      <template #description>
-                        目标：{{ item.goalTitle || '-' }}，分类：{{ item.categoryName || '未分类' }}，截止：{{ item.deadline || '-' }}
-                      </template>
-                    </a-list-item-meta>
-                  </a-list-item>
-                </template>
-              </a-list>
-            </a-card>
-          </a-col>
+        <a-card :bordered="false" class="dashboard-panel trend-panel">
+          <template #title>
+            <div class="dashboard-panel-title">
+              <span>📈</span>
+              <strong>完成趋势</strong>
+            </div>
+          </template>
+          <div class="time-stat-grid">
+            <div>
+              <span>今日完成</span>
+              <strong>{{ dashboard.timeStats.todayCompletedTaskCount }}</strong>
+            </div>
+            <div>
+              <span>本周完成</span>
+              <strong>{{ dashboard.timeStats.weekCompletedTaskCount }}</strong>
+            </div>
+            <div>
+              <span>本月完成</span>
+              <strong>{{ dashboard.timeStats.monthCompletedTaskCount }}</strong>
+            </div>
+          </div>
 
-          <a-col :xs="24" :xl="12">
-            <a-card :bordered="false" title="长期未推进目标">
-              <a-empty v-if="dashboard.riskStats.longTimeNoProgressGoals.length === 0" description="暂无长期未推进目标"/>
-              <a-list v-else :data-source="dashboard.riskStats.longTimeNoProgressGoals">
-                <template #renderItem="{ item }">
-                  <a-list-item>
-                    <a-list-item-meta>
-                      <template #title>
-                        <a-space size="small" wrap>
-                          <span>{{ item.title }}</span>
-                          <a-tag color="orange">{{ item.daysSinceLastProgress }} 天未推进</a-tag>
-                        </a-space>
-                      </template>
-                      <template #description>
-                        最近推进：{{ item.lastProgressDate || '-' }}，当前进度 {{ item.progress || 0 }}%
-                      </template>
-                    </a-list-item-meta>
-                  </a-list-item>
-                </template>
-              </a-list>
-            </a-card>
-          </a-col>
+          <div class="trend-list">
+            <div
+                v-for="item in dashboard.timeStats.recentSevenDayTaskCompletionTrend"
+                :key="item.date"
+                class="trend-row"
+            >
+              <span class="trend-date">{{ item.date }}</span>
+              <a-progress
+                  class="trend-progress"
+                  :percent="calculateTrendPercent(item.completedTaskCount)"
+                  :format="() => `${item.completedTaskCount} 个`"
+              />
+            </div>
+          </div>
+        </a-card>
+      </div>
 
-          <a-col :xs="24" :xl="12">
-            <a-card :bordered="false" title="高优先级未完成任务">
-              <a-empty v-if="dashboard.riskStats.highPriorityUnfinishedTasks.length === 0" description="暂无高优先级未完成任务"/>
-              <a-list v-else :data-source="dashboard.riskStats.highPriorityUnfinishedTasks">
-                <template #renderItem="{ item }">
-                  <a-list-item>
-                    <a-list-item-meta>
-                      <template #title>
-                        <a-space size="small" wrap>
-                          <span>{{ item.title }}</span>
-                          <a-tag color="red">高优先级</a-tag>
-                        </a-space>
-                      </template>
-                      <template #description>
-                        目标：{{ item.goalTitle || '-' }}，截止：{{ item.deadline || '-' }}
-                      </template>
-                    </a-list-item-meta>
-                  </a-list-item>
-                </template>
-              </a-list>
-            </a-card>
-          </a-col>
-        </a-row>
-      </a-spin>
-    </a-flex>
+      <a-card :bordered="false" class="dashboard-panel risk-panel">
+        <template #title>
+          <div class="dashboard-panel-title">
+            <span>⚠️</span>
+            <strong>风险雷达</strong>
+          </div>
+        </template>
+        <div class="risk-grid">
+          <div class="risk-card">
+            <div class="risk-card-title">逾期目标</div>
+            <a-empty v-if="dashboard.riskStats.overdueGoals.length === 0" description="暂无逾期目标"/>
+            <div v-else class="risk-list">
+              <div v-for="item in dashboard.riskStats.overdueGoals" :key="item.id || item.title" class="risk-item">
+                <div class="risk-item-title">{{ item.title }}</div>
+                <div class="risk-item-meta">
+                  <span>{{ item.categoryName || '未分类' }}</span>
+                  <span>逾期 {{ item.overdueDays }} 天</span>
+                  <span>进度 {{ item.progress || 0 }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="risk-card">
+            <div class="risk-card-title">逾期任务</div>
+            <a-empty v-if="dashboard.riskStats.overdueTasks.length === 0" description="暂无逾期任务"/>
+            <div v-else class="risk-list">
+              <div v-for="item in dashboard.riskStats.overdueTasks" :key="item.id || item.title" class="risk-item">
+                <div class="risk-item-title">{{ item.title }}</div>
+                <div class="risk-item-meta">
+                  <span>🎯 {{ item.goalTitle || '-' }}</span>
+                  <span>逾期 {{ item.overdueDays }} 天</span>
+                  <span>截止 {{ item.deadline || '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="risk-card">
+            <div class="risk-card-title">长期未推进目标</div>
+            <a-empty v-if="dashboard.riskStats.longTimeNoProgressGoals.length === 0" description="暂无长期未推进目标"/>
+            <div v-else class="risk-list">
+              <div v-for="item in dashboard.riskStats.longTimeNoProgressGoals" :key="item.id || item.title" class="risk-item">
+                <div class="risk-item-title">{{ item.title }}</div>
+                <div class="risk-item-meta">
+                  <span>{{ item.daysSinceLastProgress }} 天未推进</span>
+                  <span>最近 {{ item.lastProgressDate || '-' }}</span>
+                  <span>进度 {{ item.progress || 0 }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="risk-card">
+            <div class="risk-card-title">高优未完成任务</div>
+            <a-empty v-if="dashboard.riskStats.highPriorityUnfinishedTasks.length === 0" description="暂无高优先级未完成任务"/>
+            <div v-else class="risk-list">
+              <div v-for="item in dashboard.riskStats.highPriorityUnfinishedTasks" :key="item.id || item.title" class="risk-item">
+                <div class="risk-item-title">{{ item.title }}</div>
+                <div class="risk-item-meta">
+                  <span>🎯 {{ item.goalTitle || '-' }}</span>
+                  <span>截止 {{ item.deadline || '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a-card>
+    </a-spin>
   </div>
 </template>
 
@@ -527,36 +532,563 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .shanzhu-dashboard-page {
-  .dashboard-header-card,
-  .overview-card,
-  .dashboard-section :deep(.ant-card) {
-    border-radius: 12px;
+  max-width: 1360px;
+  min-height: calc(100vh - 120px);
+  margin: 0 auto;
+  padding: 36px 48px 56px;
+  overflow-x: hidden;
+
+  .dashboard-hero {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 26px 28px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(22, 119, 255, 0.08);
+    border-radius: 26px;
+    background:
+      radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
+      radial-gradient(circle at 96% 18%, rgba(82, 196, 26, 0.10), transparent 28%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
+    box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
+
+    :deep(.ant-btn-primary) {
+      min-width: 118px;
+      height: 42px;
+      box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
+    }
   }
 
-  .dashboard-title {
-    margin-bottom: 4px;
+  .dashboard-eyebrow {
+    margin-bottom: 8px;
+    color: #1677ff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
   }
 
-  .overview-suffix {
+  .dashboard-page-title {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 30px;
+    font-weight: 850;
+    line-height: 1.2;
+    letter-spacing: -0.7px;
+  }
+
+  .dashboard-page-desc {
+    margin: 8px 0 0;
+    color: rgba(0, 0, 0, 0.48);
     font-size: 14px;
   }
 
-  .dashboard-section {
-    margin-top: 16px;
+  .dashboard-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
   }
 
-  .trend-row,
+  .overview-card,
+  .dashboard-panel {
+    border: 1px solid rgba(15, 35, 80, 0.06);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 45px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.04);
+  }
+
+  .overview-card {
+    position: relative;
+    min-height: 142px;
+    padding: 18px;
+    overflow: hidden;
+
+    &::before {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--card-color) 14%, transparent);
+      content: "";
+    }
+
+    &::after {
+      position: absolute;
+      top: 31px;
+      right: 31px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--card-color);
+      opacity: 0.78;
+      content: "";
+    }
+
+    strong {
+      display: block;
+      margin: 16px 0 8px;
+      color: var(--card-color);
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    p {
+      display: -webkit-box;
+      margin: 0;
+      overflow: hidden;
+      color: rgba(0, 0, 0, 0.46);
+      font-size: 13px;
+      line-height: 20px;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  .overview-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 13px;
+    font-weight: 800;
+
+    em {
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(15, 35, 80, 0.06);
+      font-size: 11px;
+      font-style: normal;
+    }
+  }
+
+  .dashboard-main-grid,
+  .dashboard-insight-grid {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+  }
+
+  .dashboard-insight-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  }
+
+  .dashboard-panel {
+    overflow: hidden;
+
+    :deep(.ant-card-head) {
+      min-height: 58px;
+      border-bottom-color: rgba(15, 35, 80, 0.06);
+    }
+
+    :deep(.ant-card-body) {
+      padding: 18px;
+    }
+
+    :deep(.ant-card-extra .ant-btn) {
+      border-radius: 999px;
+      color: rgba(0, 0, 0, 0.48);
+      font-weight: 650;
+    }
+
+    :deep(.ant-empty) {
+      padding: 34px 12px;
+    }
+  }
+
+  .dashboard-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 10px;
+      background: rgba(22, 119, 255, 0.08);
+    }
+
+    strong {
+      color: rgba(0, 0, 0, 0.84);
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    em {
+      min-width: 22px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: rgba(15, 35, 80, 0.06);
+      color: rgba(0, 0, 0, 0.48);
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 800;
+      text-align: center;
+    }
+  }
+
+  .habit-summary {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .habit-progress-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 106px;
+    height: 106px;
+    flex-shrink: 0;
+    border-radius: 32px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
+      linear-gradient(135deg, rgba(22, 119, 255, 0.92), rgba(82, 196, 26, 0.82));
+    box-shadow: 0 18px 34px rgba(22, 119, 255, 0.20);
+    color: #fff;
+
+    span {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    small {
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 12px;
+      font-weight: 700;
+    }
+  }
+
+  .habit-summary-stats {
+    display: grid;
+    flex: 1;
+    gap: 10px;
+
+    div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 14px;
+      background: rgba(15, 35, 80, 0.045);
+    }
+
+    span {
+      color: rgba(0, 0, 0, 0.48);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    strong {
+      color: rgba(0, 0, 0, 0.78);
+      font-size: 14px;
+      font-weight: 850;
+    }
+  }
+
+  .today-habit-list,
+  .category-list,
+  .risk-list,
+  .trend-list {
+    display: flex;
+    flex-direction: column;
+  }
+
   .habit-list-item {
-    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .habit-list-item-done {
+    opacity: 0.76;
+  }
+
+  .habit-list-main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .habit-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .habit-title,
+  .risk-item-title {
+    display: -webkit-box;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.84);
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 22px;
+    word-break: break-word;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .habit-status-chip,
+  .category-chip,
+  .risk-item-meta span {
+    display: inline-flex;
+    align-items: center;
+    max-width: 180px;
+    min-height: 24px;
+    padding: 3px 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(15, 35, 80, 0.055);
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .habit-status-done {
+    background: rgba(82, 196, 26, 0.12);
+    color: #389e0d;
+  }
+
+  .habit-meta,
+  .risk-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .habit-action-btn {
+    border-radius: 999px;
+  }
+
+  .category-item {
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .category-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .category-chip {
+    background: color-mix(in srgb, var(--category-color) 14%, transparent);
+    color: var(--category-color);
+  }
+
+  .category-count {
+    flex-shrink: 0;
+    color: rgba(0, 0, 0, 0.42);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .category-progress-row {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+
+    span {
+      color: rgba(0, 0, 0, 0.46);
+      font-size: 12px;
+      font-weight: 700;
+    }
+  }
+
+  .time-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+
+    div {
+      padding: 13px;
+      border-radius: 16px;
+      background: rgba(15, 35, 80, 0.045);
+    }
+
+    span {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(0, 0, 0, 0.44);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    strong {
+      color: rgba(0, 0, 0, 0.82);
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+    }
+  }
+
+  .trend-row {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
   }
 
   .trend-date {
-    width: 96px;
-    color: rgba(0, 0, 0, 0.65);
+    color: rgba(0, 0, 0, 0.50);
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .trend-progress {
-    flex: 1;
+    min-width: 0;
+  }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .risk-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid rgba(15, 35, 80, 0.055);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(255, 77, 79, 0.07), transparent 34%),
+      rgba(255, 255, 255, 0.68);
+  }
+
+  .risk-card-title {
+    margin-bottom: 12px;
+    color: rgba(0, 0, 0, 0.78);
+    font-size: 14px;
+    font-weight: 850;
+  }
+
+  .risk-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    &:first-child {
+      padding-top: 0;
+    }
+  }
+
+  .risk-item-meta span {
+    max-width: 150px;
+  }
+
+  :deep(.ant-progress-inner) {
+    background: rgba(15, 35, 80, 0.06);
+  }
+
+  @media (max-width: 1200px) {
+    padding: 28px 28px 48px;
+
+    .dashboard-overview-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-main-grid,
+    .dashboard-insight-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .risk-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .dashboard-hero {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .dashboard-overview-grid,
+    .risk-grid,
+    .time-stat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .habit-summary {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 18px 14px 36px;
+
+    .dashboard-hero {
+      padding: 22px 20px;
+      border-radius: 22px;
+    }
+
+    .dashboard-page-title {
+      font-size: 26px;
+    }
+
+    .overview-card strong {
+      font-size: 28px;
+    }
+
+    .category-item-header,
+    .habit-title-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .trend-row,
+    .category-progress-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
   }
 }
 </style>
