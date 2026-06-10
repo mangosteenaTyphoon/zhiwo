@@ -95,63 +95,79 @@
               </a-button>
             </div>
 
-            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list">
-              <div
-                  v-for="(goal, index) in goalList"
-                  :key="goal.id"
-                  class="goal-item"
-                  :class="{
-                    'goal-item-done': goal.status === 'completed',
-                    'goal-item-high': goal.priority === 3 && goal.status !== 'completed'
-                  }"
-                  :style="{ '--anim-order': index }"
-              >
-                <div class="goal-progress-ring" @click="openDetailPage(goal.id)">
-                  <div class="goal-progress-number">{{ goal.progress || 0 }}</div>
-                  <div class="goal-progress-unit">%</div>
-                </div>
+            <div v-else-if="goalList.length > 0" class="goal-list-shell">
+              <div class="goal-list-header">
+                <span class="goal-list-header-title">目标</span>
+                <span class="goal-list-header-progress">进度</span>
+                <span class="goal-list-header-meta">状态 / 截止</span>
+              </div>
 
-                <div class="goal-item-body" @click="openDetailPage(goal.id)">
-                  <div class="goal-item-title">{{ goal.title }}</div>
-                  <div class="goal-item-desc">{{ goal.description || '暂无目标描述' }}</div>
-                  <div class="goal-item-track">
-                    <div class="goal-item-track-fill" :style="{ width: (goal.progress || 0) + '%' }"></div>
+              <TransitionGroup name="goal-list-anim" tag="div" class="goal-list">
+                <div
+                    v-for="(goal, index) in goalList"
+                    :key="goal.id"
+                    class="goal-item"
+                    :class="{
+                      'goal-item-done': goal.status === 'completed',
+                      'goal-item-high': goal.priority === 3 && goal.status !== 'completed'
+                    }"
+                    :style="{ '--anim-order': index }"
+                >
+                  <div class="goal-progress-ring" @click="openDetailPage(goal.id)">
+                    <div class="goal-progress-number">{{ goal.progress || 0 }}</div>
+                    <div class="goal-progress-unit">%</div>
                   </div>
-                  <div class="goal-item-tags">
-                    <span v-if="goal.priority === 3" class="goal-tag goal-tag-red">高优</span>
+
+                  <div class="goal-item-body" @click="openDetailPage(goal.id)">
+                    <div class="goal-item-title-row">
+                      <div class="goal-item-title">{{ goal.title }}</div>
+                      <span class="goal-item-priority" :class="'goal-item-priority-' + (goal.priority || 2)">
+                        {{ getGoalPriorityOption(goal.priority).label }}优
+                      </span>
+                    </div>
+                    <div class="goal-item-desc">{{ goal.description || '暂无目标描述' }}</div>
+                    <div class="goal-item-tags">
+                      <span class="goal-tag goal-tag-category">{{ goal.categoryName || '未分类' }}</span>
+                      <span v-for="tag in goal.tags.slice(0, 2)" :key="tag.id" class="goal-tag goal-tag-custom">{{ tag.name }}</span>
+                      <span v-if="goal.tags.length > 2" class="goal-tag goal-tag-more">+{{ goal.tags.length - 2 }}</span>
+                    </div>
+                  </div>
+
+                  <div class="goal-item-progress">
+                    <div class="goal-item-track">
+                      <div class="goal-item-track-fill" :style="{ width: (goal.progress || 0) + '%' }"></div>
+                    </div>
+                    <span>{{ goal.progress || 0 }}%</span>
+                  </div>
+
+                  <div class="goal-item-right">
                     <span class="goal-tag goal-tag-status" :class="'goal-tag-status-' + goal.status">
                       <component :is="getStatusIcon(goal.status)" style="font-size: 10px;"/>
                       {{ getGoalStatusOption(goal.status).label }}
                     </span>
-                    <span class="goal-tag goal-tag-category">{{ goal.categoryName || '未分类' }}</span>
-                    <span v-for="tag in goal.tags.slice(0, 2)" :key="tag.id" class="goal-tag goal-tag-custom">{{ tag.name }}</span>
-                    <span v-if="goal.tags.length > 2" class="goal-tag goal-tag-more">+{{ goal.tags.length - 2 }}</span>
+                    <span class="goal-item-date" :class="{ 'goal-item-date-empty': !goal.deadline }">
+                      <ClockCircleOutlined v-if="goal.deadline"/> {{ goal.deadline || '未设置截止' }}
+                    </span>
+                    <div class="goal-item-actions" @click.stop>
+                      <a-button type="text" size="small" @click="openDetailPage(goal.id)">详情</a-button>
+                      <a-dropdown>
+                        <a-button type="text" size="small">
+                          <template #icon><MoreOutlined/></template>
+                        </a-button>
+                        <template #overlay>
+                          <a-menu>
+                            <a-menu-item @click="openDetailPage(goal.id)">查看详情</a-menu-item>
+                            <a-menu-item @click="openEditModal(goal.id)">编辑目标</a-menu-item>
+                            <a-menu-divider/>
+                            <a-menu-item danger @click="confirmDeleteGoal(goal)">删除目标</a-menu-item>
+                          </a-menu>
+                        </template>
+                      </a-dropdown>
+                    </div>
                   </div>
                 </div>
-
-                <div class="goal-item-right">
-                  <span v-if="goal.deadline" class="goal-item-date">
-                    <ClockCircleOutlined/> {{ goal.deadline }}
-                  </span>
-                  <div class="goal-item-actions" @click.stop>
-                    <a-button type="text" size="small" @click="openDetailPage(goal.id)">详情</a-button>
-                    <a-dropdown>
-                      <a-button type="text" size="small">
-                        <template #icon><MoreOutlined/></template>
-                      </a-button>
-                      <template #overlay>
-                        <a-menu>
-                          <a-menu-item @click="openDetailPage(goal.id)">查看详情</a-menu-item>
-                          <a-menu-item @click="openEditModal(goal.id)">编辑目标</a-menu-item>
-                          <a-menu-divider/>
-                          <a-menu-item danger @click="confirmDeleteGoal(goal)">删除目标</a-menu-item>
-                        </a-menu>
-                      </template>
-                    </a-dropdown>
-                  </div>
-                </div>
-              </div>
-            </TransitionGroup>
+              </TransitionGroup>
+            </div>
 
             <div v-if="goalTotal > goalQuery.pageSize" class="goal-pagination">
               <a-pagination
@@ -833,6 +849,28 @@ onMounted(() => {
   font-size: 13px;
 }
 
+.goal-list-shell {
+  background: #ffffff;
+}
+
+.goal-list-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 154px 142px;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 18px 9px 72px;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.06);
+  background: #f8fafc;
+  color: rgba(0, 0, 0, 0.38);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.goal-list-header-progress,
+.goal-list-header-meta {
+  text-align: left;
+}
+
 .goal-list {
   display: flex;
   flex-direction: column;
@@ -840,10 +878,11 @@ onMounted(() => {
 
 .goal-item {
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 154px 142px;
+  align-items: center;
+  gap: 18px;
+  padding: 13px 18px;
   overflow: hidden;
   border-bottom: 1px solid rgba(15, 35, 80, 0.052);
   background: #ffffff;
@@ -859,20 +898,20 @@ onMounted(() => {
 .goal-item:hover {
   z-index: 1;
   background: #f8fbff;
-  box-shadow: 0 10px 24px rgba(15, 35, 80, 0.05);
+  box-shadow: 0 8px 18px rgba(15, 35, 80, 0.045);
   transform: translateY(-1px);
 }
 
 .goal-item-done {
-  opacity: 0.68;
-  background: rgba(248, 250, 252, 0.88);
+  opacity: 0.72;
+  background: rgba(248, 250, 252, 0.9);
 }
 
 .goal-item-high::before {
   content: "";
   position: absolute;
-  top: 16px;
-  bottom: 16px;
+  top: 14px;
+  bottom: 14px;
   left: 0;
   width: 3px;
   border-radius: 999px;
@@ -881,32 +920,32 @@ onMounted(() => {
 
 .goal-progress-ring {
   display: flex;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(22, 119, 255, 0.10);
-  border-radius: 14px;
-  background: rgba(22, 119, 255, 0.055);
+  border-radius: 13px;
+  background: rgba(22, 119, 255, 0.052);
   color: #1677ff;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
 .goal-progress-number {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 850;
   line-height: 1;
   font-feature-settings: "tnum";
 }
 
 .goal-progress-unit {
-  margin-top: 2px;
-  font-size: 10px;
+  margin-top: 1px;
+  font-size: 9px;
   font-weight: 700;
-  opacity: 0.68;
+  opacity: 0.62;
 }
 
 .goal-item-done .goal-progress-ring {
@@ -917,8 +956,14 @@ onMounted(() => {
 
 .goal-item-body {
   min-width: 0;
-  flex: 1;
   cursor: pointer;
+}
+
+.goal-item-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .goal-item-title {
@@ -926,28 +971,64 @@ onMounted(() => {
   overflow: hidden;
   color: rgba(0, 0, 0, 0.86);
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 760;
   line-height: 21px;
   word-break: break-word;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
+.goal-item-priority {
+  display: inline-flex;
+  min-width: 36px;
+  height: 19px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.045);
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.goal-item-priority-2 {
+  background: rgba(250, 173, 20, 0.10);
+  color: #ad6800;
+}
+
+.goal-item-priority-3 {
+  background: rgba(255, 77, 79, 0.09);
+  color: #cf1322;
+}
+
 .goal-item-desc {
   display: -webkit-box;
-  margin-top: 2px;
+  margin-top: 1px;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.42);
+  color: rgba(0, 0, 0, 0.40);
   font-size: 12px;
-  line-height: 19px;
+  line-height: 18px;
   word-break: break-word;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
+.goal-item-progress {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  color: rgba(0, 0, 0, 0.44);
+  font-size: 12px;
+  font-weight: 750;
+  font-feature-settings: "tnum";
+}
+
 .goal-item-track {
   height: 5px;
-  margin-top: 8px;
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(15, 35, 80, 0.055);
@@ -968,52 +1049,53 @@ onMounted(() => {
 .goal-item-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 .goal-tag {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  max-width: 150px;
-  min-height: 20px;
-  padding: 1px 8px;
+  max-width: 136px;
+  min-height: 19px;
+  padding: 1px 7px;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 650;
-  line-height: 16px;
+  line-height: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .goal-tag-red {
-  border-color: rgba(255, 77, 79, 0.10);
-  background: rgba(255, 77, 79, 0.10);
+  border-color: rgba(255, 77, 79, 0.08);
+  background: rgba(255, 77, 79, 0.08);
   color: #cf1322;
 }
 
 .goal-tag-category {
-  border-color: rgba(250, 173, 20, 0.12);
-  background: rgba(250, 173, 20, 0.13);
-  color: #ad6800;
+  border-color: rgba(22, 119, 255, 0.08);
+  background: rgba(22, 119, 255, 0.06);
+  color: #1677ff;
 }
 
 .goal-tag-custom {
-  border-color: rgba(114, 46, 209, 0.08);
-  background: rgba(114, 46, 209, 0.08);
-  color: #531dab;
+  border-color: rgba(15, 35, 80, 0.055);
+  background: rgba(15, 35, 80, 0.035);
+  color: rgba(0, 0, 0, 0.48);
 }
 
 .goal-tag-more {
-  background: rgba(0, 0, 0, 0.045);
-  color: rgba(0, 0, 0, 0.42);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.38);
 }
 
 .goal-tag-status {
+  justify-content: center;
   border-color: rgba(0, 0, 0, 0.035);
   background: rgba(0, 0, 0, 0.045);
   color: rgba(0, 0, 0, 0.52);
@@ -1030,7 +1112,7 @@ onMounted(() => {
 }
 
 .goal-tag-status-paused {
-  background: rgba(250, 173, 20, 0.12);
+  background: rgba(250, 173, 20, 0.11);
   color: #ad6800;
 }
 
@@ -1041,21 +1123,27 @@ onMounted(() => {
 
 .goal-item-right {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  width: 96px;
-  flex-shrink: 0;
+  align-items: flex-start;
+  gap: 7px;
 }
 
 .goal-item-date {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   gap: 4px;
+  overflow: hidden;
   color: rgba(0, 0, 0, 0.36);
   font-size: 12px;
   font-weight: 650;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.goal-item-date-empty {
+  color: rgba(0, 0, 0, 0.26);
 }
 
 .goal-item-actions {
@@ -1223,11 +1311,21 @@ onMounted(() => {
 
 @media (max-width: 1180px) {
   .shanzhu-goal-page {
-    max-width: 980px;
+    width: min(100%, 980px);
   }
 
   .goal-content {
     flex-direction: column;
+  }
+
+  .goal-list-header {
+    grid-template-columns: minmax(0, 1fr) 132px 132px;
+    padding-left: 68px;
+  }
+
+  .goal-item {
+    grid-template-columns: 38px minmax(0, 1fr) 132px 132px;
+    gap: 14px;
   }
 
   .goal-sidebar {
@@ -1240,7 +1338,9 @@ onMounted(() => {
 
 @media (max-width: 760px) {
   .shanzhu-goal-page {
+    width: 100%;
     padding: 16px 12px 36px;
+    border-radius: 18px;
   }
 
   .goal-header-top,
@@ -1254,17 +1354,31 @@ onMounted(() => {
     width: 100%;
   }
 
-  .goal-sidebar {
-    grid-template-columns: 1fr;
+  .goal-list-header {
+    display: none;
   }
 
   .goal-item {
+    grid-template-columns: 38px minmax(0, 1fr);
     gap: 12px;
-    padding: 16px;
+    padding: 14px;
+  }
+
+  .goal-item-progress,
+  .goal-item-right {
+    grid-column: 2;
   }
 
   .goal-item-right {
-    display: none;
+    align-items: flex-start;
+  }
+
+  .goal-item-actions {
+    opacity: 1;
+  }
+
+  .goal-sidebar {
+    grid-template-columns: 1fr;
   }
 }
 </style>
