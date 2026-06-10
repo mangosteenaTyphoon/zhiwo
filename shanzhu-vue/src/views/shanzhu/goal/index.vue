@@ -32,19 +32,6 @@
           <span class="goal-tab-count">{{ tab.count }}</span>
         </button>
       </div>
-      <div class="goal-search">
-        <a-input
-            v-model:value="goalQuery.keyword"
-            placeholder="搜索目标..."
-            allow-clear
-            @press-enter="queryPage"
-            @change="handleSearchChange"
-        >
-          <template #prefix>
-            <SearchOutlined style="color: rgba(0,0,0,0.25);"/>
-          </template>
-        </a-input>
-      </div>
     </div>
 
     <div class="goal-content">
@@ -949,36 +936,41 @@ onMounted(() => {
 .goal-list {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
 }
 
 .goal-item {
   position: relative;
   display: flex;
   padding: 0;
+  margin: 0 8px;
   overflow: hidden;
-  border-bottom: 1px solid rgba(15, 35, 80, 0.04);
-  background: #fff;
-  transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  transition: background-color 0.18s ease, box-shadow 0.22s ease, transform 0.18s ease;
 }
 
 .goal-item:hover {
   z-index: 2;
-  background: #fafbfc;
-  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06);
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(15, 35, 80, 0.09);
+  transform: translateY(-1px);
 }
 
 .goal-item-done {
-  background: linear-gradient(135deg, rgba(250, 255, 250, 0.6), rgba(246, 255, 237, 0.4));
+  background: linear-gradient(135deg, rgba(246, 255, 237, 0.7), rgba(240, 249, 235, 0.5));
 }
 
 .goal-item-done:hover {
-  background: linear-gradient(135deg, rgba(250, 255, 250, 0.8), rgba(246, 255, 237, 0.6));
+  background: linear-gradient(135deg, rgba(246, 255, 237, 0.9), rgba(240, 249, 235, 0.7));
 }
 
 /* 左侧状态色带 */
 .goal-status-strip {
-  width: 4px;
+  width: 5px;
   flex-shrink: 0;
+  border-radius: 999px 0 0 999px;
   background: transparent;
 }
 
@@ -1010,8 +1002,8 @@ onMounted(() => {
 .goal-item-inner {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 18px 20px;
+  gap: 20px;
+  padding: 22px 24px;
   flex: 1;
   min-width: 0;
 }
@@ -1022,36 +1014,40 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 66px;
+  height: 66px;
   flex-shrink: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(22, 119, 255, 0.04), transparent 70%);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .goal-ring-wrap:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(22, 119, 255, 0.12);
 }
 
 .goal-ring-svg {
-  width: 64px;
-  height: 64px;
+  width: 66px;
+  height: 66px;
   transform: rotate(-90deg);
 }
 
 .goal-ring-track {
   fill: none;
-  stroke: rgba(15, 35, 80, 0.06);
-  stroke-width: 5;
+  stroke: rgba(15, 35, 80, 0.08);
+  stroke-width: 6;
   stroke-linecap: round;
 }
 
 .goal-ring-fill {
   fill: none;
   stroke: url(#goalRingGradient);
-  stroke-width: 5;
+  stroke-width: 6;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 6px rgba(22, 119, 255, 0.25));
 }
 
 .goal-ring-text {
@@ -1062,19 +1058,29 @@ onMounted(() => {
 }
 
 .goal-ring-percent {
-  color: rgba(0, 0, 0, 0.78);
-  font-size: 15px;
-  font-weight: 850;
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 16px;
+  font-weight: 900;
+  font-feature-settings: "tnum";
 }
 
 .goal-ring-unit {
   color: rgba(0, 0, 0, 0.38);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
+}
+
+.goal-item-done .goal-ring-wrap {
+  background: radial-gradient(circle at 50% 50%, rgba(82, 196, 26, 0.06), transparent 70%);
+}
+
+.goal-item-done .goal-ring-wrap:hover {
+  box-shadow: 0 6px 20px rgba(82, 196, 26, 0.15);
 }
 
 .goal-item-done .goal-ring-fill {
   stroke: #52c41a;
+  filter: drop-shadow(0 2px 6px rgba(82, 196, 26, 0.25));
 }
 
 .goal-item-done .goal-ring-percent {
@@ -1093,7 +1099,7 @@ onMounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .goal-item-title {
@@ -1111,11 +1117,11 @@ onMounted(() => {
 .goal-item-desc {
   display: -webkit-box;
   min-height: 18px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   overflow: hidden;
   color: rgba(0, 0, 0, 0.42);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
   word-break: break-word;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -1179,8 +1185,8 @@ onMounted(() => {
 /* ===== 分段式进度轨道 ===== */
 .goal-track-bar {
   position: relative;
-  height: 6px;
-  margin-bottom: 12px;
+  height: 8px;
+  margin-bottom: 14px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(15, 35, 80, 0.06);
@@ -1220,32 +1226,34 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   max-width: 140px;
-  min-height: 22px;
-  padding: 2px 8px;
+  min-height: 24px;
+  padding: 3px 10px;
   overflow: hidden;
-  border-radius: 6px;
-  background: rgba(15, 35, 80, 0.045);
-  color: rgba(0, 0, 0, 0.52);
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.055);
+  color: rgba(0, 0, 0, 0.56);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 .goal-tag-category {
-  background: rgba(22, 119, 255, 0.08);
+  background: rgba(22, 119, 255, 0.10);
   color: #1677ff;
 }
 
 .goal-tag-custom {
-  background: rgba(114, 46, 209, 0.07);
+  background: rgba(114, 46, 209, 0.09);
   color: #722ed1;
 }
 
 .goal-tag-more {
-  background: rgba(0, 0, 0, 0.03);
-  color: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.38);
+  font-weight: 600;
 }
 
 .goal-item-dates {
