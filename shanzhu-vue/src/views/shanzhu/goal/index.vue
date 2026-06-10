@@ -1,25 +1,27 @@
 <template>
   <div class="shanzhu-goal-page">
-    <!-- 顶部栏：标题 + 统计 + 操作 -->
-    <div class="goal-topbar">
-      <h2 class="goal-page-title">目标</h2>
-      <div class="goal-topbar-stats">
-        <span class="goal-mini-stat"><strong>{{ goalOverview.total }}</strong> 全部</span>
-        <span class="goal-mini-stat"><strong class="c-blue">{{ goalOverview.inProgress }}</strong> 进行中</span>
-        <span class="goal-mini-stat"><strong class="c-green">{{ goalOverview.completed }}</strong> 已完成</span>
-        <span class="goal-mini-stat"><strong>{{ goalOverview.avgProgress }}%</strong> 平均</span>
-      </div>
-      <div class="goal-topbar-actions">
-        <a-button size="small" @click="router.push('/shanzhu/task')">任务中心</a-button>
-        <a-button type="primary" size="small" @click="openCreateModal">
-          <template #icon><PlusOutlined/></template>
-          新建
-        </a-button>
+    <!-- 顶部：恢复任务中心同款高级横幅 -->
+    <div class="goal-header">
+      <div class="goal-header-top">
+        <div>
+          <div class="goal-eyebrow">Goal Studio</div>
+          <h2 class="goal-page-title">目标管理</h2>
+          <p class="goal-page-desc">把长期方向拆成可见进度，用目标牵引每日行动。</p>
+        </div>
+        <a-space>
+          <a-button class="goal-secondary-btn" @click="router.push('/shanzhu/task')">
+            <RiseOutlined style="margin-right: 4px;"/> 任务中心
+          </a-button>
+          <a-button type="primary" shape="round" size="large" @click="openCreateModal">
+            <template #icon><PlusOutlined/></template>
+            新建目标
+          </a-button>
+        </a-space>
       </div>
     </div>
 
-    <!-- 操作栏：Tab + 搜索 + 筛选 -->
-    <div class="goal-action-bar">
+    <!-- Tab 筛选 + 搜索 -->
+    <div class="goal-toolbar">
       <div class="goal-tabs">
         <button
             v-for="tab in statusTabs"
@@ -29,14 +31,14 @@
             @click="handleStatusChange(tab.value)"
         >
           {{ tab.label }}
-          <span v-if="tab.count" class="goal-tab-count">{{ tab.count }}</span>
+          <span class="goal-tab-count">{{ tab.count }}</span>
         </button>
       </div>
-      <div class="goal-action-right">
-        <div class="goal-search-wrap">
+      <div class="goal-toolbar-right">
+        <div class="goal-search">
           <a-input
               v-model:value="goalQuery.keyword"
-              placeholder="搜索..."
+              placeholder="搜索目标..."
               allow-clear
               @press-enter="queryPage"
               @change="handleSearchChange"
@@ -47,13 +49,12 @@
           </a-input>
         </div>
         <a-button class="goal-filter-btn" @click="filterExpanded = !filterExpanded">
-          <FilterOutlined/>
+          <template #icon><FilterOutlined/></template>
           <span v-if="activeFilterCount > 0" class="goal-filter-dot"></span>
         </a-button>
       </div>
     </div>
 
-    <!-- 折叠筛选面板 -->
     <div v-show="filterExpanded" class="goal-filter-panel">
       <div class="goal-filter-inner">
         <div class="goal-filter-item">
@@ -65,107 +66,157 @@
           <shanzhu-tag-select v-model:value="goalQuery.tagIds" tag-type="goal"/>
         </div>
         <div class="goal-filter-actions">
-          <a-button type="primary" size="small" @click="queryPage" :loading="tableLoading">查询</a-button>
-          <a-button size="small" @click="resetPage" :loading="tableLoading">重置</a-button>
+          <a-button type="primary" shape="round" :loading="tableLoading" @click="queryPage">
+            <template #icon><SearchOutlined/></template>
+            筛选
+          </a-button>
+          <a-button shape="round" :loading="tableLoading" @click="resetPage">
+            <template #icon><RedoOutlined/></template>
+            重置
+          </a-button>
         </div>
       </div>
     </div>
 
-    <!-- 目标卡片网格 -->
-    <a-spin :spinning="tableLoading">
-      <div v-if="!tableLoading && goalList.length === 0" class="goal-empty">
-        <div class="goal-empty-icon">
-          <AimOutlined/>
+    <!-- 主体：目标列表 + 侧边栏 -->
+    <div class="goal-content">
+      <div class="goal-main">
+        <div class="goal-body">
+          <a-spin :spinning="tableLoading">
+            <div v-if="!tableLoading && goalList.length === 0" class="goal-empty">
+              <div class="goal-empty-icon">
+                <AimOutlined/>
+              </div>
+              <h3 class="goal-empty-title">还没有目标</h3>
+              <p class="goal-empty-desc">设定一个清晰的目标，让每一步行动都有方向。</p>
+              <a-button type="primary" shape="round" @click="openCreateModal">
+                <template #icon><PlusOutlined/></template>
+                创建第一个目标
+              </a-button>
+            </div>
+
+            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list">
+              <div
+                  v-for="(goal, index) in goalList"
+                  :key="goal.id"
+                  class="goal-item"
+                  :class="{
+                    'goal-item-done': goal.status === 'completed',
+                    'goal-item-high': goal.priority === 3 && goal.status !== 'completed'
+                  }"
+                  :style="{ '--anim-order': index }"
+              >
+                <div class="goal-progress-ring" @click="openDetailPage(goal.id)">
+                  <div class="goal-progress-number">{{ goal.progress || 0 }}</div>
+                  <div class="goal-progress-unit">%</div>
+                </div>
+
+                <div class="goal-item-body" @click="openDetailPage(goal.id)">
+                  <div class="goal-item-title">{{ goal.title }}</div>
+                  <div class="goal-item-desc">{{ goal.description || '暂无目标描述' }}</div>
+                  <div class="goal-item-track">
+                    <div class="goal-item-track-fill" :style="{ width: (goal.progress || 0) + '%' }"></div>
+                  </div>
+                  <div class="goal-item-tags">
+                    <span v-if="goal.priority === 3" class="goal-tag goal-tag-red">高优</span>
+                    <span class="goal-tag goal-tag-status" :class="'goal-tag-status-' + goal.status">
+                      <component :is="getStatusIcon(goal.status)" style="font-size: 10px;"/>
+                      {{ getGoalStatusOption(goal.status).label }}
+                    </span>
+                    <span class="goal-tag goal-tag-category">{{ goal.categoryName || '未分类' }}</span>
+                    <span v-for="tag in goal.tags.slice(0, 2)" :key="tag.id" class="goal-tag goal-tag-custom">{{ tag.name }}</span>
+                    <span v-if="goal.tags.length > 2" class="goal-tag goal-tag-more">+{{ goal.tags.length - 2 }}</span>
+                  </div>
+                </div>
+
+                <div class="goal-item-right">
+                  <span v-if="goal.deadline" class="goal-item-date">
+                    <ClockCircleOutlined/> {{ goal.deadline }}
+                  </span>
+                  <div class="goal-item-actions" @click.stop>
+                    <a-button type="text" size="small" @click="openDetailPage(goal.id)">详情</a-button>
+                    <a-dropdown>
+                      <a-button type="text" size="small">
+                        <template #icon><MoreOutlined/></template>
+                      </a-button>
+                      <template #overlay>
+                        <a-menu>
+                          <a-menu-item @click="openDetailPage(goal.id)">查看详情</a-menu-item>
+                          <a-menu-item @click="openEditModal(goal.id)">编辑目标</a-menu-item>
+                          <a-menu-divider/>
+                          <a-menu-item danger @click="confirmDeleteGoal(goal)">删除目标</a-menu-item>
+                        </a-menu>
+                      </template>
+                    </a-dropdown>
+                  </div>
+                </div>
+              </div>
+            </TransitionGroup>
+
+            <div v-if="goalTotal > goalQuery.pageSize" class="goal-pagination">
+              <a-pagination
+                  v-model:current="goalQuery.pageNum"
+                  v-model:page-size="goalQuery.pageSize"
+                  :total="goalTotal"
+                  :page-size-options="['10', '20', '30', '50']"
+                  size="small"
+                  show-size-changer
+                  @change="initPage"
+              />
+            </div>
+          </a-spin>
         </div>
-        <h3 class="goal-empty-title">还没有目标</h3>
-        <p class="goal-empty-desc">设定一个清晰的目标，让每一步行动都有方向</p>
-        <a-button type="primary" shape="round" size="large" @click="openCreateModal">
-          <template #icon><PlusOutlined/></template>
-          创建第一个目标
-        </a-button>
       </div>
 
-      <TransitionGroup v-else-if="goalList.length > 0" name="goal-card-anim" tag="div" class="goal-grid">
-        <div
-            v-for="(goal, index) in goalList"
-            :key="goal.id"
-            class="goal-card"
-            :class="{
-              'goal-card-done': goal.status === 'completed',
-              'goal-card-high': goal.priority === 3 && goal.status !== 'completed'
-            }"
-            :style="{ '--anim-order': index }"
-            @click="openDetailPage(goal.id)"
-        >
-          <!-- 卡片顶部：状态 + 操作 -->
-          <div class="goal-card-top">
-            <span class="goal-card-status" :class="'gc-status-' + goal.status">
-              <component :is="getStatusIcon(goal.status)" style="font-size: 11px;"/>
-              {{ getGoalStatusOption(goal.status).label }}
-            </span>
-            <div class="goal-card-actions" @click.stop>
-              <a-dropdown>
-                <button class="goal-card-more"><MoreOutlined/></button>
-                <template #overlay>
-                  <a-menu>
-                    <a-menu-item @click="openDetailPage(goal.id)">查看详情</a-menu-item>
-                    <a-menu-item @click="openEditModal(goal.id)">编辑目标</a-menu-item>
-                    <a-menu-divider/>
-                    <a-menu-item danger @click="confirmDeleteGoal(goal)">删除</a-menu-item>
-                  </a-menu>
-                </template>
-              </a-dropdown>
-            </div>
+      <div class="goal-sidebar">
+        <div class="goal-sidebar-card goal-overview-card">
+          <div class="goal-sidebar-title">
+            <RiseOutlined/>
+            目标概览
           </div>
-
-          <!-- 卡片主体 -->
-          <div class="goal-card-body">
-            <div class="goal-card-title">{{ goal.title }}</div>
-            <div class="goal-card-desc">{{ goal.description || '暂无描述' }}</div>
+          <div class="goal-overview-row">
+            <span>全部目标</span>
+            <strong>{{ goalOverview.total }}</strong>
           </div>
-
-          <!-- 进度区域 -->
-          <div class="goal-card-progress">
-            <div class="goal-card-progress-info">
-              <span class="goal-card-progress-label">进度</span>
-              <span class="goal-card-progress-value">{{ goal.progress || 0 }}%</span>
-            </div>
-            <div class="goal-card-bar">
-              <div class="goal-card-bar-fill" :style="{ width: (goal.progress || 0) + '%' }"></div>
-            </div>
+          <div class="goal-overview-row goal-overview-blue">
+            <span>进行中</span>
+            <strong>{{ goalOverview.inProgress }}</strong>
           </div>
-
-          <!-- 卡片底部：标签 + 日期 -->
-          <div class="goal-card-footer">
-            <div class="goal-card-tags">
-              <span class="gc-tag gc-tag-cat">{{ goal.categoryName || '未分类' }}</span>
-              <span v-for="tag in goal.tags.slice(0, 1)" :key="tag.id" class="gc-tag gc-tag-custom">{{ tag.name }}</span>
-              <span v-if="goal.tags.length > 1" class="gc-tag gc-tag-more">+{{ goal.tags.length - 1 }}</span>
-            </div>
-            <span v-if="goal.deadline" class="goal-card-deadline">
-              <ClockCircleOutlined/> {{ goal.deadline }}
-            </span>
+          <div class="goal-overview-row goal-overview-green">
+            <span>已完成</span>
+            <strong>{{ goalOverview.completed }}</strong>
           </div>
+          <div class="goal-overview-row">
+            <span>平均进度</span>
+            <strong>{{ goalOverview.avgProgress }}%</strong>
+          </div>
+        </div>
 
-          <!-- 高优标记 -->
-          <div v-if="goal.priority === 3 && goal.status !== 'completed'" class="goal-card-priority">
+        <div class="goal-sidebar-card">
+          <div class="goal-sidebar-title">
+            <AimOutlined/>
+            快捷入口
+          </div>
+          <div class="goal-sidebar-actions">
+            <a-button block @click="router.push('/shanzhu/task')">任务中心</a-button>
+            <a-button block @click="router.push('/shanzhu/today-work')">今日工作台</a-button>
+            <a-button block @click="router.push('/shanzhu/review')">复盘中心</a-button>
+          </div>
+        </div>
+
+        <div class="goal-sidebar-card goal-tip-card">
+          <div class="goal-sidebar-title">
             <FireOutlined/>
+            提醒
           </div>
+          <ul class="goal-tip-list">
+            <li>目标保持具体、可衡量。</li>
+            <li>每个目标至少拆解一个行动项。</li>
+            <li>每周复盘一次真实进展。</li>
+          </ul>
         </div>
-      </TransitionGroup>
-
-      <div v-if="goalTotal > goalQuery.pageSize" class="goal-pagination">
-        <a-pagination
-            v-model:current="goalQuery.pageNum"
-            v-model:page-size="goalQuery.pageSize"
-            :total="goalTotal"
-            :page-size-options="['10', '20', '30', '50']"
-            size="small"
-            show-size-changer
-            @change="initPage"
-        />
       </div>
-    </a-spin>
+    </div>
 
     <a-modal
         v-model:open="modalActive.open"
@@ -1069,6 +1120,527 @@ onMounted(() => {
   }
   .goal-topbar-stats {
     gap: 10px;
+  }
+}
+
+/* ===== Goal page restored layout override ===== */
+.shanzhu-goal-page {
+  max-width: 1160px;
+  padding: 28px 28px 56px;
+}
+
+.goal-header {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 14px;
+  padding: 28px 30px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(22, 119, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 100% 8%, rgba(114, 46, 209, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.94));
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07);
+}
+
+.goal-header::after {
+  content: "";
+  position: absolute;
+  right: -54px;
+  bottom: -66px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: rgba(22, 119, 255, 0.08);
+}
+
+.goal-header-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.goal-eyebrow {
+  margin-bottom: 8px;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.goal-page-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.goal-page-desc {
+  margin: 6px 0 0;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 13px;
+}
+
+.goal-secondary-btn {
+  height: 38px;
+  border-color: rgba(15, 35, 80, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: rgba(0, 0, 0, 0.68);
+  font-weight: 650;
+}
+
+.goal-header-top :deep(.ant-btn-primary) {
+  min-width: 122px;
+  height: 42px;
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
+}
+
+.goal-toolbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 28px rgba(15, 35, 80, 0.04);
+  backdrop-filter: blur(12px);
+}
+
+.goal-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.goal-search {
+  width: 240px;
+}
+
+.goal-search :deep(.ant-input-affix-wrapper) {
+  height: 34px;
+  border-color: transparent;
+  border-radius: 12px;
+  background: rgba(247, 248, 250, 0.92);
+}
+
+.goal-toolbar .goal-filter-btn {
+  width: 34px;
+  height: 34px;
+  border-color: transparent;
+  border-radius: 12px;
+  background: rgba(247, 248, 250, 0.92);
+}
+
+.goal-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.goal-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-body {
+  min-height: 260px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+}
+
+.goal-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 22px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.055);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 251, 255, 0.78));
+  transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  animation: goalFadeUp 0.36s ease both;
+  animation-delay: calc(var(--anim-order) * 0.025s);
+}
+
+.goal-item:last-child {
+  border-bottom: none;
+}
+
+.goal-item:hover {
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(247, 251, 255, 0.98));
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.065);
+  transform: translateY(-1px);
+}
+
+.goal-item-done {
+  opacity: 0.68;
+  background: rgba(248, 250, 252, 0.88);
+}
+
+.goal-item-high::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #ff4d4f;
+}
+
+.goal-progress-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border: 1px solid rgba(22, 119, 255, 0.10);
+  border-radius: 18px;
+  background: rgba(22, 119, 255, 0.06);
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.goal-progress-number {
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1;
+  font-feature-settings: "tnum";
+}
+
+.goal-progress-unit {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.68;
+}
+
+.goal-item-done .goal-progress-ring {
+  border-color: rgba(82, 196, 26, 0.14);
+  background: rgba(82, 196, 26, 0.08);
+  color: #389e0d;
+}
+
+.goal-item-body {
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+}
+
+.goal-item-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.86);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 22px;
+  word-break: break-word;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.goal-item-desc {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 12px;
+  line-height: 19px;
+  word-break: break-word;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.goal-item-track {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 35, 80, 0.06);
+}
+
+.goal-item-track-fill {
+  min-width: 6px;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1677ff, #52c41a);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.goal-item-high .goal-item-track-fill {
+  background: linear-gradient(90deg, #ff4d4f, #ff7875);
+}
+
+.goal-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+  margin-top: 10px;
+}
+
+.goal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 150px;
+  min-height: 22px;
+  padding: 2px 9px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-tag-red {
+  border-color: rgba(255, 77, 79, 0.10);
+  background: rgba(255, 77, 79, 0.10);
+  color: #cf1322;
+}
+
+.goal-tag-category {
+  border-color: rgba(250, 173, 20, 0.12);
+  background: rgba(250, 173, 20, 0.13);
+  color: #ad6800;
+}
+
+.goal-tag-custom {
+  border-color: rgba(114, 46, 209, 0.08);
+  background: rgba(114, 46, 209, 0.08);
+  color: #531dab;
+}
+
+.goal-tag-more {
+  background: rgba(0, 0, 0, 0.045);
+  color: rgba(0, 0, 0, 0.42);
+}
+
+.goal-tag-status {
+  border-color: rgba(0, 0, 0, 0.035);
+  background: rgba(0, 0, 0, 0.045);
+  color: rgba(0, 0, 0, 0.52);
+}
+
+.goal-tag-status-completed {
+  background: rgba(82, 196, 26, 0.10);
+  color: #389e0d;
+}
+
+.goal-tag-status-in_progress {
+  background: rgba(22, 119, 255, 0.09);
+  color: #1677ff;
+}
+
+.goal-tag-status-paused {
+  background: rgba(250, 173, 20, 0.12);
+  color: #ad6800;
+}
+
+.goal-tag-status-cancelled {
+  background: rgba(255, 77, 79, 0.08);
+  color: #cf1322;
+}
+
+.goal-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  width: 116px;
+  flex-shrink: 0;
+}
+
+.goal-item-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(0, 0, 0, 0.36);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.goal-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.goal-item:hover .goal-item-actions {
+  opacity: 1;
+}
+
+.goal-sidebar {
+  display: flex;
+  width: 268px;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goal-sidebar-card {
+  padding: 18px;
+  border: 1px solid rgba(15, 35, 80, 0.06);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 38px rgba(15, 35, 80, 0.06);
+}
+
+.goal-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.goal-overview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  color: rgba(0, 0, 0, 0.52);
+  font-size: 13px;
+  border-bottom: 1px solid rgba(15, 35, 80, 0.045);
+}
+
+.goal-overview-row:last-child {
+  border-bottom: none;
+}
+
+.goal-overview-row strong {
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 18px;
+  font-weight: 850;
+  font-feature-settings: "tnum";
+}
+
+.goal-overview-blue strong {
+  color: #1677ff;
+}
+
+.goal-overview-green strong {
+  color: #52c41a;
+}
+
+.goal-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-sidebar-actions :deep(.ant-btn) {
+  height: 36px;
+  border-radius: 12px;
+  font-weight: 650;
+}
+
+.goal-tip-card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(250, 173, 20, 0.14), transparent 44%),
+    rgba(255, 255, 255, 0.94);
+}
+
+.goal-tip-list {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(0, 0, 0, 0.48);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.goal-list-anim-enter-active,
+.goal-list-anim-leave-active {
+  transition: all 0.22s ease;
+}
+
+.goal-list-anim-enter-from,
+.goal-list-anim-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.goal-list-anim-move {
+  transition: transform 0.22s ease;
+}
+
+@media (max-width: 1180px) {
+  .shanzhu-goal-page {
+    max-width: 980px;
+  }
+
+  .goal-content {
+    flex-direction: column;
+  }
+
+  .goal-sidebar {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .shanzhu-goal-page {
+    padding: 16px 12px 36px;
+  }
+
+  .goal-header-top,
+  .goal-toolbar,
+  .goal-filter-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .goal-search {
+    width: 100%;
+  }
+
+  .goal-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-item {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .goal-item-right {
+    display: none;
   }
 }
 </style>
