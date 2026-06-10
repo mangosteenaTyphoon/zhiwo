@@ -683,14 +683,14 @@ onMounted(() => {
   .review-report-card,
   .review-panel {
     border: 1px solid rgba(15, 35, 80, 0.06);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 18px 45px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.04);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 14px 38px rgba(15, 35, 80, 0.055), 0 1px 2px rgba(15, 35, 80, 0.04);
   }
 
   .review-report-card {
-    padding: 22px;
-    margin-bottom: 18px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
   }
 
   .review-report-header {
@@ -727,25 +727,31 @@ onMounted(() => {
 
   .review-overview-card {
     position: relative;
-    min-height: 122px;
-    padding: 16px;
+    min-height: 116px;
+    padding: 14px 16px;
     overflow: hidden;
-    border-radius: 18px;
+    border-radius: 16px;
     background:
-      radial-gradient(circle at 86% 12%, color-mix(in srgb, var(--card-color) 15%, transparent), transparent 34%),
-      rgba(15, 35, 80, 0.036);
+      radial-gradient(circle at 86% 12%, color-mix(in srgb, var(--card-color) 12%, transparent), transparent 34%),
+      rgba(15, 35, 80, 0.034);
+    transition: transform 0.18s, box-shadow 0.18s;
 
-    span {
-      color: rgba(0, 0, 0, 0.48);
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(15, 35, 80, 0.08);
+    }
+
+    > span {
+      color: rgba(0, 0, 0, 0.50);
       font-size: 12px;
       font-weight: 800;
     }
 
     strong {
       display: block;
-      margin: 14px 0 7px;
+      margin: 12px 0 6px;
       color: var(--card-color);
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 900;
       line-height: 1;
 
@@ -761,7 +767,7 @@ onMounted(() => {
       display: -webkit-box;
       margin: 0;
       overflow: hidden;
-      color: rgba(0, 0, 0, 0.43);
+      color: rgba(0, 0, 0, 0.40);
       font-size: 12px;
       line-height: 18px;
       -webkit-line-clamp: 2;
@@ -809,8 +815,8 @@ onMounted(() => {
   .review-section-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 18px;
+    gap: 16px;
+    margin-bottom: 16px;
   }
 
   .review-panel {
@@ -830,24 +836,30 @@ onMounted(() => {
     }
 
     :deep(.ant-empty) {
-      padding: 32px 12px;
+      padding: 28px 12px;
+
+      :deep(.ant-empty-image) {
+        height: 52px;
+      }
     }
   }
 
   .review-panel-title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-width: 0;
 
     > span {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 11px;
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
       background: rgba(114, 46, 209, 0.09);
+      font-size: 17px;
+      line-height: 1;
     }
 
     strong {
@@ -869,26 +881,26 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 112px;
-    height: 112px;
+    width: 104px;
+    height: 104px;
     flex-shrink: 0;
-    border-radius: 34px;
+    border-radius: 30px;
     background:
       radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.88), transparent 34%),
       linear-gradient(135deg, rgba(114, 46, 209, 0.92), rgba(22, 119, 255, 0.82));
-    box-shadow: 0 18px 34px rgba(114, 46, 209, 0.18);
+    box-shadow: 0 14px 28px rgba(114, 46, 209, 0.16);
     color: #fff;
 
     strong {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 900;
       line-height: 1;
     }
 
     span {
-      margin-top: 8px;
+      margin-top: 6px;
       color: rgba(255, 255, 255, 0.84);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 750;
     }
   }
@@ -1114,12 +1126,18 @@ onMounted(() => {
     grid-template-columns: 92px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
-    padding: 8px 0;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(15, 35, 80, 0.04);
+
+    &:last-child {
+      border-bottom: none;
+    }
 
     > span {
-      color: rgba(0, 0, 0, 0.50);
-      font-size: 12px;
+      color: rgba(0, 0, 0, 0.54);
+      font-size: 13px;
       font-weight: 750;
+      font-variant-numeric: tabular-nums;
     }
   }
 
@@ -1134,22 +1152,49 @@ onMounted(() => {
     gap: 14px;
     padding: 14px 0;
 
+    > div {
+      min-width: 0;
+      flex: 1;
+    }
+
     p {
       margin: 6px 0 0;
       color: rgba(0, 0, 0, 0.48);
       font-size: 13px;
       line-height: 20px;
     }
+
+    :deep(.ant-btn) {
+      flex-shrink: 0;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+  }
+
+  .suggestion-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.82);
+    line-height: 22px;
   }
 
   .goal-achievement-panel {
     margin-bottom: 0;
+
+    :deep(.ant-card-head) {
+      padding: 0 22px;
+    }
+
+    :deep(.ant-card-body) {
+      padding: 18px 22px;
+    }
   }
 
   .goal-achievement-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
   }
 
   .goal-achievement-card {
@@ -1159,29 +1204,67 @@ onMounted(() => {
     background:
       radial-gradient(circle at 8% 0%, rgba(22, 119, 255, 0.07), transparent 32%),
       rgba(255, 255, 255, 0.72);
+    transition: transform 0.18s, box-shadow 0.18s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(15, 35, 80, 0.08);
+    }
   }
 
   .goal-achievement-risk {
+    border-color: rgba(250, 140, 22, 0.14);
     background:
-      radial-gradient(circle at 8% 0%, rgba(250, 140, 22, 0.09), transparent 32%),
+      radial-gradient(circle at 8% 0%, rgba(250, 140, 22, 0.10), transparent 32%),
       rgba(255, 255, 255, 0.72);
 
     .goal-achievement-header em {
-      color: #fa8c16;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(250, 140, 22, 0.12);
+      color: #d46b08;
+      font-size: 12px;
+      font-weight: 800;
     }
   }
 
   .goal-achievement-header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 12px;
     margin-bottom: 12px;
 
     > div {
       min-width: 0;
+      flex: 1;
+    }
+
+    strong {
+      display: -webkit-box;
+      overflow: hidden;
+      color: rgba(0, 0, 0, 0.82);
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 22px;
+      word-break: break-word;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    em {
+      flex-shrink: 0;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(82, 196, 26, 0.10);
+      color: #389e0d;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 800;
     }
 
     span {
+      display: inline-flex;
       width: fit-content;
       margin-top: 8px;
     }
