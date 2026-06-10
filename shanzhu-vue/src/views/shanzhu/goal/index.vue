@@ -538,27 +538,42 @@ onMounted(() => {
 <style scoped>
 /* ===== Goal page refined layout ===== */
 .shanzhu-goal-page {
-  max-width: 1360px;
+  position: relative;
+  max-width: 1280px;
   min-height: calc(100vh - 120px);
   margin: 0 auto;
-  padding: 36px 48px 56px;
+  padding: 28px 36px 56px;
   overflow-x: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(22, 119, 255, 0.05), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #ffffff 42%);
   isolation: isolate;
+}
+
+.shanzhu-goal-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 28px;
+  background: #ffffff;
+  pointer-events: none;
 }
 
 .goal-header {
   position: relative;
   z-index: 2;
-  margin-bottom: 18px;
-  padding: 26px 28px;
+  margin-bottom: 16px;
+  padding: 24px 28px;
   overflow: hidden;
   border: 1px solid rgba(22, 119, 255, 0.08);
-  border-radius: 26px;
+  border-radius: 24px;
   background:
-    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
-    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.10), transparent 28%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
-  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
+    radial-gradient(circle at 14% 0%, rgba(22, 119, 255, 0.10), transparent 30%),
+    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.08), transparent 26%),
+    linear-gradient(135deg, #ffffff, #f7fbff);
+  box-shadow: 0 12px 32px rgba(15, 35, 80, 0.055);
 }
 
 .goal-header-top {
@@ -618,11 +633,10 @@ onMounted(() => {
   gap: 16px;
   margin-bottom: 14px;
   padding: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 10px 28px rgba(15, 35, 80, 0.04);
-  backdrop-filter: blur(12px);
+  border: 1px solid rgba(15, 35, 80, 0.055);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 35, 80, 0.035);
 }
 
 .goal-tabs {
@@ -732,10 +746,9 @@ onMounted(() => {
   margin: -4px 0 14px;
   padding: 14px;
   border: 1px solid rgba(15, 35, 80, 0.055);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 10px 28px rgba(15, 35, 80, 0.04);
-  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 35, 80, 0.035);
 }
 
 .goal-filter-inner {
@@ -768,7 +781,7 @@ onMounted(() => {
   z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 28px;
+  gap: 24px;
   overflow: visible;
 }
 
@@ -781,9 +794,9 @@ onMounted(() => {
   min-height: 240px;
   overflow: hidden;
   border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 35, 80, 0.05), 0 1px 2px rgba(15, 35, 80, 0.035);
 }
 
 .goal-empty {
@@ -830,7 +843,7 @@ onMounted(() => {
   padding: 18px 22px;
   overflow: hidden;
   border-bottom: 1px solid rgba(15, 35, 80, 0.055);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(248, 251, 255, 0.72));
+  background: #ffffff;
   transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   animation: goalFadeUp 0.30s ease both;
   animation-delay: calc(var(--anim-order) * 0.025s);
@@ -842,8 +855,8 @@ onMounted(() => {
 
 .goal-item:hover {
   z-index: 1;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.96));
-  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.065);
+  background: #f8fbff;
+  box-shadow: 0 10px 24px rgba(15, 35, 80, 0.05);
   transform: translateY(-1px);
 }
 
@@ -1058,7 +1071,7 @@ onMounted(() => {
   position: sticky;
   top: 80px;
   display: flex;
-  width: 300px;
+  width: 286px;
   flex-shrink: 0;
   flex-direction: column;
   gap: 16px;
@@ -1067,25 +1080,24 @@ onMounted(() => {
 .goal-sidebar-card {
   position: relative;
   overflow: hidden;
-  padding: 20px;
+  padding: 18px;
   border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 22px;
+  border-radius: 20px;
   background:
-    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.08), transparent 32%),
-    rgba(255, 255, 255, 0.92);
-  box-shadow: 0 16px 38px rgba(15, 35, 80, 0.065), 0 1px 2px rgba(15, 35, 80, 0.035);
-  backdrop-filter: blur(12px);
+    radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.055), transparent 30%),
+    #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 35, 80, 0.05), 0 1px 2px rgba(15, 35, 80, 0.035);
 }
 
 .goal-sidebar-card::after {
   content: "";
   position: absolute;
-  right: -34px;
-  bottom: -34px;
-  width: 88px;
-  height: 88px;
+  right: -36px;
+  bottom: -36px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  background: rgba(22, 119, 255, 0.055);
+  background: rgba(22, 119, 255, 0.045);
   pointer-events: none;
 }
 
@@ -1177,8 +1189,8 @@ onMounted(() => {
 .goal-tip-card {
   border-color: rgba(250, 173, 20, 0.10);
   background:
-    radial-gradient(circle at 100% 0%, rgba(250, 173, 20, 0.12), transparent 32%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 252, 255, 0.90));
+    radial-gradient(circle at 100% 0%, rgba(250, 173, 20, 0.08), transparent 30%),
+    #ffffff;
 }
 
 .goal-tip-list {
