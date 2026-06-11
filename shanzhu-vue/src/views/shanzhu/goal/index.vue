@@ -407,8 +407,8 @@ const listTransitioning = ref(false);
 const goalTabsRef = ref<HTMLElement>();
 const goalTabRefs = ref<HTMLElement[]>([]);
 const goalTabIndicatorStyle = reactive({
+  left: "0px",
   width: "0px",
-  transform: "translateX(0px)",
   opacity: 0
 });
 const goalFormRef = ref<FormInstance>();
@@ -502,8 +502,8 @@ const updateGoalTabIndicator = async () => {
 
   const indicatorOffset = activeTabRect.left - tabsRect.left + tabsElement.scrollLeft;
 
+  goalTabIndicatorStyle.left = `${indicatorOffset}px`;
   goalTabIndicatorStyle.width = `${activeTabRect.width}px`;
-  goalTabIndicatorStyle.transform = `translate3d(${indicatorOffset}px, 0, 0)`;
   goalTabIndicatorStyle.opacity = 1;
 };
 
@@ -731,7 +731,7 @@ onMounted(async () => {
   position: relative;
   display: flex;
   gap: 6px;
-  overflow-x: auto;
+  overflow: hidden;
   contain: layout paint;
   isolation: isolate;
 }
@@ -746,12 +746,10 @@ onMounted(async () => {
   background: #eaf3ff;
   box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06), 0 2px 8px rgba(22, 119, 255, 0.08);
   pointer-events: none;
-  transform: translate3d(0, 0, 0);
   transition:
-    transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
-    width 0.22s ease,
+    left 0.28s cubic-bezier(0.23, 1, 0.32, 1),
+    width 0.24s ease,
     opacity 0.2s ease;
-  will-change: transform;
   contain: paint;
 }
 
