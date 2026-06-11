@@ -38,25 +38,25 @@
             <a-progress class="goal-hero-progress" :percent="goalDetail?.progress || 0" :show-info="false" stroke-linecap="round"/>
 
             <div class="goal-kpi-strip">
-              <div class="goal-kpi-item">
-                <span class="goal-kpi-value" :class="{ 'kpi-overdue': remainingDays === '已逾期' }">{{ remainingDays }}</span>
+              <div class="goal-kpi-item kpi-time">
                 <span class="goal-kpi-label">剩余天数</span>
+                <span class="goal-kpi-value" :class="{ 'kpi-overdue': remainingDays === '已逾期' }">{{ remainingDays }}</span>
               </div>
-              <div class="goal-kpi-item">
-                <span class="goal-kpi-value">{{ goalDetail?.subGoalCount ?? subGoalList.length }}</span>
+              <div class="goal-kpi-item kpi-sub-goal">
                 <span class="goal-kpi-label">子目标</span>
+                <span class="goal-kpi-value">{{ goalDetail?.subGoalCount ?? subGoalList.length }}</span>
               </div>
-              <div class="goal-kpi-item">
-                <span class="goal-kpi-value">{{ completedTaskCount }}<small>/{{ goalDetail?.totalTaskCount ?? taskList.length }}</small></span>
+              <div class="goal-kpi-item kpi-task">
                 <span class="goal-kpi-label">任务完成</span>
+                <span class="goal-kpi-value">{{ completedTaskCount }}<small>/{{ goalDetail?.totalTaskCount ?? taskList.length }}</small></span>
               </div>
-              <div class="goal-kpi-item">
-                <span class="goal-kpi-value">{{ goalProgressList.length }}</span>
+              <div class="goal-kpi-item kpi-progress">
                 <span class="goal-kpi-label">进展记录</span>
+                <span class="goal-kpi-value">{{ goalProgressList.length }}</span>
               </div>
-              <div class="goal-kpi-item">
-                <span class="goal-kpi-value">{{ goalHabitList.length }}</span>
+              <div class="goal-kpi-item kpi-habit">
                 <span class="goal-kpi-label">关联习惯</span>
+                <span class="goal-kpi-value">{{ goalHabitList.length }}</span>
               </div>
             </div>
 
@@ -85,7 +85,13 @@
               <template #title><AimOutlined style="margin-right: 6px;"/> 子目标拆解</template>
               <a-empty v-if="subGoalList.length === 0" description="暂无子目标，先新增一个拆解项吧"/>
               <a-flex v-else vertical :gap="16">
-                <a-card v-for="subGoal in subGoalList" :key="subGoal.id" class="sub-goal-card" hoverable>
+                <a-card
+                    v-for="(subGoal, subGoalIndex) in subGoalList"
+                    :key="subGoal.id"
+                    class="sub-goal-card"
+                    :class="'sub-goal-card-tone-' + (subGoalIndex % 4)"
+                    hoverable
+                >
                   <a-flex vertical :gap="12">
                     <a-flex justify="space-between" align="flex-start" :gap="12">
                       <div class="sub-goal-title-wrap">
@@ -1057,12 +1063,15 @@ onMounted(() => {
   margin: 0 auto;
   padding: 32px 48px 56px;
   overflow-x: hidden;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 228, 174, 0.16), transparent 26%),
+    radial-gradient(circle at 92% 14%, rgba(185, 224, 255, 0.18), transparent 24%);
 }
 
 .shanzhu-goal-detail-page :deep(.ant-card) {
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 32px rgba(15, 35, 80, 0.055), 0 1px 2px rgba(15, 35, 80, 0.035);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(45, 45, 65, 0.055), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .shanzhu-goal-detail-page :deep(.ant-card-head) {
@@ -1084,11 +1093,11 @@ onMounted(() => {
 .goal-cockpit-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(15, 35, 80, 0.06);
-  border-radius: 28px;
+  border: 1px solid rgba(28, 35, 55, 0.055);
+  border-radius: 30px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(245, 249, 255, 0.88));
-  box-shadow: 0 18px 46px rgba(15, 35, 80, 0.06), 0 1px 2px rgba(15, 35, 80, 0.035);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.88));
+  box-shadow: 0 20px 54px rgba(48, 54, 79, 0.075), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .goal-hero-backdrop {
@@ -1096,14 +1105,15 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 8% 0%, rgba(22, 119, 255, 0.10), transparent 34%),
-    radial-gradient(circle at 94% 12%, rgba(82, 196, 26, 0.08), transparent 30%);
+    radial-gradient(circle at 10% 12%, rgba(255, 210, 122, 0.20), transparent 30%),
+    radial-gradient(circle at 58% 0%, rgba(203, 187, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 94% 18%, rgba(155, 216, 255, 0.24), transparent 32%);
 }
 
 .goal-hero-content {
   position: relative;
   z-index: 1;
-  padding: 26px 28px 24px;
+  padding: 28px 30px 26px;
 }
 
 .goal-hero-nav {
@@ -1224,13 +1234,13 @@ onMounted(() => {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  width: 86px;
-  height: 86px;
-  border-radius: 24px;
+  width: 88px;
+  height: 88px;
+  border-radius: 26px;
   background:
-    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.80), transparent 36%),
-    linear-gradient(135deg, rgba(22, 119, 255, 0.86), rgba(82, 196, 26, 0.76));
-  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.15);
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.86), transparent 34%),
+    linear-gradient(135deg, rgba(65, 150, 255, 0.88), rgba(76, 205, 126, 0.78));
+  box-shadow: 0 18px 34px rgba(72, 145, 221, 0.18);
   color: #fff;
 }
 
@@ -1258,31 +1268,54 @@ onMounted(() => {
 
 .goal-hero-progress :deep(.ant-progress-bg) {
   border-radius: 999px;
+  background: linear-gradient(90deg, #ffb84d, #6fd27f, #42a5ff);
 }
 
 /* ── KPI 指标卡 ── */
 .goal-kpi-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  margin: 18px 0 0;
+  gap: 12px;
+  margin: 20px 0 0;
 }
 
 .goal-kpi-item {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   min-width: 0;
-  padding: 12px 14px;
-  border: 1px solid rgba(15, 35, 80, 0.05);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 2px 8px rgba(15, 35, 80, 0.03);
+  min-height: 76px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 1px solid rgba(26, 32, 48, 0.045);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(45, 45, 65, 0.045);
 }
 
+.goal-kpi-item::after {
+  position: absolute;
+  right: -18px;
+  bottom: -24px;
+  width: 70px;
+  height: 70px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.34);
+  content: "";
+  transform: rotate(18deg);
+}
+
+.kpi-time { background: linear-gradient(135deg, #fff3c4, #ffe2b5); }
+.kpi-sub-goal { background: linear-gradient(135deg, #e4f0ff, #cfe5ff); }
+.kpi-task { background: linear-gradient(135deg, #eadfff, #d9ceff); }
+.kpi-progress { background: linear-gradient(135deg, #ffe1ed, #ffcfe4); }
+.kpi-habit { background: linear-gradient(135deg, #e8f8d7, #d6f0c3); }
+
 .goal-kpi-value {
-  color: rgba(0, 0, 0, 0.84);
-  font-size: 22px;
+  position: relative;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 24px;
   font-weight: 900;
   line-height: 1;
 }
@@ -1290,19 +1323,21 @@ onMounted(() => {
 .goal-kpi-value.kpi-overdue {
   font-size: 15px;
   font-weight: 850;
-  color: #d48806;
+  color: #b05a00;
 }
 
 .goal-kpi-value small {
   font-size: 13px;
-  font-weight: 700;
-  opacity: 0.45;
+  font-weight: 750;
+  opacity: 0.48;
 }
 
 .goal-kpi-label {
-  color: rgba(0, 0, 0, 0.40);
+  position: relative;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0.46);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 760;
 }
 
 .goal-kpi-divider {
@@ -1330,8 +1365,14 @@ onMounted(() => {
 
 /* ═══════ Section Card 通用 ═══════ */
 .goal-section-card {
-  border: 1px solid rgba(15, 35, 80, 0.06);
   overflow: hidden;
+  border: 1px solid rgba(28, 35, 55, 0.055);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(253, 253, 255, 0.90));
+}
+
+.goal-section-card :deep(.ant-card-head) {
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .goal-section-card :deep(.ant-card-extra .ant-btn) {
@@ -1344,21 +1385,51 @@ onMounted(() => {
 
 /* ═══════ 子目标卡片 ═══════ */
 .sub-goal-card {
+  position: relative;
   overflow: hidden;
-  border: 1px solid rgba(15, 35, 80, 0.055);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 8px 22px rgba(15, 35, 80, 0.04);
+  border: 1px solid rgba(28, 35, 55, 0.045);
+  border-radius: 22px;
+  box-shadow: 0 14px 28px rgba(45, 45, 65, 0.05);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
+.sub-goal-card::before {
+  position: absolute;
+  top: -32px;
+  right: -28px;
+  width: 120px;
+  height: 120px;
+  border-radius: 38px;
+  background: rgba(255, 255, 255, 0.30);
+  content: "";
+  transform: rotate(18deg);
+}
+
+.sub-goal-card-tone-0 {
+  background: linear-gradient(135deg, #fff2c9, #ffe0ad);
+}
+
+.sub-goal-card-tone-1 {
+  background: linear-gradient(135deg, #dff0ff, #c8e4ff);
+}
+
+.sub-goal-card-tone-2 {
+  background: linear-gradient(135deg, #eadfff, #d7cbff);
+}
+
+.sub-goal-card-tone-3 {
+  background: linear-gradient(135deg, #ffe0ee, #ffcce3);
+}
+
 .sub-goal-card:hover {
-  box-shadow: 0 14px 30px rgba(15, 35, 80, 0.08);
+  box-shadow: 0 18px 34px rgba(45, 45, 65, 0.08);
   transform: translateY(-1px);
 }
 
 .sub-goal-card :deep(.ant-card-body) {
-  padding: 18px;
+  position: relative;
+  z-index: 1;
+  padding: 20px;
 }
 
 .sub-goal-title-wrap,
@@ -1372,8 +1443,8 @@ onMounted(() => {
   display: -webkit-box;
   margin: 6px 0 4px;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.84);
-  font-weight: 760;
+  color: rgba(0, 0, 0, 0.82);
+  font-weight: 820;
   line-height: 24px;
   word-break: break-word;
   -webkit-line-clamp: 2;
@@ -1386,7 +1457,7 @@ onMounted(() => {
   min-height: 20px;
   margin-bottom: 0;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.46);
+  color: rgba(0, 0, 0, 0.50);
   font-size: 13px;
   line-height: 21px;
   word-break: break-word;
@@ -1409,7 +1480,7 @@ onMounted(() => {
 .task-meta span {
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(15, 35, 80, 0.04);
+  background: rgba(255, 255, 255, 0.48);
 }
 
 .sub-goal-control {
@@ -1418,12 +1489,22 @@ onMounted(() => {
 
 .sub-goal-control :deep(.ant-select-selector),
 .sub-goal-control :deep(.ant-input-number) {
-  border-radius: 10px;
+  border-color: rgba(28, 35, 55, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.sub-goal-card :deep(.ant-progress-inner) {
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.sub-goal-card :deep(.ant-progress-bg) {
+  background: rgba(23, 23, 32, 0.74);
 }
 
 .sub-goal-task-divider {
-  margin: 4px 0;
-  border-color: rgba(15, 35, 80, 0.06);
+  margin: 6px 0;
+  border-color: rgba(28, 35, 55, 0.07);
 }
 
 .sub-goal-task-empty {
@@ -1431,11 +1512,18 @@ onMounted(() => {
 }
 
 .task-list-item {
-  padding: 14px 0;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.48);
 }
 
 .task-list-item:not(:last-child) {
-  border-bottom: 1px solid rgba(15, 35, 80, 0.05);
+  border-bottom: 0;
+}
+
+.task-list-item :deep(.ant-list-item-action) {
+  margin-inline-start: 0;
 }
 
 .task-status-select {
@@ -1443,20 +1531,29 @@ onMounted(() => {
 }
 
 .task-status-select :deep(.ant-select-selector) {
-  border-radius: 10px;
+  border-color: rgba(28, 35, 55, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
 }
 
 /* ═══════ 右栏：下一步行动 ═══════ */
+.goal-col-right .goal-section-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 255, 0.86));
+}
+
 .goal-next-action-card :deep(.ant-card-body) {
-  padding: 16px 20px;
+  padding: 16px 18px;
 }
 
 .next-action-item {
-  padding: 10px 0;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
 }
 
 .next-action-item:not(:last-child) {
-  border-bottom: 1px solid rgba(15, 35, 80, 0.05);
+  border-bottom: 0;
 }
 
 .next-action-dot {
@@ -1468,7 +1565,10 @@ onMounted(() => {
 }
 
 .next-action-dot.dot-not_started { background: rgba(0, 0, 0, 0.18); }
-.next-action-dot.dot-in_progress { background: #1677ff; }
+.next-action-dot.dot-in_progress {
+  background: #1677ff;
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+}
 
 .next-action-info {
   display: flex;
@@ -1499,32 +1599,37 @@ onMounted(() => {
 }
 
 .next-action-status :deep(.ant-select-selector) {
-  border-radius: 10px;
+  border-color: rgba(28, 35, 55, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.66);
 }
 
 /* ═══════ 右栏：关联习惯（紧凑） ═══════ */
 .habit-compact-item {
-  padding: 12px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(232, 248, 215, 0.74), rgba(214, 240, 195, 0.54));
 }
 
 .habit-compact-item:not(:last-child) {
-  border-bottom: 1px solid rgba(15, 35, 80, 0.05);
+  border-bottom: 0;
 }
 
 .habit-checkin-dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.12);
-  border: 2px solid rgba(0, 0, 0, 0.10);
+  background: rgba(0, 0, 0, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.76);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
 }
 
 .habit-checkin-dot.checked {
   background: #52c41a;
-  border-color: #52c41a;
-  box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.15);
+  border-color: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.16);
 }
 
 .habit-compact-info {
@@ -1551,23 +1656,35 @@ onMounted(() => {
 }
 
 .habit-compact-progress {
-  margin-top: 6px;
+  margin-top: 8px;
+}
+
+.habit-compact-progress :deep(.ant-progress-inner) {
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.habit-compact-progress :deep(.ant-progress-bg) {
+  background: #2f9e44;
 }
 
 /* ═══════ 右栏：进展时间线 ═══════ */
 .progress-timeline {
   position: relative;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .timeline-item {
-  display: flex;
-  gap: 16px;
   position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.56);
 }
 
 .timeline-item:not(:last-child) {
-  padding-bottom: 24px;
+  margin-bottom: 10px;
+  padding-bottom: 12px;
 }
 
 .timeline-rail {
@@ -1582,24 +1699,25 @@ onMounted(() => {
 .timeline-dot {
   width: 10px;
   height: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
   border-radius: 50%;
   background: #1677ff;
-  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
   flex-shrink: 0;
 }
 
 .timeline-line {
   width: 2px;
   flex: 1;
-  margin-top: 6px;
-  background: rgba(22, 119, 255, 0.10);
+  margin-top: 8px;
+  background: linear-gradient(180deg, rgba(22, 119, 255, 0.20), rgba(22, 119, 255, 0.02));
   border-radius: 1px;
 }
 
 .timeline-content {
   min-width: 0;
   flex: 1;
-  padding-bottom: 4px;
+  padding-bottom: 0;
 }
 
 .timeline-header {
@@ -1619,10 +1737,10 @@ onMounted(() => {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(82, 196, 26, 0.10);
-  color: #389e0d;
+  background: rgba(82, 196, 26, 0.14);
+  color: #2f8f16;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 760;
 }
 
 .timeline-delete {
