@@ -843,6 +843,7 @@ onMounted(() => {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 18px 45px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+  animation: goalFadeUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.1s both;
 }
 
 .goal-empty {
@@ -891,9 +892,9 @@ onMounted(() => {
   border-bottom: 1px solid rgba(15, 35, 80, 0.055);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(248, 251, 255, 0.72));
-  transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-  animation: goalFadeUp 0.30s ease both;
-  animation-delay: calc(var(--anim-order) * 0.025s);
+  transition: background-color 0.22s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+  animation: goalFadeUp 0.38s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--anim-order) * 0.06s);
 }
 
 .goal-item:last-child {
@@ -904,7 +905,7 @@ onMounted(() => {
   z-index: 1;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.96));
   box-shadow: 0 12px 28px rgba(15, 35, 80, 0.065);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .goal-item-done {
@@ -940,6 +941,7 @@ onMounted(() => {
   background: rgba(82, 196, 26, 0.06);
   color: #36b37e;
   cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
 
 .goal-progress-number {
@@ -1012,7 +1014,6 @@ onMounted(() => {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #36d399, #52c41a);
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .goal-item-high .goal-item-track-fill {
@@ -1271,7 +1272,7 @@ onMounted(() => {
   font-size: 13px;
   font-weight: 620;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .goal-shortcut-item:hover {
@@ -1279,7 +1280,11 @@ onMounted(() => {
   background: rgba(22, 119, 255, 0.05);
   color: #1677ff;
   box-shadow: 0 8px 18px rgba(22, 119, 255, 0.06);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.goal-shortcut-item:active {
+  transform: scale(0.97);
 }
 
 .goal-shortcut-icon {
@@ -1457,62 +1462,71 @@ onMounted(() => {
 
 /* Header 入场 */
 .goal-anim-header {
-  animation: goalSlideDown 0.45s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: goalSlideDown 0.55s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 /* 工具栏延迟入场 */
 .goal-anim-toolbar {
-  animation: goalFadeUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.08s both;
+  animation: goalFadeUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.1s both;
 }
 
 /* 侧栏卡片交错入场 */
 .goal-anim-sidebar {
-  animation: goalSidebarSlide 0.42s cubic-bezier(0.23, 1, 0.32, 1) both;
-  animation-delay: calc(0.12s + var(--sidebar-order, 0) * 0.08s);
+  animation: goalSidebarSlide 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(0.18s + var(--sidebar-order, 0) * 0.1s);
 }
 
-/* 列表卡片入场 */
-.goal-body {
-  animation: goalFadeUp 0.35s ease 0.06s both;
-}
+/* 列表卡片入场 - 通过 .goal-body 已有定义，这里追加动画 */
 
 /* 空状态图标呼吸 */
 .goal-empty-icon {
   animation: goalPulse 2.4s ease-in-out infinite;
 }
 
-/* 进度条填充动画 */
+/* 进度条填充动画 - 通过 animation 而非 transition 实现丝滑填充 */
 .goal-item-track-fill {
-  animation: goalProgressFill 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
+  animation: goalProgressFill 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: calc(0.35s + var(--anim-order, 0) * 0.06s);
 }
 
 .goal-overview-progress-fill {
-  animation: goalProgressFill 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
+  animation: goalProgressFill 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s both;
 }
 
 /* 筛选面板展开/收起 */
 .goal-filter-expand-enter-active {
-  transition: all 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+              transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
 }
 
 .goal-filter-expand-leave-active {
-  transition: all 0.2s ease-in;
+  transition: opacity 0.2s ease-in,
+              transform 0.2s ease-in;
+  overflow: hidden;
 }
 
-.goal-filter-expand-enter-from,
+.goal-filter-expand-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scaleY(0.96);
+}
+
 .goal-filter-expand-leave-to {
   opacity: 0;
-  max-height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  transform: translateY(-6px);
+  transform: translateY(-6px) scaleY(0.98);
 }
 
 /* Tab 点击弹性效果 */
+.goal-tab {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .goal-tab:active {
-  transform: scale(0.95);
+  transform: scale(0.93);
+}
+
+.goal-tab-active {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* 标签 hover 微上浮 */
@@ -1526,13 +1540,13 @@ onMounted(() => {
 }
 
 /* 进度块 hover 弹性 */
-.goal-progress-ring {
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+.goal-progress-ring:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 20px rgba(82, 196, 26, 0.15);
 }
 
-.goal-progress-ring:hover {
-  transform: scale(1.06);
-  box-shadow: 0 8px 20px rgba(82, 196, 26, 0.12);
+.goal-progress-ring:active {
+  transform: scale(0.96);
 }
 
 /* 新建按钮 hover 发光 */
