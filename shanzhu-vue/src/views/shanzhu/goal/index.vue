@@ -126,7 +126,7 @@
               </a-button>
             </div>
 
-            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list">
+            <div v-else-if="goalList.length > 0" class="goal-list">
               <div
                   v-for="(goal, index) in goalList"
                   :key="goal.id"
@@ -135,7 +135,6 @@
                     'goal-item-done': goal.status === 'completed',
                     'goal-item-high': goal.priority === 3 && goal.status !== 'completed'
                   }"
-                  :style="{ '--anim-order': index }"
               >
                 <div class="goal-progress-ring" @click="openDetailPage(goal.id)">
                   <div class="goal-progress-number">{{ goal.progress || 0 }}</div>
@@ -188,7 +187,7 @@
                   </div>
                 </div>
               </div>
-            </TransitionGroup>
+            </div>
 
             <div class="goal-pagination">
               <span class="goal-pagination-info">共 {{ goalList.length }} 条</span>
@@ -1024,8 +1023,6 @@ onMounted(async () => {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(248, 251, 255, 0.72));
   transition: background-color 0.22s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
-  animation: goalFadeUp 0.38s cubic-bezier(0.23, 1, 0.32, 1) both;
-  animation-delay: calc(var(--anim-order) * 0.06s);
 }
 
 .goal-item:last-child {
@@ -1528,21 +1525,6 @@ onMounted(async () => {
   color: rgba(0, 0, 0, 0.38);
   font-size: 12px;
   font-feature-settings: "tnum";
-}
-
-.goal-list-anim-enter-active,
-.goal-list-anim-leave-active {
-  transition: all 0.22s ease;
-}
-
-.goal-list-anim-enter-from,
-.goal-list-anim-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.goal-list-anim-move {
-  transition: transform 0.22s ease;
 }
 
 /* ===== 入场动画 ===== */
