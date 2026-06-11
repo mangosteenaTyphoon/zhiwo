@@ -500,8 +500,10 @@ const updateGoalTabIndicator = async () => {
   const tabsRect = tabsElement.getBoundingClientRect();
   const activeTabRect = activeTabElement.getBoundingClientRect();
 
+  const indicatorOffset = activeTabRect.left - tabsRect.left + tabsElement.scrollLeft;
+
   goalTabIndicatorStyle.width = `${activeTabRect.width}px`;
-  goalTabIndicatorStyle.transform = `translateX(${activeTabRect.left - tabsRect.left + tabsElement.scrollLeft}px)`;
+  goalTabIndicatorStyle.transform = `translate3d(${indicatorOffset}px, 0, 0)`;
   goalTabIndicatorStyle.opacity = 1;
 };
 
@@ -730,6 +732,8 @@ onMounted(async () => {
   display: flex;
   gap: 6px;
   overflow-x: auto;
+  contain: layout paint;
+  isolation: isolate;
 }
 
 .goal-tab-indicator {
@@ -742,11 +746,13 @@ onMounted(async () => {
   background: #eaf3ff;
   box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06), 0 2px 8px rgba(22, 119, 255, 0.08);
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
   transition:
-    width 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
     transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.22s ease,
     opacity 0.2s ease;
-  will-change: width, transform;
+  will-change: transform;
+  contain: paint;
 }
 
 .goal-tab {
@@ -1089,6 +1095,8 @@ onMounted(async () => {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #36d399, #52c41a);
+  transform: translateZ(0);
+  transition: width 0.32s ease;
 }
 
 .goal-item-high .goal-item-track-fill {
@@ -1531,10 +1539,6 @@ onMounted(async () => {
   50% { transform: scale(1.08); opacity: 0.8; }
 }
 
-@keyframes goalProgressFill {
-  from { width: 0; }
-}
-
 @keyframes goalCountBounce {
   0% { transform: scale(0.7); }
   50% { transform: scale(1.15); }
@@ -1564,14 +1568,9 @@ onMounted(async () => {
   animation: goalPulse 2.4s ease-in-out infinite;
 }
 
-/* 进度条填充动画 - 通过 animation 而非 transition 实现丝滑填充 */
-.goal-item-track-fill {
-  animation: goalProgressFill 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  animation-delay: calc(0.35s + var(--anim-order, 0) * 0.06s);
-}
-
+/* 进度条仅保留稳定的宽度过渡，避免 Tab 切换瞬间触发宽度重播造成渲染伪影 */
 .goal-overview-progress-fill {
-  animation: goalProgressFill 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s both;
+  transition: width 0.36s ease;
 }
 
 /* 筛选面板展开/收起 */
