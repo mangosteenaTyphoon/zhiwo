@@ -1084,11 +1084,11 @@ onMounted(() => {
 .goal-cockpit-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(15, 35, 80, 0.055);
+  border: 1px solid rgba(15, 35, 80, 0.06);
   border-radius: 28px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.92));
-  box-shadow: 0 18px 46px rgba(15, 35, 80, 0.07), 0 1px 2px rgba(15, 35, 80, 0.04);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(245, 249, 255, 0.88));
+  box-shadow: 0 18px 46px rgba(15, 35, 80, 0.06), 0 1px 2px rgba(15, 35, 80, 0.035);
 }
 
 .goal-hero-backdrop {
@@ -1217,15 +1217,7 @@ onMounted(() => {
 }
 
 .goal-hero-orb-area {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 118px;
-  height: 118px;
   flex-shrink: 0;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(15, 35, 80, 0.055);
 }
 
 .goal-progress-orb {
@@ -1261,7 +1253,11 @@ onMounted(() => {
 }
 
 .goal-hero-progress :deep(.ant-progress-inner) {
-  background: rgba(15, 35, 80, 0.055);
+  background: rgba(15, 35, 80, 0.045);
+}
+
+.goal-hero-progress :deep(.ant-progress-bg) {
+  border-radius: 999px;
 }
 
 /* ── KPI 指标卡 ── */
@@ -1275,12 +1271,13 @@ onMounted(() => {
 .goal-kpi-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
   padding: 12px 14px;
-  border: 1px solid rgba(15, 35, 80, 0.045);
+  border: 1px solid rgba(15, 35, 80, 0.05);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 2px 8px rgba(15, 35, 80, 0.03);
 }
 
 .goal-kpi-value {
@@ -1293,7 +1290,7 @@ onMounted(() => {
 .goal-kpi-value.kpi-overdue {
   font-size: 15px;
   font-weight: 850;
-  color: #cf1322;
+  color: #d48806;
 }
 
 .goal-kpi-value small {
@@ -1712,7 +1709,7 @@ onMounted(() => {
   }
 
   .goal-kpi-item {
-    padding: 11px 12px;
+    padding: 10px 12px;
   }
 
   .goal-kpi-value {
