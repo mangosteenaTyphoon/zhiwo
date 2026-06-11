@@ -550,16 +550,16 @@ onMounted(() => {
 .goal-header {
   position: relative;
   z-index: 2;
-  margin-bottom: 18px;
-  padding: 26px 28px;
+  margin-bottom: 16px;
+  padding: 22px 28px;
   overflow: hidden;
   border: 1px solid rgba(22, 119, 255, 0.08);
-  border-radius: 26px;
+  border-radius: 24px;
   background:
-    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.13), transparent 34%),
-    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.10), transparent 28%),
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.11), transparent 34%),
+    radial-gradient(circle at 96% 18%, rgba(114, 46, 209, 0.08), transparent 28%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.94));
-  box-shadow: 0 18px 45px rgba(15, 35, 80, 0.06);
+  box-shadow: 0 14px 34px rgba(15, 35, 80, 0.052);
 }
 
 .goal-header-top {
@@ -590,7 +590,7 @@ onMounted(() => {
 }
 
 .goal-page-desc {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: rgba(0, 0, 0, 0.48);
   font-size: 14px;
 }
@@ -688,9 +688,10 @@ onMounted(() => {
 
 .goal-search :deep(.ant-input-affix-wrapper) {
   height: 34px;
-  border-color: transparent;
+  border-color: rgba(15, 35, 80, 0.07);
   border-radius: 12px;
-  background: rgba(247, 248, 250, 0.92);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
 }
 
 .goal-search :deep(.ant-input-affix-wrapper:hover),
@@ -704,9 +705,9 @@ onMounted(() => {
   position: relative;
   width: 34px;
   height: 34px;
-  border-color: transparent;
+  border-color: rgba(15, 35, 80, 0.07);
   border-radius: 12px;
-  background: rgba(247, 248, 250, 0.92);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .goal-toolbar .goal-filter-btn:hover {
@@ -871,23 +872,23 @@ onMounted(() => {
 
 .goal-progress-ring {
   display: flex;
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(22, 119, 255, 0.10);
-  border-radius: 16px;
-  background: rgba(22, 119, 255, 0.06);
-  color: #1677ff;
+  border: 1px solid rgba(22, 119, 255, 0.08);
+  border-radius: 15px;
+  background: rgba(22, 119, 255, 0.045);
+  color: #2f6fd8;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
 }
 
 .goal-progress-number {
-  font-size: 16px;
-  font-weight: 850;
+  font-size: 15px;
+  font-weight: 820;
   line-height: 1;
   font-feature-settings: "tnum";
 }
@@ -896,7 +897,7 @@ onMounted(() => {
   margin-top: 2px;
   font-size: 10px;
   font-weight: 700;
-  opacity: 0.68;
+  opacity: 0.58;
 }
 
 .goal-item-done .goal-progress-ring {
@@ -947,12 +948,12 @@ onMounted(() => {
   min-width: 6px;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #1677ff, #52c41a);
+  background: linear-gradient(90deg, #4d8df7, #7bcf9a);
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .goal-item-high .goal-item-track-fill {
-  background: linear-gradient(90deg, #ff4d4f, #ff7875);
+  background: linear-gradient(90deg, #ff7875, #ffa39e);
 }
 
 .goal-item-tags {
@@ -1164,7 +1165,7 @@ onMounted(() => {
   min-width: 8px;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #1677ff, #52c41a);
+  background: linear-gradient(90deg, #4d8df7, #7bcf9a);
   transition: width 0.5s ease;
 }
 
@@ -1178,19 +1179,21 @@ onMounted(() => {
 
 .goal-sidebar-actions :deep(.ant-btn) {
   height: 40px;
-  border-color: rgba(15, 35, 80, 0.06);
+  border-color: rgba(15, 35, 80, 0.065);
   border-radius: 13px;
-  background: rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.78);
   color: rgba(0, 0, 0, 0.66);
   font-size: 13px;
   font-weight: 650;
   text-align: left;
+  box-shadow: 0 6px 14px rgba(15, 35, 80, 0.025);
 }
 
 .goal-sidebar-actions :deep(.ant-btn:hover) {
   border-color: rgba(22, 119, 255, 0.20);
   color: #1677ff;
-  background: rgba(22, 119, 255, 0.06);
+  background: rgba(22, 119, 255, 0.065);
+  box-shadow: 0 10px 20px rgba(22, 119, 255, 0.08);
   transform: translateY(-1px);
 }
 
