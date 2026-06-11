@@ -86,7 +86,13 @@
     <!-- 主体：目标列表 + 侧边栏 -->
     <div class="goal-content">
       <div class="goal-main">
-        <div class="goal-body">
+        <div
+            class="goal-body"
+            :class="[
+              `goal-tab-slide-${listTransitionDirection}`,
+              { 'goal-tab-switching': listTransitioning }
+            ]"
+        >
           <a-spin :spinning="tableLoading">
             <!-- 列表表头 -->
             <div v-if="goalList.length > 0" class="goal-list-header">
@@ -404,6 +410,7 @@ const goalList = ref<ShanzhuGoalVO[]>([]);
 const goalTotal = ref<number>(0);
 const tableLoading = ref(false);
 const listTransitioning = ref(false);
+const listTransitionDirection = ref<"left" | "right">("right");
 const goalTabsRef = ref<HTMLElement>();
 const goalTabRefs = ref<HTMLElement[]>([]);
 const goalTabIndicatorStyle = reactive({
@@ -508,6 +515,10 @@ const updateGoalTabIndicator = async () => {
 };
 
 const handleStatusChange = async (status: string, tabIndex?: number) => {
+  if (typeof tabIndex === "number") {
+    listTransitionDirection.value = tabIndex >= activeTabIndex.value ? "right" : "left";
+  }
+
   listTransitioning.value = true;
   goalQuery.value.status = status || undefined;
 
@@ -953,12 +964,22 @@ onMounted(async () => {
 .goal-list {
   display: flex;
   flex-direction: column;
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.goal-tab-switching {
+  transition: transform 0.26s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.26s ease;
+}
+
+.goal-tab-switching.goal-tab-slide-right {
+  transform: translateX(8px);
+}
+
+.goal-tab-switching.goal-tab-slide-left {
+  transform: translateX(-8px);
 }
 
 .goal-list-entering {
-  opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(2px);
 }
 
 .goal-item {
