@@ -22,13 +22,15 @@
 
     <!-- Tab 筛选 + 搜索 -->
     <div class="goal-toolbar goal-anim-toolbar">
-      <div class="goal-tabs">
+      <div ref="goalTabsRef" class="goal-tabs">
+        <span class="goal-tab-indicator" :style="goalTabIndicatorStyle"></span>
         <button
-            v-for="tab in statusTabs"
+            v-for="(tab, index) in statusTabs"
             :key="tab.value || 'all'"
+            ref="goalTabRefs"
             class="goal-tab"
             :class="{ 'goal-tab-active': activeStatus === tab.value }"
-            @click="handleStatusChange(tab.value)"
+            @click="handleStatusChange(tab.value, index)"
         >
           {{ tab.label }}
           <span class="goal-tab-count">{{ tab.count }}</span>
@@ -328,7 +330,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
 import {useRouter} from "vue-router";
 import type {FormInstance, Rule} from "ant-design-vue/es/form";
 import {message, Modal} from "ant-design-vue";
@@ -402,6 +404,13 @@ const goalList = ref<ShanzhuGoalVO[]>([]);
 const goalTotal = ref<number>(0);
 const tableLoading = ref(false);
 const listTransitioning = ref(false);
+const goalTabsRef = ref<HTMLElement>();
+const goalTabRefs = ref<HTMLElement[]>([]);
+const goalTabIndicatorStyle = reactive({
+  width: "0px",
+  transform: "translateX(0px)",
+  opacity: 0
+});
 const goalFormRef = ref<FormInstance>();
 const goalForm = ref<ShanzhuGoal>(defaultGoalForm());
 const filterExpanded = ref(false);
@@ -473,9 +482,38 @@ const activeFilterCount = computed(() => {
   return count;
 });
 
-const handleStatusChange = async (status: string) => {
+const activeTabIndex = computed(() => {
+  const currentIndex = statusTabs.value.findIndex(tab => tab.value === activeStatus.value);
+  return currentIndex >= 0 ? currentIndex : 0;
+});
+
+const updateGoalTabIndicator = async () => {
+  await nextTick();
+
+  const tabsElement = goalTabsRef.value;
+  const activeTabElement = goalTabRefs.value[activeTabIndex.value];
+
+  if (!tabsElement || !activeTabElement) {
+    return;
+  }
+
+  const tabsRect = tabsElement.getBoundingClientRect();
+  const activeTabRect = activeTabElement.getBoundingClientRect();
+
+  goalTabIndicatorStyle.width = `${activeTabRect.width}px`;
+  goalTabIndicatorStyle.transform = `translateX(${activeTabRect.left - tabsRect.left + tabsElement.scrollLeft}px)`;
+  goalTabIndicatorStyle.opacity = 1;
+};
+
+const handleStatusChange = async (status: string, tabIndex?: number) => {
   listTransitioning.value = true;
   goalQuery.value.status = status || undefined;
+
+  if (typeof tabIndex === "number") {
+    await nextTick();
+    await updateGoalTabIndicator();
+  }
+
   await queryPage();
   requestAnimationFrame(() => {
     listTransitioning.value = false;
@@ -586,8 +624,13 @@ const handleSaveGoal = async () => {
   }
 };
 
-onMounted(() => {
-  initPage();
+watch(activeTabIndex, () => {
+  updateGoalTabIndicator();
+});
+
+onMounted(async () => {
+  await initPage();
+  await updateGoalTabIndicator();
 });
 </script>
 
@@ -683,12 +726,32 @@ onMounted(() => {
 }
 
 .goal-tabs {
+  position: relative;
   display: flex;
   gap: 6px;
   overflow-x: auto;
 }
 
+.goal-tab-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 12px;
+  background: #eaf3ff;
+  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06), 0 2px 8px rgba(22, 119, 255, 0.08);
+  pointer-events: none;
+  transition:
+    width 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
+  will-change: width, transform;
+}
+
 .goal-tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-height: 34px;
   align-items: center;
@@ -702,18 +765,15 @@ onMounted(() => {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.22s ease, transform 0.2s ease;
 }
 
 .goal-tab:hover {
-  background: rgba(22, 119, 255, 0.06);
   color: rgba(0, 0, 0, 0.78);
 }
 
 .goal-tab-active {
-  background: #eaf3ff;
   color: #1677ff;
-  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06), 0 2px 8px rgba(22, 119, 255, 0.08);
 }
 
 .goal-tab-active .goal-tab-count {
