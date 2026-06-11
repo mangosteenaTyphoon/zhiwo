@@ -552,7 +552,7 @@ const fetchAllGoals = async () => {
       ...goalQuery.value,
       status: undefined,
       pageNum: 1,
-      pageSize: 999
+      pageSize: 100
     });
     if (response.code === 200) {
       allGoalList.value = response.data.records || [];
