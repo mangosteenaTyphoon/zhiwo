@@ -979,63 +979,38 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-/* Tab 切换两阶段动画 */
+/* Tab 切换两阶段动画 - 纯位移，不做透明度变化，避免闪白 */
 .goal-phase-idle {
-  opacity: 1;
   transform: translateX(0);
-  transition:
-    opacity 0.28s cubic-bezier(0.23, 1, 0.32, 1),
-    transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform 0.26s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .goal-phase-leaving.goal-slide-right {
-  opacity: 0;
-  transform: translateX(-16px);
-  transition:
-    opacity 0.12s ease-out,
-    transform 0.12s ease-out;
+  transform: translateX(-24px);
+  transition: transform 0.14s ease-out;
 }
 
 .goal-phase-leaving.goal-slide-left {
-  opacity: 0;
-  transform: translateX(16px);
-  transition:
-    opacity 0.12s ease-out,
-    transform 0.12s ease-out;
+  transform: translateX(24px);
+  transition: transform 0.14s ease-out;
 }
 
 .goal-phase-entering.goal-slide-right {
-  opacity: 1;
-  transform: translateX(0);
-  animation: goalSlideFromRight 0.28s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: goalSlideFromRight 0.26s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .goal-phase-entering.goal-slide-left {
-  opacity: 1;
-  transform: translateX(0);
-  animation: goalSlideFromLeft 0.28s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: goalSlideFromLeft 0.26s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 @keyframes goalSlideFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { transform: translateX(24px); }
+  to { transform: translateX(0); }
 }
 
 @keyframes goalSlideFromLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { transform: translateX(-24px); }
+  to { transform: translateX(0); }
 }
 
 .goal-item {
