@@ -512,13 +512,13 @@ const playGoalBodySwitchAnimation = () => {
     return;
   }
 
-  const startOffset = listTransitionDirection.value === "right" ? 18 : -18;
+  const startOffset = listTransitionDirection.value === "right" ? 34 : -34;
   const transformOrigin = listTransitionDirection.value === "right" ? "left center" : "right center";
   goalBodyElement.getAnimations().forEach(animation => animation.cancel());
   goalBodyElement.animate(
     [
       {
-        transform: `translate3d(${startOffset}px, 0, 0) scaleX(0.982)`,
+        transform: `translate3d(${startOffset}px, 0, 0) scaleX(0.94)`,
         transformOrigin
       },
       {
@@ -527,7 +527,7 @@ const playGoalBodySwitchAnimation = () => {
       }
     ],
     {
-      duration: 260,
+      duration: 320,
       easing: "cubic-bezier(0.2, 0, 0.2, 1)"
     }
   );
