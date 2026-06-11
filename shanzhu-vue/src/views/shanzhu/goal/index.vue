@@ -86,14 +86,7 @@
     <!-- 主体：目标列表 + 侧边栏 -->
     <div class="goal-content">
       <div class="goal-main">
-        <div
-            ref="goalBodyRef"
-            class="goal-body"
-            :class="[
-              `goal-slide-${listTransitionDirection}`,
-              `goal-phase-${tabSwitchPhase}`
-            ]"
-        >
+        <div ref="goalBodyRef" class="goal-body">
           <a-spin :spinning="tableLoading">
             <!-- 列表表头 -->
             <div v-if="goalList.length > 0" class="goal-list-header">
@@ -512,16 +505,31 @@ const updateGoalTabIndicator = async () => {
 };
 
 const goalBodyRef = ref<HTMLElement>();
-const tabSwitchPhase = ref<"idle" | "leaving" | "entering">("idle");
+
+const playGoalBodySwitchAnimation = () => {
+  const goalBodyElement = goalBodyRef.value;
+  if (!goalBodyElement) {
+    return;
+  }
+
+  const startOffset = listTransitionDirection.value === "right" ? 18 : -18;
+  goalBodyElement.getAnimations().forEach(animation => animation.cancel());
+  goalBodyElement.animate(
+    [
+      {transform: `translateX(${startOffset}px)`},
+      {transform: "translateX(0)"}
+    ],
+    {
+      duration: 220,
+      easing: "cubic-bezier(0.23, 1, 0.32, 1)"
+    }
+  );
+};
 
 const handleStatusChange = async (status: string, tabIndex?: number) => {
   if (typeof tabIndex === "number") {
     listTransitionDirection.value = tabIndex >= activeTabIndex.value ? "right" : "left";
   }
-
-  tabSwitchPhase.value = "leaving";
-
-  await new Promise(resolve => setTimeout(resolve, 140));
 
   goalQuery.value.status = status || undefined;
 
@@ -531,11 +539,7 @@ const handleStatusChange = async (status: string, tabIndex?: number) => {
   }
 
   await nextTick();
-  tabSwitchPhase.value = "entering";
-
-  setTimeout(() => {
-    tabSwitchPhase.value = "idle";
-  }, 280);
+  playGoalBodySwitchAnimation();
 };
 
 const handleSearchChange = async () => {
@@ -976,40 +980,6 @@ onMounted(async () => {
 .goal-list {
   display: flex;
   flex-direction: column;
-}
-
-/* Tab 切换两阶段动画 - 纯位移，不做透明度变化，避免闪白 */
-.goal-phase-idle {
-  transform: translateX(0);
-  transition: transform 0.26s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.goal-phase-leaving.goal-slide-right {
-  transform: translateX(-24px);
-  transition: transform 0.14s ease-out;
-}
-
-.goal-phase-leaving.goal-slide-left {
-  transform: translateX(24px);
-  transition: transform 0.14s ease-out;
-}
-
-.goal-phase-entering.goal-slide-right {
-  animation: goalSlideFromRight 0.26s cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-
-.goal-phase-entering.goal-slide-left {
-  animation: goalSlideFromLeft 0.26s cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-
-@keyframes goalSlideFromRight {
-  from { transform: translateX(24px); }
-  to { transform: translateX(0); }
-}
-
-@keyframes goalSlideFromLeft {
-  from { transform: translateX(-24px); }
-  to { transform: translateX(0); }
 }
 
 .goal-item {
