@@ -117,7 +117,7 @@
               </a-button>
             </div>
 
-            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list">
+            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list" :class="{ 'goal-list-entering': listTransitioning }">
               <div
                   v-for="(goal, index) in goalList"
                   :key="goal.id"
@@ -401,6 +401,7 @@ const goalQuery = ref<ShanzhuGoalQuery>(defaultGoalQuery());
 const goalList = ref<ShanzhuGoalVO[]>([]);
 const goalTotal = ref<number>(0);
 const tableLoading = ref(false);
+const listTransitioning = ref(false);
 const goalFormRef = ref<FormInstance>();
 const goalForm = ref<ShanzhuGoal>(defaultGoalForm());
 const filterExpanded = ref(false);
@@ -473,8 +474,12 @@ const activeFilterCount = computed(() => {
 });
 
 const handleStatusChange = async (status: string) => {
+  listTransitioning.value = true;
   goalQuery.value.status = status || undefined;
   await queryPage();
+  requestAnimationFrame(() => {
+    listTransitioning.value = false;
+  });
 };
 
 const handleSearchChange = async () => {
@@ -708,7 +713,11 @@ onMounted(() => {
 .goal-tab-active {
   background: #eaf3ff;
   color: #1677ff;
-  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.06), 0 2px 8px rgba(22, 119, 255, 0.08);
+}
+
+.goal-tab-active .goal-tab-count {
+  animation: goalCountBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .goal-tab-count {
@@ -880,6 +889,12 @@ onMounted(() => {
 .goal-list {
   display: flex;
   flex-direction: column;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.goal-list-entering {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
 .goal-item {
@@ -1458,6 +1473,12 @@ onMounted(() => {
 
 @keyframes goalProgressFill {
   from { width: 0; }
+}
+
+@keyframes goalCountBounce {
+  0% { transform: scale(0.7); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 /* Header 入场 */
