@@ -97,7 +97,7 @@
           <a-spin :spinning="tableLoading">
             <!-- 列表表头 -->
             <div v-if="goalList.length > 0" class="goal-list-header">
-              <span class="goal-list-count">共 <strong>{{ goalTotal }}</strong> 个目标</span>
+              <span class="goal-list-count">共 <strong>{{ goalList.length }}</strong> 个目标</span>
               <a-dropdown>
                 <a-button type="text" size="small" class="goal-sort-btn">
                   <SortAscendingOutlined style="margin-right: 4px;"/> 按截止日期
@@ -191,17 +191,7 @@
             </TransitionGroup>
 
             <div class="goal-pagination">
-              <span class="goal-pagination-info">共 {{ goalTotal }} 条 · 每页 {{ goalQuery.pageSize }} 条</span>
-              <a-pagination
-                  v-if="goalTotal > goalQuery.pageSize"
-                  v-model:current="goalQuery.pageNum"
-                  v-model:page-size="goalQuery.pageSize"
-                  :total="goalTotal"
-                  :page-size-options="['8', '10', '20', '30']"
-                  size="small"
-                  show-size-changer
-                  @change="initPage"
-              />
+              <span class="goal-pagination-info">共 {{ goalList.length }} 条</span>
             </div>
           </a-spin>
         </div>
@@ -407,8 +397,7 @@ const defaultGoalForm = (): ShanzhuGoal => ({
 });
 
 const goalQuery = ref<ShanzhuGoalQuery>(defaultGoalQuery());
-const goalList = ref<ShanzhuGoalVO[]>([]);
-const goalTotal = ref<number>(0);
+const allGoalList = ref<ShanzhuGoalVO[]>([]);
 const tableLoading = ref(false);
 const listTransitionDirection = ref<"left" | "right">("right");
 const goalTabsRef = ref<HTMLElement>();
@@ -435,22 +424,31 @@ const goalRules: Record<string, Rule[]> = {
 
 const activeStatus = computed(() => goalQuery.value.status || "");
 
+const goalList = computed(() => {
+  const status = activeStatus.value;
+  if (!status) return allGoalList.value;
+  return allGoalList.value.filter(goal => goal.status === status);
+});
+
+const goalTotal = computed(() => allGoalList.value.length);
+
 const statusTabs = computed(() => [
-  {label: "全部", value: "", count: goalTotal.value},
+  {label: "全部", value: "", count: allGoalList.value.length},
   ...goalStatusOptions.map(item => ({
     ...item,
-    count: goalList.value.filter(goal => goal.status === item.value).length
+    count: allGoalList.value.filter(goal => goal.status === item.value).length
   }))
 ]);
 
 const goalOverview = computed(() => {
-  const inProgressCount = goalList.value.filter(goal => goal.status === "in_progress").length;
-  const completedCount = goalList.value.filter(goal => goal.status === "completed").length;
-  const totalProgress = goalList.value.reduce((sum, goal) => sum + (goal.progress || 0), 0);
-  const avgProgress = goalList.value.length ? Math.round(totalProgress / goalList.value.length) : 0;
+  const allGoals = allGoalList.value;
+  const inProgressCount = allGoals.filter(goal => goal.status === "in_progress").length;
+  const completedCount = allGoals.filter(goal => goal.status === "completed").length;
+  const totalProgress = allGoals.reduce((sum, goal) => sum + (goal.progress || 0), 0);
+  const avgProgress = allGoals.length ? Math.round(totalProgress / allGoals.length) : 0;
 
   return {
-    total: goalTotal.value,
+    total: allGoals.length,
     inProgress: inProgressCount,
     completed: completedCount,
     avgProgress
@@ -517,22 +515,21 @@ const updateGoalTabIndicator = async () => {
 const goalBodyRef = ref<HTMLElement>();
 const tabSwitchPhase = ref<"idle" | "leaving" | "entering">("idle");
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 const handleStatusChange = async (status: string, tabIndex?: number) => {
   if (typeof tabIndex === "number") {
     listTransitionDirection.value = tabIndex >= activeTabIndex.value ? "right" : "left";
   }
 
   tabSwitchPhase.value = "leaving";
+
+  await new Promise(resolve => setTimeout(resolve, 140));
+
   goalQuery.value.status = status || undefined;
 
   if (typeof tabIndex === "number") {
     await nextTick();
     await updateGoalTabIndicator();
   }
-
-  await Promise.all([queryPage(), delay(150)]);
 
   await nextTick();
   tabSwitchPhase.value = "entering";
@@ -548,13 +545,17 @@ const handleSearchChange = async () => {
   }
 };
 
-const initPage = async () => {
+const fetchAllGoals = async () => {
   tableLoading.value = true;
   try {
-    const response = await queryGoalPage(goalQuery.value);
+    const response = await queryGoalPage({
+      ...goalQuery.value,
+      status: undefined,
+      pageNum: 1,
+      pageSize: 999
+    });
     if (response.code === 200) {
-      goalList.value = response.data.records || [];
-      goalTotal.value = response.data.total || 0;
+      allGoalList.value = response.data.records || [];
     } else {
       message.error(response.msg);
     }
@@ -563,14 +564,17 @@ const initPage = async () => {
   }
 };
 
+const initPage = async () => {
+  await fetchAllGoals();
+};
+
 const queryPage = async () => {
-  goalQuery.value.pageNum = 1;
-  await initPage();
+  await fetchAllGoals();
 };
 
 const resetPage = async () => {
   goalQuery.value = defaultGoalQuery();
-  await initPage();
+  await fetchAllGoals();
 };
 
 const openCreateModal = () => {
