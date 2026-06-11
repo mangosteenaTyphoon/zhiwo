@@ -1,7 +1,7 @@
 <template>
   <div class="shanzhu-goal-page">
     <!-- 顶部：恢复任务中心同款高级横幅 -->
-    <div class="goal-header">
+    <div class="goal-header goal-anim-header">
       <div class="goal-header-top">
         <div>
           <div class="goal-eyebrow">Goal Studio</div>
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Tab 筛选 + 搜索 -->
-    <div class="goal-toolbar">
+    <div class="goal-toolbar goal-anim-toolbar">
       <div class="goal-tabs">
         <button
             v-for="tab in statusTabs"
@@ -56,6 +56,7 @@
       </div>
     </div>
 
+    <Transition name="goal-filter-expand">
     <div v-show="filterExpanded" class="goal-filter-panel">
       <div class="goal-filter-inner">
         <div class="goal-filter-item">
@@ -78,6 +79,7 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- 主体：目标列表 + 侧边栏 -->
     <div class="goal-content">
@@ -197,7 +199,7 @@
       </div>
 
       <div class="goal-sidebar">
-        <div class="goal-sidebar-card goal-overview-card">
+        <div class="goal-sidebar-card goal-overview-card goal-anim-sidebar" style="--sidebar-order: 0;">
           <div class="goal-sidebar-title">
             <RiseOutlined/>
             目标概览
@@ -223,7 +225,7 @@
           </div>
         </div>
 
-        <div class="goal-sidebar-card">
+        <div class="goal-sidebar-card goal-anim-sidebar" style="--sidebar-order: 1;">
           <div class="goal-sidebar-title">
             <ThunderboltOutlined/>
             快捷入口
@@ -247,7 +249,7 @@
           </div>
         </div>
 
-        <div class="goal-sidebar-card goal-tip-card">
+        <div class="goal-sidebar-card goal-tip-card goal-anim-sidebar" style="--sidebar-order: 2;">
           <div class="goal-sidebar-title">
             <BulbOutlined/>
             目标提示
@@ -1404,6 +1406,146 @@ onMounted(() => {
 .goal-list-anim-move {
   transition: transform 0.22s ease;
 }
+
+/* ===== 入场动画 ===== */
+@keyframes goalFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes goalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes goalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes goalSidebarSlide {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes goalPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.8; }
+}
+
+@keyframes goalProgressFill {
+  from { width: 0; }
+}
+
+/* Header 入场 */
+.goal-anim-header {
+  animation: goalSlideDown 0.45s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* 工具栏延迟入场 */
+.goal-anim-toolbar {
+  animation: goalFadeUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.08s both;
+}
+
+/* 侧栏卡片交错入场 */
+.goal-anim-sidebar {
+  animation: goalSidebarSlide 0.42s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(0.12s + var(--sidebar-order, 0) * 0.08s);
+}
+
+/* 列表卡片入场 */
+.goal-body {
+  animation: goalFadeUp 0.35s ease 0.06s both;
+}
+
+/* 空状态图标呼吸 */
+.goal-empty-icon {
+  animation: goalPulse 2.4s ease-in-out infinite;
+}
+
+/* 进度条填充动画 */
+.goal-item-track-fill {
+  animation: goalProgressFill 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
+}
+
+.goal-overview-progress-fill {
+  animation: goalProgressFill 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
+}
+
+/* 筛选面板展开/收起 */
+.goal-filter-expand-enter-active {
+  transition: all 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.goal-filter-expand-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.goal-filter-expand-enter-from,
+.goal-filter-expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  transform: translateY(-6px);
+}
+
+/* Tab 点击弹性效果 */
+.goal-tab:active {
+  transform: scale(0.95);
+}
+
+/* 标签 hover 微上浮 */
+.goal-tag {
+  transition: all 0.15s ease;
+}
+
+.goal-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 进度块 hover 弹性 */
+.goal-progress-ring {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.goal-progress-ring:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 20px rgba(82, 196, 26, 0.12);
+}
+
+/* 新建按钮 hover 发光 */
+.goal-header-top :deep(.ant-btn-primary) {
+  transition: all 0.2s ease;
+}
+
+.goal-header-top :deep(.ant-btn-primary:hover) {
+  box-shadow: 0 14px 32px rgba(22, 119, 255, 0.32);
+  transform: translateY(-1px);
+}
+
+/* 快捷入口箭头动画已在 .goal-shortcut-item:hover 中定义 */
 
 @media (max-width: 1200px) {
   .shanzhu-goal-page {
