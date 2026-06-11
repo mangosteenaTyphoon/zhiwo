@@ -87,10 +87,11 @@
     <div class="goal-content">
       <div class="goal-main">
         <div
+            ref="goalBodyRef"
             class="goal-body"
             :class="[
-              `goal-tab-slide-${listTransitionDirection}`,
-              { 'goal-tab-switching': listTransitioning }
+              `goal-slide-${listTransitionDirection}`,
+              `goal-phase-${tabSwitchPhase}`
             ]"
         >
           <a-spin :spinning="tableLoading">
@@ -125,7 +126,7 @@
               </a-button>
             </div>
 
-            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list" :class="{ 'goal-list-entering': listTransitioning }">
+            <TransitionGroup v-else-if="goalList.length > 0" name="goal-list-anim" tag="div" class="goal-list">
               <div
                   v-for="(goal, index) in goalList"
                   :key="goal.id"
@@ -409,7 +410,6 @@ const goalQuery = ref<ShanzhuGoalQuery>(defaultGoalQuery());
 const goalList = ref<ShanzhuGoalVO[]>([]);
 const goalTotal = ref<number>(0);
 const tableLoading = ref(false);
-const listTransitioning = ref(false);
 const listTransitionDirection = ref<"left" | "right">("right");
 const goalTabsRef = ref<HTMLElement>();
 const goalTabRefs = ref<HTMLElement[]>([]);
@@ -514,12 +514,15 @@ const updateGoalTabIndicator = async () => {
   goalTabIndicatorStyle.opacity = 1;
 };
 
+const goalBodyRef = ref<HTMLElement>();
+const tabSwitchPhase = ref<"idle" | "leaving" | "entering">("idle");
+
 const handleStatusChange = async (status: string, tabIndex?: number) => {
   if (typeof tabIndex === "number") {
     listTransitionDirection.value = tabIndex >= activeTabIndex.value ? "right" : "left";
   }
 
-  listTransitioning.value = true;
+  tabSwitchPhase.value = "leaving";
   goalQuery.value.status = status || undefined;
 
   if (typeof tabIndex === "number") {
@@ -528,9 +531,13 @@ const handleStatusChange = async (status: string, tabIndex?: number) => {
   }
 
   await queryPage();
-  requestAnimationFrame(() => {
-    listTransitioning.value = false;
-  });
+
+  await nextTick();
+  tabSwitchPhase.value = "entering";
+
+  setTimeout(() => {
+    tabSwitchPhase.value = "idle";
+  }, 280);
 };
 
 const handleSearchChange = async () => {
@@ -966,20 +973,63 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-.goal-tab-switching {
-  transition: transform 0.26s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.26s ease;
+/* Tab 切换两阶段动画 */
+.goal-phase-idle {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 0.28s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.goal-tab-switching.goal-tab-slide-right {
-  transform: translateX(8px);
+.goal-phase-leaving.goal-slide-right {
+  opacity: 0;
+  transform: translateX(-16px);
+  transition:
+    opacity 0.12s ease-out,
+    transform 0.12s ease-out;
 }
 
-.goal-tab-switching.goal-tab-slide-left {
-  transform: translateX(-8px);
+.goal-phase-leaving.goal-slide-left {
+  opacity: 0;
+  transform: translateX(16px);
+  transition:
+    opacity 0.12s ease-out,
+    transform 0.12s ease-out;
 }
 
-.goal-list-entering {
-  transform: translateY(2px);
+.goal-phase-entering.goal-slide-right {
+  opacity: 1;
+  transform: translateX(0);
+  animation: goalSlideFromRight 0.28s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.goal-phase-entering.goal-slide-left {
+  opacity: 1;
+  transform: translateX(0);
+  animation: goalSlideFromLeft 0.28s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes goalSlideFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes goalSlideFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .goal-item {
