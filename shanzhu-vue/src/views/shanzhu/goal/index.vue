@@ -517,6 +517,8 @@ const updateGoalTabIndicator = async () => {
 const goalBodyRef = ref<HTMLElement>();
 const tabSwitchPhase = ref<"idle" | "leaving" | "entering">("idle");
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const handleStatusChange = async (status: string, tabIndex?: number) => {
   if (typeof tabIndex === "number") {
     listTransitionDirection.value = tabIndex >= activeTabIndex.value ? "right" : "left";
@@ -530,7 +532,7 @@ const handleStatusChange = async (status: string, tabIndex?: number) => {
     await updateGoalTabIndicator();
   }
 
-  await queryPage();
+  await Promise.all([queryPage(), delay(150)]);
 
   await nextTick();
   tabSwitchPhase.value = "entering";
