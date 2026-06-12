@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    zhiwo_desktop_lib::run()
+    zhiwo_desktop::run()
 }

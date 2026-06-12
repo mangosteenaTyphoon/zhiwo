@@ -84,9 +84,10 @@ async function handleLogin() {
     const token = await login({
       username: form.username,
       password: form.password,
-      captchaVerification: form.captchaVerification,
+      captchaVerification: "loginCaptcha",
     });
     appStore.setToken(token);
+    await appStore.loadUserInfo();
     router.push("/");
   } catch (error: any) {
     errorMsg.value = error.message || "登录失败";

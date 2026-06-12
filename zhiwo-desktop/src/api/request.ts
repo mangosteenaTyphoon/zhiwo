@@ -1,5 +1,6 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { useAppStore } from "@/stores/app";
+import router from "@/router";
 
 const service = axios.create({
   timeout: 50000,
@@ -21,11 +22,11 @@ service.interceptors.request.use((config) => {
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const data = response.data;
-    if (data.code !== 0) {
+    if (data.code !== 200) {
       if (data.code === 401) {
         const appStore = useAppStore();
         appStore.clearAuth();
-        window.location.href = "/login";
+        router.push("/login");
       }
       return Promise.reject(new Error(data.msg || "请求失败"));
     }

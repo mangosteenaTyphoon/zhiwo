@@ -18,7 +18,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 // 允许所有域名
                 .allowedOriginPatterns("*")
                 // 允许的 HTTP 方法
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 // 允许所有请求头
                 .allowedHeaders("*")
                 // 允许携带 Cookie

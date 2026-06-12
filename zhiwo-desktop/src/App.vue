@@ -1,12 +1,8 @@
 <template>
   <div class="zhiwo-app">
-    <AppLayout />
+    <router-view />
   </div>
 </template>
-
-<script setup lang="ts">
-import AppLayout from "./layouts/AppLayout.vue";
-</script>
 
 <style scoped>
 .zhiwo-app {
