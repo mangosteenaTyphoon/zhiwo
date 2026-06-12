@@ -1215,8 +1215,9 @@ onMounted(() => {
   padding: 32px 48px 56px;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 10% 0%, rgba(255, 228, 174, 0.16), transparent 26%),
-    radial-gradient(circle at 92% 14%, rgba(185, 224, 255, 0.18), transparent 24%);
+    radial-gradient(circle at 10% 0%, rgba(219, 235, 255, 0.42), transparent 28%),
+    radial-gradient(circle at 90% 8%, rgba(226, 218, 255, 0.32), transparent 26%),
+    linear-gradient(180deg, #f6f9fd 0%, #eef3f8 100%);
 }
 
 .shanzhu-goal-detail-page :deep(.ant-card) {
@@ -1244,22 +1245,23 @@ onMounted(() => {
 .goal-cockpit-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(92, 120, 180, 0.16);
+  min-height: 430px;
+  border: 1px solid rgba(206, 218, 238, 0.92);
   border-radius: 34px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.82));
-  box-shadow: 0 28px 70px rgba(43, 56, 92, 0.12), 0 1px 2px rgba(15, 35, 80, 0.03);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 255, 0.90));
+  box-shadow: 0 24px 62px rgba(43, 56, 92, 0.10), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .goal-hero-grid {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.46;
+  opacity: 0.30;
   background-image:
-    linear-gradient(rgba(58, 88, 145, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(58, 88, 145, 0.055) 1px, transparent 1px);
-  background-size: 26px 26px;
+    linear-gradient(rgba(58, 88, 145, 0.052) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 88, 145, 0.052) 1px, transparent 1px);
+  background-size: 30px 30px;
 }
 
 .goal-hero-backdrop {
@@ -1267,15 +1269,16 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 5% 8%, rgba(97, 149, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 62% 10%, rgba(185, 157, 255, 0.16), transparent 30%),
-    radial-gradient(circle at 96% 72%, rgba(230, 214, 255, 0.54), transparent 34%);
+    radial-gradient(circle at 8% 6%, rgba(255, 255, 255, 0.76), transparent 24%),
+    radial-gradient(circle at 72% 4%, rgba(201, 222, 255, 0.28), transparent 30%),
+    radial-gradient(circle at 96% 78%, rgba(226, 214, 255, 0.46), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(245, 249, 255, 0.56));
 }
 
 .goal-hero-content {
   position: relative;
   z-index: 1;
-  padding: 30px 36px 34px;
+  padding: 30px 38px 46px;
 }
 
 .goal-hero-nav {
@@ -1306,8 +1309,8 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 34px;
-  margin-top: 42px;
+  gap: 42px;
+  margin-top: 50px;
 }
 
 .goal-hero-info {
@@ -1337,11 +1340,11 @@ onMounted(() => {
   max-width: 820px;
   margin: 0 0 14px;
   overflow: hidden;
-  color: #111b35;
-  font-size: 40px;
+  color: #0c1833;
+  font-size: 42px;
   font-weight: 920;
-  line-height: 1.16;
-  letter-spacing: -1.2px;
+  line-height: 1.14;
+  letter-spacing: -1.3px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1352,10 +1355,10 @@ onMounted(() => {
   max-width: 780px;
   margin: 0;
   overflow: hidden;
-  color: rgba(25, 43, 82, 0.66);
+  color: rgba(25, 43, 82, 0.68);
   font-size: 15px;
-  font-weight: 560;
-  line-height: 26px;
+  font-weight: 580;
+  line-height: 27px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1403,20 +1406,20 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(150px, 1fr));
   gap: 14px;
-  max-width: 690px;
-  margin-top: 28px;
+  max-width: 700px;
+  margin-top: 30px;
 }
 
 .goal-date-card {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  min-height: 96px;
-  padding: 17px 18px;
-  border: 1px solid rgba(32, 55, 106, 0.055);
+  min-height: 100px;
+  padding: 18px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.66);
-  box-shadow: 0 12px 26px rgba(43, 56, 92, 0.045);
+  background: rgba(255, 255, 255, 0.70);
+  box-shadow: 0 14px 30px rgba(43, 56, 92, 0.055);
 }
 
 .goal-date-card .date-label {
@@ -1567,19 +1570,20 @@ onMounted(() => {
 .goal-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 20px;
+  margin-top: 26px;
 }
 
 .goal-summary-card {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 168px;
-  padding: 24px 22px 20px;
-  border: 1px solid rgba(28, 42, 82, 0.055);
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 38px rgba(43, 56, 92, 0.07), 0 1px 2px rgba(15, 35, 80, 0.03);
+  min-height: 176px;
+  padding: 26px 24px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 22px 46px rgba(43, 56, 92, 0.085), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .summary-card-head {
@@ -1619,7 +1623,7 @@ onMounted(() => {
 
 .summary-number {
   color: #111b35;
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 940;
   line-height: 1;
 }
