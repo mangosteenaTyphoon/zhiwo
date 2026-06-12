@@ -3,77 +3,145 @@
     <a-spin :spinning="pageLoading">
       <a-flex :gap="16" vertical>
         <div class="goal-cockpit-hero">
+          <div class="goal-hero-grid"/>
           <div class="goal-hero-backdrop"/>
           <div class="goal-hero-content">
             <div class="goal-hero-nav">
-              <a-button class="goal-back-btn" size="small" @click="goBack">← 返回</a-button>
-              <span class="goal-chip goal-chip-category">{{ goalDetail?.categoryName || '未分类' }}</span>
-              <span class="goal-chip" :class="'goal-chip-status-' + goalDetail?.status">
-                {{ getGoalStatusOption(goalDetail?.status).label }}
-              </span>
+              <a-button class="goal-back-btn" size="small" @click="goBack">← 返回目标列表</a-button>
+              <span class="goal-breadcrumb">工作台 / 我的目标 / {{ goalDetail?.title || '目标详情' }}</span>
             </div>
 
             <div class="goal-hero-body">
               <div class="goal-hero-info">
+                <div class="goal-eyebrow">
+                  <span>GOAL DETAIL</span>
+                  <i/>
+                  <span>编号 G-{{ goalId }}</span>
+                </div>
                 <h2 class="goal-title">{{ goalDetail?.title || '目标详情' }}</h2>
                 <p class="goal-description">{{ goalDetail?.description || '暂无目标描述' }}</p>
-                <div class="goal-meta">
-                  <span>{{ goalDetail?.startDate || '-' }} → {{ goalDetail?.deadline || '-' }}</span>
-                  <span>{{ getGoalPriorityLabel(goalDetail?.priority) }}优先级</span>
-                </div>
+
                 <div class="goal-tags">
+                  <span class="goal-chip" :class="'goal-chip-status-' + goalDetail?.status">
+                    {{ getGoalStatusOption(goalDetail?.status).label }}
+                  </span>
+                  <span class="goal-chip goal-chip-category">{{ goalDetail?.categoryName || '未分类' }}</span>
+                  <span class="goal-chip goal-chip-priority">{{ getGoalPriorityLabel(goalDetail?.priority) }}优先级</span>
                   <span v-for="tag in goalDetail?.tags" :key="tag.id" class="goal-tag">{{ tag.name }}</span>
                   <span v-if="!goalDetail?.tags || goalDetail.tags.length === 0" class="goal-tag">暂无标签</span>
                 </div>
+
+                <div class="goal-date-panel">
+                  <div class="goal-date-card">
+                    <span class="date-label">开始日期</span>
+                    <strong>{{ goalDetail?.startDate || '-' }}</strong>
+                    <span class="date-sub">目标启动时间</span>
+                  </div>
+                  <div class="goal-date-card">
+                    <span class="date-label">截止日期</span>
+                    <strong>{{ goalDetail?.deadline || '-' }}</strong>
+                    <span class="date-sub">按计划提交</span>
+                  </div>
+                  <div class="goal-date-card date-card-warning">
+                    <span class="date-label">剩余天数</span>
+                    <strong :class="{ 'kpi-overdue': remainingDays === '已逾期' }">{{ remainingDays }}<small v-if="remainingDays !== '-' && remainingDays !== '已逾期'"> 天</small></strong>
+                    <span class="date-sub">建议持续推进</span>
+                  </div>
+                </div>
+
+                <a-space class="goal-hero-actions" wrap>
+                  <a-button type="primary" shape="round" @click="openCreateProgressModal">
+                    <template #icon><PlusOutlined/></template>
+                    新增进展
+                  </a-button>
+                  <a-button shape="round" @click="openCreateSubGoalModal">
+                    <template #icon><AimOutlined/></template>
+                    新增子目标
+                  </a-button>
+                  <a-button shape="round" @click="() => openCreateTaskModal()">
+                    <template #icon><PlusOutlined/></template>
+                    新增任务
+                  </a-button>
+                  <a-button shape="round" @click="openCreateProgressModal">
+                    <template #icon><RiseOutlined/></template>
+                    记录进展
+                  </a-button>
+                </a-space>
               </div>
 
-              <div class="goal-hero-orb-area">
-                <div class="goal-progress-orb">
-                  <span class="orb-number">{{ goalDetail?.progress || 0 }}</span>
-                  <span class="orb-unit">%</span>
+              <div class="goal-progress-panel">
+                <div class="goal-progress-ring" :style="{ '--goal-progress': `${goalDetail?.progress || 0}%` }">
+                  <div class="goal-progress-ring-inner">
+                    <span>PROGRESS</span>
+                    <strong>{{ goalDetail?.progress || 0 }}<small>%</small></strong>
+                    <em>{{ getGoalStatusOption(goalDetail?.status).label }} · {{ remainingDays === '已逾期' ? '已逾期' : '持续推进' }}</em>
+                  </div>
+                </div>
+                <div class="goal-health-card">
+                  <span class="health-dot"/>
+                  <span>健康度</span>
+                  <strong>{{ remainingDays === '已逾期' ? '需关注' : '稳定' }}</strong>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <a-progress class="goal-hero-progress" :percent="goalDetail?.progress || 0" :show-info="false" stroke-linecap="round"/>
-
-            <div class="goal-kpi-strip">
-              <div class="goal-kpi-item kpi-time">
-                <span class="goal-kpi-label">剩余天数</span>
-                <span class="goal-kpi-value" :class="{ 'kpi-overdue': remainingDays === '已逾期' }">{{ remainingDays }}</span>
-              </div>
-              <div class="goal-kpi-item kpi-sub-goal">
-                <span class="goal-kpi-label">子目标</span>
-                <span class="goal-kpi-value">{{ goalDetail?.subGoalCount ?? subGoalList.length }}</span>
-              </div>
-              <div class="goal-kpi-item kpi-task">
-                <span class="goal-kpi-label">任务完成</span>
-                <span class="goal-kpi-value">{{ completedTaskCount }}<small>/{{ goalDetail?.totalTaskCount ?? taskList.length }}</small></span>
-              </div>
-              <div class="goal-kpi-item kpi-progress">
-                <span class="goal-kpi-label">进展记录</span>
-                <span class="goal-kpi-value">{{ goalProgressList.length }}</span>
-              </div>
-              <div class="goal-kpi-item kpi-habit">
-                <span class="goal-kpi-label">关联习惯</span>
-                <span class="goal-kpi-value">{{ goalHabitList.length }}</span>
-              </div>
+        <div class="goal-summary-grid">
+          <div class="goal-summary-card summary-sub">
+            <div class="summary-card-head">
+              <span class="summary-icon"><AimOutlined/></span>
+              <span class="summary-label">子目标</span>
+              <span class="summary-code">SUB</span>
             </div>
+            <div class="summary-number">{{ completedSubGoalCount }}<small>/{{ goalDetail?.subGoalCount ?? subGoalList.length }} 已完成</small></div>
+            <a-progress :percent="(goalDetail?.subGoalCount ?? subGoalList.length) ? Math.round(completedSubGoalCount / (goalDetail?.subGoalCount ?? subGoalList.length) * 100) : 0" :show-info="false" size="small"/>
+            <div class="summary-footer">
+              <span>建议拆解 2-3 个阶段</span>
+              <a-button type="link" size="small" @click="openCreateSubGoalModal">立即拆解 →</a-button>
+            </div>
+          </div>
 
-            <a-space class="goal-hero-actions" wrap>
-              <a-button shape="round" @click="openCreateTaskModal">
-                <template #icon><PlusOutlined/></template>
-                新增任务
-              </a-button>
-              <a-button type="primary" shape="round" @click="openCreateSubGoalModal">
-                <template #icon><PlusOutlined/></template>
-                新增子目标
-              </a-button>
-              <a-button shape="round" @click="openCreateProgressModal">
-                <template #icon><RiseOutlined/></template>
-                记录进展
-              </a-button>
-            </a-space>
+          <div class="goal-summary-card summary-task">
+            <div class="summary-card-head">
+              <span class="summary-icon"><ThunderboltOutlined/></span>
+              <span class="summary-label">任务</span>
+              <span class="summary-code">TASK</span>
+            </div>
+            <div class="summary-number">{{ completedTaskCount }}<small>/{{ goalDetail?.totalTaskCount ?? taskList.length }} 已完成</small></div>
+            <a-progress :percent="(goalDetail?.totalTaskCount ?? taskList.length) ? Math.round(completedTaskCount / (goalDetail?.totalTaskCount ?? taskList.length) * 100) : 0" :show-info="false" size="small"/>
+            <div class="summary-footer">
+              <span>{{ nextActionTasks.length }} 个待推进</span>
+              <a-button type="link" size="small" @click="() => openCreateTaskModal()">新增任务 →</a-button>
+            </div>
+          </div>
+
+          <div class="goal-summary-card summary-habit">
+            <div class="summary-card-head">
+              <span class="summary-icon"><ExperimentOutlined/></span>
+              <span class="summary-label">关联习惯</span>
+              <span class="summary-code">HABIT</span>
+            </div>
+            <div class="summary-number">{{ goalHabitList.length }}<small>/ 今日 {{ goalHabitList.filter(habit => habit.todayChecked).length }} 待打卡</small></div>
+            <div class="summary-dash-line"/>
+            <div class="summary-footer">
+              <span>{{ goalHabitList.length ? '习惯支撑目标推进' : '暂无习惯打卡' }}</span>
+              <a-button type="link" size="small" @click="openHabitPage">查看习惯 →</a-button>
+            </div>
+          </div>
+
+          <div class="goal-summary-card summary-log">
+            <div class="summary-card-head">
+              <span class="summary-icon"><RiseOutlined/></span>
+              <span class="summary-label">进展记录</span>
+              <span class="summary-code">LOG</span>
+            </div>
+            <div class="summary-number">{{ goalProgressList.length }}<small> 条进展</small></div>
+            <div class="summary-dash-line"/>
+            <div class="summary-footer">
+              <span>{{ goalProgressList.length ? '最近已有记录' : '最近暂无记录' }}</span>
+              <a-button type="link" size="small" @click="openCreateProgressModal">记录进展 →</a-button>
+            </div>
           </div>
         </div>
 
@@ -82,8 +150,46 @@
           <!-- ── 左栏：执行拆解 ── -->
           <div class="goal-col-left">
             <a-card :bordered="false" class="goal-section-card">
-              <template #title><AimOutlined style="margin-right: 6px;"/> 子目标拆解</template>
-              <a-empty v-if="subGoalList.length === 0" description="暂无子目标，先新增一个拆解项吧"/>
+              <div class="goal-section-header">
+                <div class="section-title-group">
+                  <span class="section-icon section-icon-blue"><AimOutlined/></span>
+                  <div>
+                    <h3>执行拆解</h3>
+                    <p>将目标拆解成阶段性子目标，逐步推进。</p>
+                  </div>
+                </div>
+                <a-space size="small" class="section-actions">
+                  <a-button size="small" shape="round" @click="() => openCreateTaskModal()">
+                    <template #icon><PlusOutlined/></template>
+                    新增任务
+                  </a-button>
+                  <a-button type="primary" size="small" shape="round" @click="openCreateSubGoalModal">
+                    <template #icon><PlusOutlined/></template>
+                    新增子目标
+                  </a-button>
+                </a-space>
+              </div>
+              <div v-if="subGoalList.length === 0" class="goal-empty-workbench empty-sub-goal">
+                <div class="empty-illustration"><AimOutlined/></div>
+                <h4>暂无子目标</h4>
+                <p>建议先把「{{ goalDetail?.title || '当前目标' }}」拆解成 2-3 个阶段目标，例如准备、核心推进、最终交付。</p>
+                <a-space wrap>
+                  <a-button type="primary" shape="round" @click="openCreateSubGoalModal">
+                    <template #icon><PlusOutlined/></template>
+                    立即拆解
+                  </a-button>
+                  <a-button shape="round" @click="() => openCreateTaskModal()">
+                    <template #icon><PlusOutlined/></template>
+                    先加任务
+                  </a-button>
+                </a-space>
+                <div class="empty-template-tags">
+                  <span>推荐模板：</span>
+                  <em>环境与基础</em>
+                  <em>核心模块开发</em>
+                  <em>联调与上线</em>
+                </div>
+              </div>
               <a-flex v-else vertical :gap="16">
                 <a-card
                     v-for="(subGoal, subGoalIndex) in subGoalList"
@@ -255,8 +361,25 @@
           <div class="goal-col-right">
             <!-- 下一步行动 -->
             <a-card :bordered="false" class="goal-section-card goal-next-action-card">
-              <template #title><ThunderboltOutlined style="margin-right: 6px;"/> 下一步行动</template>
-              <a-empty v-if="nextActionTasks.length === 0" description="暂无待执行任务"/>
+              <div class="goal-section-header compact">
+                <div class="section-title-group">
+                  <span class="section-icon section-icon-orange"><ThunderboltOutlined/></span>
+                  <div>
+                    <h3>下一步行动</h3>
+                    <p>系统为你挑选的优先动作</p>
+                  </div>
+                </div>
+                <a-button shape="circle" size="small" @click="loadGoalDetail">↻</a-button>
+              </div>
+              <div v-if="nextActionTasks.length === 0" class="goal-empty-workbench side-empty empty-action">
+                <div class="empty-illustration"><ThunderboltOutlined/></div>
+                <h4>暂无待执行任务</h4>
+                <p>可以先新增一个任务，或把目标拆成子目标后再推进。</p>
+                <a-button type="primary" size="small" shape="round" @click="() => openCreateTaskModal()">
+                  <template #icon><PlusOutlined/></template>
+                  新增任务
+                </a-button>
+              </div>
               <a-flex v-else vertical :gap="10">
                 <div v-for="actionTask in nextActionTasks" :key="actionTask.id" class="next-action-item">
                   <a-flex align="center" :gap="10">
@@ -282,12 +405,23 @@
 
             <!-- 关联习惯 -->
             <a-card :bordered="false" class="goal-section-card">
-              <template #title><ExperimentOutlined style="margin-right: 6px;"/> 关联习惯</template>
-              <template #extra>
-                <a-button type="link" size="small" @click="openHabitPage">全部</a-button>
-              </template>
+              <div class="goal-section-header compact">
+                <div class="section-title-group">
+                  <span class="section-icon section-icon-green"><ExperimentOutlined/></span>
+                  <div>
+                    <h3>关联习惯</h3>
+                    <p>每天稳定推进的小动作</p>
+                  </div>
+                </div>
+                <a-button size="small" shape="round" @click="openHabitPage">查看全部 →</a-button>
+              </div>
               <a-spin :spinning="habitLoading">
-                <a-empty v-if="goalHabitList.length === 0" description="暂无关联习惯"/>
+                <div v-if="goalHabitList.length === 0" class="goal-empty-workbench side-empty empty-habit">
+                  <div class="empty-illustration"><ExperimentOutlined/></div>
+                  <h4>暂无关联习惯</h4>
+                  <p>创建习惯来稳定推进目标，例如每天学习、复盘或练习。</p>
+                  <a-button size="small" shape="round" @click="openHabitPage">去关联习惯</a-button>
+                </div>
                 <a-flex v-else vertical :gap="12">
                   <div v-for="habit in goalHabitList" :key="habit.id" class="habit-compact-item">
                     <a-flex justify="space-between" align="center" :gap="10">
@@ -324,9 +458,26 @@
 
             <!-- 进展时间线 -->
             <a-card :bordered="false" class="goal-section-card">
-              <template #title><RiseOutlined style="margin-right: 6px;"/> 进展时间线</template>
+              <div class="goal-section-header compact">
+                <div class="section-title-group">
+                  <span class="section-icon section-icon-purple"><RiseOutlined/></span>
+                  <div>
+                    <h3>进展时间线</h3>
+                    <p>按时间记录目标的关键变化</p>
+                  </div>
+                </div>
+                <a-button size="small" shape="round" @click="openCreateProgressModal">
+                  <template #icon><PlusOutlined/></template>
+                  新增进展
+                </a-button>
+              </div>
               <a-spin :spinning="progressLoading">
-                <a-empty v-if="goalProgressList.length === 0" description="暂无进展记录"/>
+                <div v-if="goalProgressList.length === 0" class="goal-empty-workbench side-empty empty-progress">
+                  <div class="empty-illustration"><RiseOutlined/></div>
+                  <h4>暂无进展记录</h4>
+                  <p>记录一次进展，让目标拥有「呼吸」与节奏。</p>
+                  <a-button size="small" shape="round" @click="openCreateProgressModal">记录进展</a-button>
+                </div>
                 <div v-else class="progress-timeline">
                   <div v-for="(progress, index) in goalProgressList" :key="progress.id || index" class="timeline-item">
                     <div class="timeline-rail">
@@ -1089,15 +1240,26 @@ onMounted(() => {
   font-weight: 650;
 }
 
-/* ═══════ Hero 驾驶舱 ═══════ */
+/* ═══════ Hero 工作台 ═══════ */
 .goal-cockpit-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(28, 35, 55, 0.055);
-  border-radius: 30px;
+  border: 1px solid rgba(92, 120, 180, 0.16);
+  border-radius: 34px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.88));
-  box-shadow: 0 20px 54px rgba(48, 54, 79, 0.075), 0 1px 2px rgba(15, 35, 80, 0.03);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.82));
+  box-shadow: 0 28px 70px rgba(43, 56, 92, 0.12), 0 1px 2px rgba(15, 35, 80, 0.03);
+}
+
+.goal-hero-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.46;
+  background-image:
+    linear-gradient(rgba(58, 88, 145, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 88, 145, 0.055) 1px, transparent 1px);
+  background-size: 26px 26px;
 }
 
 .goal-hero-backdrop {
@@ -1105,62 +1267,47 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 10% 12%, rgba(255, 210, 122, 0.20), transparent 30%),
-    radial-gradient(circle at 58% 0%, rgba(203, 187, 255, 0.18), transparent 28%),
-    radial-gradient(circle at 94% 18%, rgba(155, 216, 255, 0.24), transparent 32%);
+    radial-gradient(circle at 5% 8%, rgba(97, 149, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 62% 10%, rgba(185, 157, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 96% 72%, rgba(230, 214, 255, 0.54), transparent 34%);
 }
 
 .goal-hero-content {
   position: relative;
   z-index: 1;
-  padding: 28px 30px 26px;
+  padding: 30px 36px 34px;
 }
 
 .goal-hero-nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .goal-back-btn {
-  border-color: rgba(15, 35, 80, 0.10);
+  height: 34px;
+  border-color: rgba(25, 44, 84, 0.10);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: rgba(0, 0, 0, 0.55);
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(16, 30, 62, 0.74);
   font-size: 13px;
+  font-weight: 760;
+  box-shadow: 0 8px 20px rgba(31, 55, 105, 0.06);
 }
 
-.goal-chip,
-.goal-tag {
-  display: inline-flex;
-  align-items: center;
-  max-width: 180px;
-  min-height: 24px;
-  padding: 3px 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(15, 35, 80, 0.055);
-  color: rgba(0, 0, 0, 0.56);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.goal-breadcrumb {
+  color: rgba(31, 45, 78, 0.46);
+  font-size: 13px;
+  font-weight: 680;
 }
-
-.goal-chip-category { background: rgba(22, 119, 255, 0.09); color: #1677ff; }
-.goal-chip-status-in_progress { background: rgba(22, 119, 255, 0.10); color: #1677ff; }
-.goal-chip-status-completed { background: rgba(82, 196, 26, 0.12); color: #389e0d; }
-.goal-chip-status-paused { background: rgba(250, 173, 20, 0.13); color: #d48806; }
-.goal-chip-status-cancelled { background: rgba(255, 77, 79, 0.10); color: #cf1322; }
 
 .goal-hero-body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 24px;
-  margin-top: 10px;
+  gap: 34px;
+  margin-top: 42px;
 }
 
 .goal-hero-info {
@@ -1168,16 +1315,33 @@ onMounted(() => {
   flex: 1;
 }
 
+.goal-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #1768e8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 5px;
+}
+
+.goal-eyebrow i {
+  width: 54px;
+  height: 1px;
+  background: rgba(23, 104, 232, 0.44);
+}
+
 .goal-title {
   display: -webkit-box;
   max-width: 820px;
-  margin: 0 0 8px;
+  margin: 0 0 14px;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.88);
-  font-size: 30px;
-  font-weight: 850;
-  line-height: 1.25;
-  letter-spacing: -0.7px;
+  color: #111b35;
+  font-size: 40px;
+  font-weight: 920;
+  line-height: 1.16;
+  letter-spacing: -1.2px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1185,167 +1349,319 @@ onMounted(() => {
 
 .goal-description {
   display: -webkit-box;
-  max-width: 760px;
+  max-width: 780px;
   margin: 0;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.48);
-  font-size: 14px;
-  line-height: 22px;
+  color: rgba(25, 43, 82, 0.66);
+  font-size: 15px;
+  font-weight: 560;
+  line-height: 26px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-}
-
-.goal-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-  color: rgba(0, 0, 0, 0.46);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.goal-meta span {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.66);
 }
 
 .goal-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 20px;
 }
+
+.goal-chip,
+.goal-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 180px;
+  min-height: 25px;
+  padding: 4px 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(38, 65, 115, 0.065);
+  color: rgba(24, 42, 82, 0.62);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-chip-category { background: rgba(37, 110, 255, 0.10); color: #1768e8; }
+.goal-chip-priority { background: rgba(255, 123, 46, 0.12); color: #c84f12; }
+.goal-chip-status-in_progress { background: rgba(22, 119, 255, 0.12); color: #1677ff; }
+.goal-chip-status-completed { background: rgba(82, 196, 26, 0.13); color: #389e0d; }
+.goal-chip-status-paused { background: rgba(250, 173, 20, 0.14); color: #d48806; }
+.goal-chip-status-cancelled { background: rgba(255, 77, 79, 0.11); color: #cf1322; }
 
 .goal-tag {
-  background: rgba(114, 46, 209, 0.08);
-  color: #722ed1;
+  background: rgba(126, 87, 255, 0.10);
+  color: #6f4fe8;
 }
 
-.goal-hero-orb-area {
-  flex-shrink: 0;
-}
-
-.goal-progress-orb {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  width: 88px;
-  height: 88px;
-  border-radius: 26px;
-  background:
-    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.86), transparent 34%),
-    linear-gradient(135deg, rgba(65, 150, 255, 0.88), rgba(76, 205, 126, 0.78));
-  box-shadow: 0 18px 34px rgba(72, 145, 221, 0.18);
-  color: #fff;
-}
-
-.orb-number {
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1;
-  color: #fff;
-}
-
-.orb-unit {
-  margin-left: 1px;
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.goal-hero-progress {
-  margin: 14px 0 0;
-}
-
-.goal-hero-progress :deep(.ant-progress-inner) {
-  background: rgba(15, 35, 80, 0.045);
-}
-
-.goal-hero-progress :deep(.ant-progress-bg) {
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ffb84d, #6fd27f, #42a5ff);
-}
-
-/* ── KPI 指标卡 ── */
-.goal-kpi-strip {
+.goal-date-panel {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin: 20px 0 0;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 14px;
+  max-width: 690px;
+  margin-top: 28px;
 }
 
-.goal-kpi-item {
-  position: relative;
+.goal-date-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-  min-height: 76px;
-  padding: 14px 16px;
-  overflow: hidden;
-  border: 1px solid rgba(26, 32, 48, 0.045);
-  border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(45, 45, 65, 0.045);
+  gap: 7px;
+  min-height: 96px;
+  padding: 17px 18px;
+  border: 1px solid rgba(32, 55, 106, 0.055);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 12px 26px rgba(43, 56, 92, 0.045);
 }
 
-.goal-kpi-item::after {
-  position: absolute;
-  right: -18px;
-  bottom: -24px;
-  width: 70px;
-  height: 70px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.34);
-  content: "";
-  transform: rotate(18deg);
+.goal-date-card .date-label {
+  color: rgba(33, 51, 89, 0.52);
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.kpi-time { background: linear-gradient(135deg, #fff3c4, #ffe2b5); }
-.kpi-sub-goal { background: linear-gradient(135deg, #e4f0ff, #cfe5ff); }
-.kpi-task { background: linear-gradient(135deg, #eadfff, #d9ceff); }
-.kpi-progress { background: linear-gradient(135deg, #ffe1ed, #ffcfe4); }
-.kpi-habit { background: linear-gradient(135deg, #e8f8d7, #d6f0c3); }
-
-.goal-kpi-value {
-  position: relative;
-  z-index: 1;
-  color: rgba(0, 0, 0, 0.82);
-  font-size: 24px;
+.goal-date-card strong {
+  color: #111b35;
+  font-size: 20px;
   font-weight: 900;
   line-height: 1;
 }
 
-.goal-kpi-value.kpi-overdue {
-  font-size: 15px;
-  font-weight: 850;
-  color: #b05a00;
-}
-
-.goal-kpi-value small {
+.goal-date-card strong small {
+  margin-left: 2px;
   font-size: 13px;
-  font-weight: 750;
-  opacity: 0.48;
+  font-weight: 820;
 }
 
-.goal-kpi-label {
-  position: relative;
-  z-index: 1;
-  color: rgba(0, 0, 0, 0.46);
+.goal-date-card .date-sub {
+  color: rgba(33, 51, 89, 0.42);
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 660;
 }
 
-.goal-kpi-divider {
-  display: none;
+.date-card-warning {
+  border-color: rgba(255, 132, 38, 0.28);
+  background: linear-gradient(135deg, rgba(255, 247, 232, 0.92), rgba(255, 233, 205, 0.72));
+}
+
+.date-card-warning strong,
+.kpi-overdue {
+  color: #cf4f12;
 }
 
 .goal-hero-actions {
-  margin-top: 18px;
+  margin-top: 24px;
+}
+
+.goal-hero-actions :deep(.ant-btn) {
+  min-width: 112px;
+  height: 40px;
+  border-radius: 14px;
+}
+
+.goal-hero-actions :deep(.ant-btn-primary) {
+  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.22);
+}
+
+.goal-progress-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 238px;
+  flex-shrink: 0;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.goal-progress-ring {
+  display: grid;
+  place-items: center;
+  width: 176px;
+  height: 176px;
+  border-radius: 50%;
+  background:
+    conic-gradient(#2a7fff var(--goal-progress), rgba(42, 127, 255, 0.12) 0),
+    linear-gradient(135deg, rgba(238, 244, 255, 0.84), rgba(250, 252, 255, 0.92));
+  box-shadow: inset 0 0 0 16px rgba(255, 255, 255, 0.76), 0 18px 36px rgba(42, 127, 255, 0.12);
+}
+
+.goal-progress-ring-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.goal-progress-ring-inner span {
+  color: rgba(26, 47, 88, 0.48);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+.goal-progress-ring-inner strong {
+  margin-top: 6px;
+  color: #111b35;
+  font-size: 42px;
+  font-weight: 940;
+  line-height: 1;
+}
+
+.goal-progress-ring-inner strong small {
+  margin-left: 1px;
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.goal-progress-ring-inner em {
+  max-width: 106px;
+  margin-top: 8px;
+  overflow: hidden;
+  color: rgba(26, 47, 88, 0.52);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 720;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-health-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 190px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.64);
+  color: rgba(26, 47, 88, 0.58);
+  font-size: 12px;
+  font-weight: 760;
+  box-shadow: 0 10px 24px rgba(43, 56, 92, 0.055);
+}
+
+.goal-health-card strong {
+  margin-left: auto;
+  color: #cf4f12;
+  font-weight: 860;
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2a7fff;
+  box-shadow: 0 0 0 4px rgba(42, 127, 255, 0.14);
+}
+
+/* ── 摘要指标卡 ── */
+.goal-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.goal-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 168px;
+  padding: 24px 22px 20px;
+  border: 1px solid rgba(28, 42, 82, 0.055);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 38px rgba(43, 56, 92, 0.07), 0 1px 2px rgba(15, 35, 80, 0.03);
+}
+
+.summary-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.summary-sub .summary-icon { background: rgba(42, 127, 255, 0.12); color: #1677ff; }
+.summary-task .summary-icon { background: rgba(82, 196, 26, 0.14); color: #2f9e44; }
+.summary-habit .summary-icon { background: rgba(255, 126, 48, 0.16); color: #d45b18; }
+.summary-log .summary-icon { background: rgba(126, 87, 255, 0.14); color: #7657ea; }
+
+.summary-label {
+  color: #1c2948;
+  font-size: 14px;
+  font-weight: 840;
+}
+
+.summary-code {
+  margin-left: auto;
+  color: rgba(31, 45, 78, 0.38);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.summary-number {
+  color: #111b35;
+  font-size: 34px;
+  font-weight: 940;
+  line-height: 1;
+}
+
+.summary-number small {
+  margin-left: 4px;
+  color: rgba(31, 45, 78, 0.54);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.goal-summary-card :deep(.ant-progress-inner) {
+  background: rgba(28, 42, 82, 0.07);
+}
+
+.goal-summary-card :deep(.ant-progress-bg) {
+  background: linear-gradient(90deg, #2a7fff, #6d8cff);
+}
+
+.summary-dash-line {
+  height: 8px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(31, 45, 78, 0.08) 0 38px, transparent 38px 48px);
+}
+
+.summary-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  color: rgba(31, 45, 78, 0.52);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.summary-footer :deep(.ant-btn) {
+  height: auto;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 820;
 }
 
 /* ═══════ 双栏布局 ═══════ */
@@ -1381,6 +1697,154 @@ onMounted(() => {
 
 .goal-section-card :deep(.ant-empty) {
   padding: 28px 0;
+}
+
+.goal-section-card :deep(.ant-card-body) {
+  padding: 22px;
+}
+
+.goal-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.goal-section-header.compact {
+  margin-bottom: 16px;
+}
+
+.section-title-group {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  font-size: 16px;
+}
+
+.section-icon-blue { background: rgba(42, 127, 255, 0.12); color: #1677ff; }
+.section-icon-orange { background: rgba(255, 126, 48, 0.16); color: #d45b18; }
+.section-icon-green { background: rgba(82, 196, 26, 0.14); color: #2f9e44; }
+.section-icon-purple { background: rgba(126, 87, 255, 0.14); color: #7657ea; }
+
+.section-title-group h3 {
+  margin: 0;
+  color: #111b35;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.goal-section-header.compact .section-title-group h3 {
+  font-size: 16px;
+}
+
+.section-title-group p {
+  margin: 4px 0 0;
+  color: rgba(31, 45, 78, 0.48);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.section-actions {
+  flex-shrink: 0;
+}
+
+.goal-empty-workbench {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  padding: 34px 24px;
+  border: 1px dashed rgba(42, 127, 255, 0.34);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(42, 127, 255, 0.06), transparent 34%),
+    rgba(255, 255, 255, 0.46);
+  text-align: center;
+}
+
+.goal-empty-workbench.side-empty {
+  min-height: 170px;
+  padding: 26px 18px;
+}
+
+.empty-illustration {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(42, 127, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #1677ff;
+  font-size: 24px;
+  box-shadow: 0 12px 26px rgba(42, 127, 255, 0.08);
+}
+
+.goal-empty-workbench h4 {
+  margin: 0 0 10px;
+  color: #111b35;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.goal-empty-workbench p {
+  max-width: 560px;
+  margin: 0 0 18px;
+  color: rgba(31, 45, 78, 0.56);
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 22px;
+}
+
+.empty-template-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: rgba(31, 45, 78, 0.45);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.empty-template-tags em {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(42, 127, 255, 0.10);
+  color: #1768e8;
+  font-style: normal;
+}
+
+.empty-habit {
+  border-color: rgba(47, 158, 68, 0.26);
+}
+
+.empty-habit .empty-illustration {
+  color: #2f9e44;
+}
+
+.empty-progress {
+  border-color: rgba(126, 87, 255, 0.28);
+}
+
+.empty-progress .empty-illustration {
+  color: #7657ea;
 }
 
 /* ═══════ 子目标卡片 ═══════ */
