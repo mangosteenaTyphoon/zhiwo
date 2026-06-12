@@ -1243,63 +1243,23 @@ onMounted(() => {
 /* ═══════ Hero 工作台 ═══════ */
 .goal-cockpit-hero {
   position: relative;
-  min-height: 620px;
   overflow: hidden;
-  border: 1px solid rgba(214, 224, 244, 0.88);
-  border-radius: 38px;
+  border: 1px solid rgba(92, 120, 180, 0.16);
+  border-radius: 34px;
   background:
-    linear-gradient(180deg, rgba(233, 245, 255, 0.20), rgba(255, 255, 255, 0.78) 66%, rgba(255, 255, 255, 0.96)),
-    linear-gradient(135deg, #d9ecfa 0%, #f5fbff 45%, #eef5ff 100%);
-  box-shadow: 0 34px 86px rgba(45, 66, 112, 0.16), 0 1px 2px rgba(15, 35, 80, 0.03);
-}
-
-.goal-cockpit-hero::before,
-.goal-cockpit-hero::after {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  content: "";
-}
-
-.goal-cockpit-hero::before {
-  top: -150px;
-  right: -130px;
-  width: 760px;
-  height: 560px;
-  border-radius: 72px;
-  background:
-    linear-gradient(115deg, transparent 0 12%, rgba(16, 33, 60, 0.78) 12% 22%, transparent 22% 30%, rgba(255, 255, 255, 0.88) 30% 37%, rgba(19, 39, 70, 0.72) 37% 48%, transparent 48% 57%, rgba(255, 255, 255, 0.72) 57% 66%, rgba(25, 46, 78, 0.52) 66% 78%, transparent 78%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 42px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 42px);
-  opacity: 0.54;
-  filter: saturate(0.82);
-  transform: rotate(-13deg) skewX(-10deg);
-}
-
-.goal-cockpit-hero::after {
-  left: -160px;
-  bottom: 18px;
-  width: 540px;
-  height: 540px;
-  border: 1px solid rgba(255, 255, 255, 0.54);
-  border-radius: 46px;
-  background:
-    linear-gradient(128deg, rgba(255, 255, 255, 0.50) 0 22%, transparent 22% 32%, rgba(255, 255, 255, 0.42) 32% 52%, transparent 52%),
-    linear-gradient(90deg, rgba(145, 190, 224, 0.28), rgba(255, 255, 255, 0.08));
-  opacity: 0.72;
-  transform: rotate(-34deg) skewX(-12deg);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.82));
+  box-shadow: 0 28px 70px rgba(43, 56, 92, 0.12), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .goal-hero-grid {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.34;
+  opacity: 0.46;
   background-image:
-    linear-gradient(rgba(35, 68, 116, 0.075) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(35, 68, 116, 0.06) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.68) 54%, transparent 88%);
+    linear-gradient(rgba(58, 88, 145, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 88, 145, 0.055) 1px, transparent 1px);
+  background-size: 26px 26px;
 }
 
 .goal-hero-backdrop {
@@ -1307,16 +1267,15 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.82), transparent 25%),
-    radial-gradient(circle at 76% 8%, rgba(101, 151, 213, 0.30), transparent 30%),
-    radial-gradient(circle at 96% 48%, rgba(244, 249, 255, 0.92), transparent 32%),
-    linear-gradient(180deg, rgba(213, 234, 248, 0.20) 0%, rgba(235, 246, 255, 0.10) 52%, rgba(255, 255, 255, 0.84) 100%);
+    radial-gradient(circle at 5% 8%, rgba(97, 149, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 62% 10%, rgba(185, 157, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 96% 72%, rgba(230, 214, 255, 0.54), transparent 34%);
 }
 
 .goal-hero-content {
   position: relative;
   z-index: 1;
-  padding: 34px 40px 210px;
+  padding: 30px 36px 34px;
 }
 
 .goal-hero-nav {
@@ -1330,26 +1289,25 @@ onMounted(() => {
   height: 34px;
   border-color: rgba(25, 44, 84, 0.10);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(16, 30, 62, 0.76);
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(16, 30, 62, 0.74);
   font-size: 13px;
   font-weight: 760;
-  box-shadow: 0 10px 24px rgba(31, 55, 105, 0.08);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 20px rgba(31, 55, 105, 0.06);
 }
 
 .goal-breadcrumb {
-  color: rgba(31, 45, 78, 0.48);
+  color: rgba(31, 45, 78, 0.46);
   font-size: 13px;
-  font-weight: 720;
+  font-weight: 680;
 }
 
 .goal-hero-body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 52px;
-  margin-top: 74px;
+  gap: 34px;
+  margin-top: 42px;
 }
 
 .goal-hero-info {
@@ -1361,30 +1319,29 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   color: #1768e8;
   font-size: 12px;
-  font-weight: 940;
+  font-weight: 900;
   letter-spacing: 5px;
 }
 
 .goal-eyebrow i {
-  width: 78px;
+  width: 54px;
   height: 1px;
-  background: rgba(23, 104, 232, 0.42);
+  background: rgba(23, 104, 232, 0.44);
 }
 
 .goal-title {
   display: -webkit-box;
-  max-width: 840px;
-  margin: 0 0 16px;
+  max-width: 820px;
+  margin: 0 0 14px;
   overflow: hidden;
-  color: #07142d;
-  font-size: 48px;
-  font-weight: 960;
-  line-height: 1.08;
-  letter-spacing: -2px;
-  text-shadow: 0 12px 34px rgba(255, 255, 255, 0.58);
+  color: #111b35;
+  font-size: 40px;
+  font-weight: 920;
+  line-height: 1.16;
+  letter-spacing: -1.2px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1392,13 +1349,13 @@ onMounted(() => {
 
 .goal-description {
   display: -webkit-box;
-  max-width: 720px;
+  max-width: 780px;
   margin: 0;
   overflow: hidden;
-  color: rgba(18, 38, 75, 0.66);
+  color: rgba(25, 43, 82, 0.66);
   font-size: 15px;
-  font-weight: 620;
-  line-height: 27px;
+  font-weight: 560;
+  line-height: 26px;
   word-break: break-word;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1409,7 +1366,7 @@ onMounted(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 22px;
+  margin-top: 20px;
 }
 
 .goal-chip,
@@ -1417,31 +1374,28 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   max-width: 180px;
-  min-height: 26px;
-  padding: 4px 12px;
+  min-height: 25px;
+  padding: 4px 11px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.46);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.48);
-  color: rgba(24, 42, 82, 0.66);
+  background: rgba(38, 65, 115, 0.065);
+  color: rgba(24, 42, 82, 0.62);
   font-size: 12px;
-  font-weight: 820;
+  font-weight: 780;
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-shadow: 0 10px 22px rgba(31, 55, 105, 0.055);
-  backdrop-filter: blur(16px);
 }
 
 .goal-chip-category { background: rgba(37, 110, 255, 0.10); color: #1768e8; }
-.goal-chip-priority { background: rgba(255, 123, 46, 0.13); color: #c84f12; }
-.goal-chip-status-in_progress { background: rgba(22, 119, 255, 0.13); color: #1677ff; }
-.goal-chip-status-completed { background: rgba(82, 196, 26, 0.14); color: #389e0d; }
-.goal-chip-status-paused { background: rgba(250, 173, 20, 0.15); color: #d48806; }
-.goal-chip-status-cancelled { background: rgba(255, 77, 79, 0.12); color: #cf1322; }
+.goal-chip-priority { background: rgba(255, 123, 46, 0.12); color: #c84f12; }
+.goal-chip-status-in_progress { background: rgba(22, 119, 255, 0.12); color: #1677ff; }
+.goal-chip-status-completed { background: rgba(82, 196, 26, 0.13); color: #389e0d; }
+.goal-chip-status-paused { background: rgba(250, 173, 20, 0.14); color: #d48806; }
+.goal-chip-status-cancelled { background: rgba(255, 77, 79, 0.11); color: #cf1322; }
 
 .goal-tag {
-  background: rgba(126, 87, 255, 0.11);
+  background: rgba(126, 87, 255, 0.10);
   color: #6f4fe8;
 }
 
@@ -1449,33 +1403,32 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(150px, 1fr));
   gap: 14px;
-  max-width: 710px;
-  margin-top: 32px;
+  max-width: 690px;
+  margin-top: 28px;
 }
 
 .goal-date-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 102px;
-  padding: 18px 19px;
-  border: 1px solid rgba(255, 255, 255, 0.54);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.50);
-  box-shadow: 0 16px 34px rgba(43, 56, 92, 0.07);
-  backdrop-filter: blur(18px);
+  gap: 7px;
+  min-height: 96px;
+  padding: 17px 18px;
+  border: 1px solid rgba(32, 55, 106, 0.055);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 12px 26px rgba(43, 56, 92, 0.045);
 }
 
 .goal-date-card .date-label {
   color: rgba(33, 51, 89, 0.52);
   font-size: 12px;
-  font-weight: 840;
+  font-weight: 800;
 }
 
 .goal-date-card strong {
-  color: #07142d;
-  font-size: 21px;
-  font-weight: 940;
+  color: #111b35;
+  font-size: 20px;
+  font-weight: 900;
   line-height: 1;
 }
 
@@ -1488,12 +1441,12 @@ onMounted(() => {
 .goal-date-card .date-sub {
   color: rgba(33, 51, 89, 0.42);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 660;
 }
 
 .date-card-warning {
-  border-color: rgba(255, 132, 38, 0.30);
-  background: linear-gradient(135deg, rgba(255, 248, 237, 0.72), rgba(255, 235, 210, 0.54));
+  border-color: rgba(255, 132, 38, 0.28);
+  background: linear-gradient(135deg, rgba(255, 247, 232, 0.92), rgba(255, 233, 205, 0.72));
 }
 
 .date-card-warning strong,
@@ -1502,44 +1455,39 @@ onMounted(() => {
 }
 
 .goal-hero-actions {
-  margin-top: 28px;
+  margin-top: 24px;
 }
 
 .goal-hero-actions :deep(.ant-btn) {
   min-width: 112px;
   height: 40px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(16px);
 }
 
 .goal-hero-actions :deep(.ant-btn-primary) {
-  background: linear-gradient(135deg, #1677ff, #6d8cff);
-  box-shadow: 0 16px 30px rgba(22, 119, 255, 0.24);
+  box-shadow: 0 12px 24px rgba(22, 119, 255, 0.22);
 }
 
 .goal-progress-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 254px;
+  width: 238px;
   flex-shrink: 0;
   gap: 18px;
-  padding-top: 2px;
+  padding-top: 4px;
 }
 
 .goal-progress-ring {
   display: grid;
   place-items: center;
-  width: 194px;
-  height: 194px;
-  border: 1px solid rgba(255, 255, 255, 0.54);
+  width: 176px;
+  height: 176px;
   border-radius: 50%;
   background:
     conic-gradient(#2a7fff var(--goal-progress), rgba(42, 127, 255, 0.12) 0),
-    linear-gradient(135deg, rgba(238, 244, 255, 0.66), rgba(250, 252, 255, 0.74));
-  box-shadow: inset 0 0 0 17px rgba(255, 255, 255, 0.68), 0 24px 54px rgba(42, 127, 255, 0.16);
-  backdrop-filter: blur(16px);
+    linear-gradient(135deg, rgba(238, 244, 255, 0.84), rgba(250, 252, 255, 0.92));
+  box-shadow: inset 0 0 0 16px rgba(255, 255, 255, 0.76), 0 18px 36px rgba(42, 127, 255, 0.12);
 }
 
 .goal-progress-ring-inner {
@@ -1547,25 +1495,24 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 144px;
-  height: 144px;
+  width: 132px;
+  height: 132px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .goal-progress-ring-inner span {
   color: rgba(26, 47, 88, 0.48);
   font-size: 12px;
-  font-weight: 940;
+  font-weight: 900;
   letter-spacing: 3px;
 }
 
 .goal-progress-ring-inner strong {
   margin-top: 6px;
-  color: #07142d;
-  font-size: 44px;
-  font-weight: 960;
+  color: #111b35;
+  font-size: 42px;
+  font-weight: 940;
   line-height: 1;
 }
 
@@ -1576,13 +1523,13 @@ onMounted(() => {
 }
 
 .goal-progress-ring-inner em {
-  max-width: 112px;
+  max-width: 106px;
   margin-top: 8px;
   overflow: hidden;
-  color: rgba(26, 47, 88, 0.54);
+  color: rgba(26, 47, 88, 0.52);
   font-size: 12px;
   font-style: normal;
-  font-weight: 760;
+  font-weight: 720;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1592,22 +1539,20 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 9px;
-  min-width: 194px;
-  padding: 12px 17px;
-  border: 1px solid rgba(255, 255, 255, 0.52);
+  min-width: 190px;
+  padding: 11px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.54);
+  background: rgba(255, 255, 255, 0.64);
   color: rgba(26, 47, 88, 0.58);
   font-size: 12px;
-  font-weight: 800;
-  box-shadow: 0 14px 30px rgba(43, 56, 92, 0.07);
-  backdrop-filter: blur(16px);
+  font-weight: 760;
+  box-shadow: 0 10px 24px rgba(43, 56, 92, 0.055);
 }
 
 .goal-health-card strong {
   margin-left: auto;
   color: #cf4f12;
-  font-weight: 900;
+  font-weight: 860;
 }
 
 .health-dot {
@@ -1620,45 +1565,24 @@ onMounted(() => {
 
 /* ── 摘要指标卡 ── */
 .goal-summary-grid {
-  position: relative;
-  z-index: 3;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
-  margin: -132px 30px 6px;
+  gap: 18px;
 }
 
 .goal-summary-card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-height: 190px;
-  padding: 28px 24px 22px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.76));
-  box-shadow: 0 28px 62px rgba(34, 51, 91, 0.14), 0 1px 1px rgba(255, 255, 255, 0.70) inset;
-  backdrop-filter: blur(22px);
-}
-
-.goal-summary-card::after {
-  position: absolute;
-  right: -44px;
-  bottom: -50px;
-  width: 132px;
-  height: 132px;
-  border-radius: 40px;
-  background: rgba(42, 127, 255, 0.055);
-  content: "";
-  transform: rotate(18deg);
+  gap: 14px;
+  min-height: 168px;
+  padding: 24px 22px 20px;
+  border: 1px solid rgba(28, 42, 82, 0.055);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 38px rgba(43, 56, 92, 0.07), 0 1px 2px rgba(15, 35, 80, 0.03);
 }
 
 .summary-card-head {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1668,52 +1592,46 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 39px;
-  height: 39px;
-  border-radius: 13px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
   font-size: 16px;
-  box-shadow: 0 12px 24px rgba(31, 55, 105, 0.08);
 }
 
-.summary-sub .summary-icon { background: rgba(42, 127, 255, 0.13); color: #1677ff; }
-.summary-task .summary-icon { background: rgba(82, 196, 26, 0.15); color: #2f9e44; }
-.summary-habit .summary-icon { background: rgba(255, 126, 48, 0.17); color: #d45b18; }
-.summary-log .summary-icon { background: rgba(126, 87, 255, 0.15); color: #7657ea; }
+.summary-sub .summary-icon { background: rgba(42, 127, 255, 0.12); color: #1677ff; }
+.summary-task .summary-icon { background: rgba(82, 196, 26, 0.14); color: #2f9e44; }
+.summary-habit .summary-icon { background: rgba(255, 126, 48, 0.16); color: #d45b18; }
+.summary-log .summary-icon { background: rgba(126, 87, 255, 0.14); color: #7657ea; }
 
 .summary-label {
-  color: #101b34;
+  color: #1c2948;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 840;
 }
 
 .summary-code {
   margin-left: auto;
-  color: rgba(31, 45, 78, 0.42);
+  color: rgba(31, 45, 78, 0.38);
   font-size: 11px;
-  font-weight: 940;
-  letter-spacing: 1.4px;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
 .summary-number {
-  position: relative;
-  z-index: 1;
-  color: #07142d;
-  font-size: 42px;
-  font-weight: 970;
+  color: #111b35;
+  font-size: 34px;
+  font-weight: 940;
   line-height: 1;
-  letter-spacing: -1.4px;
 }
 
 .summary-number small {
-  margin-left: 5px;
-  color: rgba(31, 45, 78, 0.56);
+  margin-left: 4px;
+  color: rgba(31, 45, 78, 0.54);
   font-size: 13px;
-  font-weight: 780;
-  letter-spacing: 0;
+  font-weight: 760;
 }
 
 .goal-summary-card :deep(.ant-progress-inner) {
-  height: 7px !important;
   background: rgba(28, 42, 82, 0.07);
 }
 
@@ -1722,32 +1640,28 @@ onMounted(() => {
 }
 
 .summary-dash-line {
-  position: relative;
-  z-index: 1;
   height: 8px;
   border-radius: 999px;
   background:
-    repeating-linear-gradient(90deg, rgba(31, 45, 78, 0.09) 0 40px, transparent 40px 52px);
+    repeating-linear-gradient(90deg, rgba(31, 45, 78, 0.08) 0 38px, transparent 38px 48px);
 }
 
 .summary-footer {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-top: auto;
-  color: rgba(31, 45, 78, 0.54);
+  color: rgba(31, 45, 78, 0.52);
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 720;
 }
 
 .summary-footer :deep(.ant-btn) {
   height: auto;
   padding: 0;
   font-size: 12px;
-  font-weight: 860;
+  font-weight: 820;
 }
 
 /* ═══════ 双栏布局 ═══════ */
