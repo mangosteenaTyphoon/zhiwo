@@ -1039,3 +1039,8 @@ BEGIN;
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 目标管理V2 菜单数据
+INSERT INTO `sys_menu` (`id`, `parent_id`, `label`, `title`, `menu_type`, `router_path`, `component_path`, `visible`, `status`, `perms`, `icon`, `sort`, `create_id`, `create_time`, `update_id`, `update_time`, `del_flag`, `remark`, `cache`, `link_path`, `query`, `view_tab`, `link_open_type`) VALUES (1909264238680707074, '0', '目标管理V2', '目标管理V2', 'directory', '/shanzhu-v2', NULL, '0', '0', 'directory', 'FlagOutlined', 2, 1, NOW(), NULL, NULL, '0', NULL, '0', NULL, NULL, '0', 'inner');
+INSERT INTO `sys_menu` (`id`, `parent_id`, `label`, `title`, `menu_type`, `router_path`, `component_path`, `visible`, `status`, `perms`, `icon`, `sort`, `create_id`, `create_time`, `update_id`, `update_time`, `del_flag`, `remark`, `cache`, `link_path`, `query`, `view_tab`, `link_open_type`) VALUES (1909264238680707075, '1909264238680707074', '目标列表', '目标列表', 'page', '/goal', '/shanzhu/goal-v2/index.vue', '0', '0', 'page', 'UnorderedListOutlined', 1, 1, NOW(), NULL, NULL, '0', NULL, '0', NULL, NULL, '1', 'inner');
+INSERT INTO `sys_menu` (`id`, `parent_id`, `label`, `title`, `menu_type`, `router_path`, `component_path`, `visible`, `status`, `perms`, `icon`, `sort`, `create_id`, `create_time`, `update_id`, `update_time`, `del_flag`, `remark`, `cache`, `link_path`, `query`, `view_tab`, `link_open_type`) VALUES (1909264238680707076, '1909264238680707074', '目标详情', '目标详情', 'page', '/goal/detail/:id', '/shanzhu/goal-v2/detail/index.vue', '1', '0', 'page', 'FlagOutlined', 2, 1, NOW(), NULL, NULL, '0', NULL, '0', NULL, NULL, '1', 'inner');
