@@ -1209,10 +1209,11 @@ onMounted(() => {
 <style scoped>
 /* ═══════ 全局页面 ═══════ */
 .shanzhu-goal-detail-page {
-  max-width: 1360px;
+  width: 100%;
+  max-width: none;
   min-height: calc(100vh - 120px);
-  margin: 0 auto;
-  padding: 32px 48px 56px;
+  margin: 0;
+  padding: 24px 32px 56px;
   overflow-x: hidden;
   background:
     radial-gradient(circle at 10% 0%, rgba(219, 235, 255, 0.42), transparent 28%),
