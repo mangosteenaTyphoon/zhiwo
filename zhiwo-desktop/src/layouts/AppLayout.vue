@@ -1,5 +1,5 @@
 <template>
-  <div class="app-layout" @mousedown="onDragStart">
+  <div class="app-layout" @mousedown="onDragStart" :style="{ '--sidebar-w': sidebarWidth + 'px' }">
     <!-- 四边调整大小手柄 -->
     <div class="resize-handle top" @mousedown.stop="startResize('n')"></div>
     <div class="resize-handle bottom" @mousedown.stop="startResize('s')"></div>
@@ -10,7 +10,20 @@
     <div class="resize-handle corner bottom-left" @mousedown.stop="startResize('sw')"></div>
     <div class="resize-handle corner bottom-right" @mousedown.stop="startResize('se')"></div>
 
-    <SidebarNav />
+    <SidebarNav :collapsed="collapsed" />
+    <!-- 分隔条：可拖拽调整宽度 + 点击收起 -->
+    <div
+      class="sidebar-divider"
+      @mousedown.stop="onDividerDown"
+      @dblclick="toggleCollapse"
+    >
+      <button class="collapse-btn" @click.stop="toggleCollapse" :title="collapsed ? '展开导航' : '收起导航'">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline v-if="collapsed" points="10,3 6,8 10,13" />
+          <polyline v-else points="6,3 10,8 6,13" />
+        </svg>
+      </button>
+    </div>
     <main class="main-content">
       <router-view />
     </main>
@@ -18,29 +31,69 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import SidebarNav from "./SidebarNav.vue";
 
 const appWindow = getCurrentWindow();
 
-// === 窗口拖拽（通过 Rust drag_move 命令） ===
+// === 侧边栏宽度调整 ===
+const sidebarWidth = ref(220);
+const collapsed = ref(false);
+const lastWidth = ref(220);
+const MIN_WIDTH = 160;
+const MAX_WIDTH = 360;
+const COLLAPSED_WIDTH = 56;
+
+function toggleCollapse() {
+  if (collapsed.value) {
+    sidebarWidth.value = lastWidth.value;
+    collapsed.value = false;
+  } else {
+    lastWidth.value = sidebarWidth.value;
+    collapsed.value = true;
+    sidebarWidth.value = COLLAPSED_WIDTH;
+  }
+}
+
+// 分隔条拖拽调整宽度
+let resizing = false;
+function onDividerDown(e: MouseEvent) {
+  resizing = true;
+  const startX = e.clientX;
+  const startW = sidebarWidth.value;
+  document.body.style.cursor = "col-resize";
+  document.body.style.userSelect = "none";
+  window.addEventListener("mousemove", onDividerMove);
+  window.addEventListener("mouseup", onDividerUp);
+
+  function onDividerMove(ev: MouseEvent) {
+    if (!resizing) return;
+    const newW = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startW + ev.clientX - startX));
+    sidebarWidth.value = newW;
+    if (newW > COLLAPSED_WIDTH + 20) collapsed.value = false;
+  }
+  function onDividerUp() {
+    resizing = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    window.removeEventListener("mousemove", onDividerMove);
+    window.removeEventListener("mouseup", onDividerUp);
+  }
+}
+
+// === 窗口拖拽 ===
 let dragging = false;
-let startScrX = 0;
-let startScrY = 0;
-let startWinX = 0;
-let startWinY = 0;
+let startScrX = 0, startScrY = 0, startWinX = 0, startWinY = 0;
 
 async function onDragStart(e: MouseEvent) {
   const el = e.target as HTMLElement;
-  if (el.closest("button, a, input, textarea, .resize-handle")) return;
-
+  if (el.closest("button, a, input, textarea, .resize-handle, .sidebar-divider")) return;
   const [wx, wy] = (await invoke("get_pos")) as [number, number];
   dragging = true;
-  startScrX = e.screenX;
-  startScrY = e.screenY;
-  startWinX = wx;
-  startWinY = wy;
+  startScrX = e.screenX; startScrY = e.screenY;
+  startWinX = wx; startWinY = wy;
   document.body.style.cursor = "grabbing";
   window.addEventListener("mousemove", onMove);
   window.addEventListener("mouseup", onUp);
@@ -48,9 +101,7 @@ async function onDragStart(e: MouseEvent) {
 
 function onMove(e: MouseEvent) {
   if (!dragging) return;
-  const dx = e.screenX - startScrX;
-  const dy = e.screenY - startScrY;
-  invoke("drag_move", { x: startWinX + dx, y: startWinY + dy });
+  invoke("drag_move", { x: startWinX + e.screenX - startScrX, y: startWinY + e.screenY - startScrY });
 }
 
 function onUp() {
@@ -68,15 +119,20 @@ function startResize(direction: string) {
 
 <style scoped>
 .app-layout {
+  --sidebar-w: 220px;
   display: flex;
   width: 100%;
   height: 100%;
   border-radius: 20px;
   overflow: hidden;
-  background: #f0f0f2;
   padding: 8px;
-  gap: 4px;
+  gap: 0;
   position: relative;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(120,160,255,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(255,160,160,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(160,255,200,0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #f2f2f5 0%, #ebebf0 100%);
 }
 
 .main-content {
@@ -84,6 +140,53 @@ function startResize(direction: string) {
   overflow: auto;
   background: #ffffff;
   border-radius: 16px;
+  padding: var(--z-space-2xl);
+  clip-path: inset(0 round 16px);
+}
+
+/* 分隔条 */
+.sidebar-divider {
+  width: 6px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.sidebar-divider:hover,
+.sidebar-divider:active {
+  background: rgba(0,0,0,0.03);
+}
+.collapse-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.sidebar-divider:hover .collapse-btn {
+  opacity: 1;
+}
+.collapse-btn svg {
+  width: 12px;
+  height: 12px;
+  color: var(--z-text-secondary);
+}
+.collapse-btn:hover {
+  background: #fff;
+  border-color: rgba(0,0,0,0.2);
 }
 
 .resize-handle { position: absolute; z-index: 50; }

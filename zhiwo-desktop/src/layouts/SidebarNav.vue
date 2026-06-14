@@ -1,5 +1,5 @@
 <template>
-  <nav class="sidebar">
+  <nav class="sidebar" :class="{ collapsed: props.collapsed }">
     <!-- 窗口控制按钮 -->
     <div class="window-controls" @mousedown.stop>
       <button class="window-btn close" @click.stop="closeWindow" title="关闭">
@@ -73,6 +73,8 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "@/stores/app";
+
+const props = defineProps<{ collapsed: boolean }>();
 import { logout } from "@/api/auth";
 
 const appStore = useAppStore();
@@ -109,21 +111,59 @@ async function handleLogout() {
 
 <style scoped>
 .sidebar {
-  width: 220px;
+  width: var(--sidebar-w, 220px);
   height: 100%;
   display: flex;
   flex-direction: column;
   padding: 16px 10px 12px;
   position: relative;
+  overflow: hidden;
   border-radius: 16px;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  /* 液态玻璃核心：极通透 + 强力模糊 */
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.15) 100%);
-  backdrop-filter: blur(80px) saturate(240%);
-  -webkit-backdrop-filter: blur(80px) saturate(240%);
+    linear-gradient(
+      160deg,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.06) 50%,
+      rgba(255,255,255,0.14) 100%
+    );
+  backdrop-filter: blur(120px) saturate(300%) brightness(1.04) contrast(1.02);
+  -webkit-backdrop-filter: blur(120px) saturate(300%) brightness(1.04) contrast(1.02);
+  /* 多层阴影营造深度 */
   box-shadow:
-    inset 0 0.5px 0 0.5px rgba(255,255,255,0.8),
-    inset 0 0 0 1px rgba(255,255,255,0.2),
-    0 8px 32px rgba(0,0,0,0.04);
+    /* 内层：玻璃上边缘强反光 */
+    inset 0 0.5px 0 0 rgba(255,255,255,0.9),
+    /* 内层：左上角高光区 */
+    inset 1px 1px 0 0 rgba(255,255,255,0.3),
+    /* 内层：右下角暗区（玻璃厚度感） */
+    inset -0.5px -0.5px 0 0 rgba(0,0,0,0.06),
+    /* 内层：底部微暗 */
+    inset 0 -1px 0 0 rgba(0,0,0,0.03),
+    /* 外层：紧贴阴影（玻璃边缘） */
+    0 0 0 0.5px rgba(0,0,0,0.04),
+    /* 外层：近距离弥散阴影（浮起感） */
+    0 2px 16px rgba(0,0,0,0.05),
+    /* 外层：中距离阴影 */
+    0 8px 40px rgba(0,0,0,0.06),
+    /* 外层：远距离大阴影（深度） */
+    0 20px 80px rgba(0,0,0,0.04);
+}
+/* 玻璃纹理覆盖：强光斑 + 边缘光晕 */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  background:
+    /* 左上主光源高光 */
+    radial-gradient(ellipse at 25% 8%, rgba(255,255,255,0.2) 0%, transparent 55%),
+    /* 右下二次反射光 */
+    radial-gradient(ellipse at 85% 92%, rgba(255,255,255,0.08) 0%, transparent 45%),
+    /* 顶部环境光 */
+    radial-gradient(ellipse at 60% 5%, rgba(255,255,255,0.12) 0%, transparent 40%);
 }
 
 .window-controls {
@@ -237,4 +277,16 @@ async function handleLogout() {
 .logout-btn { width:24px; height:24px; border:none; border-radius:8px; background:transparent; color:var(--z-text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s ease; padding:0; }
 .logout-btn svg { width:14px; height:14px; }
 .logout-btn:hover { background:rgba(0,0,0,0.06); color:var(--z-danger); transform:scale(1.05); }
+
+/* 收起状态 */
+.sidebar.collapsed { padding: 16px 8px 12px; }
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .search-box,
+.sidebar.collapsed .user-name,
+.sidebar.collapsed .logout-btn,
+.sidebar.collapsed .window-controls { display: none; }
+.sidebar.collapsed .nav-link { justify-content: center; padding: 8px 0; }
+.sidebar.collapsed .user-profile { justify-content: center; }
+.sidebar.collapsed .nav-section { border-top: none; margin-top: 0; padding-top: 0; }
 </style>
