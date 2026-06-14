@@ -1,8 +1,15 @@
 <template>
   <nav class="sidebar">
-    <!-- 品牌 -->
-    <div class="sidebar-brand">
-      <span class="brand-name">知我</span>
+    <!-- 窗口控制按钮 + 品牌 -->
+    <div class="sidebar-header" data-tauri-drag-region>
+      <div class="window-controls">
+        <button class="window-btn close" @click="closeWindow"></button>
+        <button class="window-btn minimize" @click="minimizeWindow"></button>
+        <button class="window-btn maximize" @click="maximizeWindow"></button>
+      </div>
+      <div class="sidebar-brand">
+        <span class="brand-name">知我</span>
+      </div>
     </div>
 
     <!-- 导航卡片容器 -->
@@ -45,11 +52,25 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore } from "@/stores/app";
 import { logout } from "@/api/auth";
 
 const appStore = useAppStore();
 const router = useRouter();
+const appWindow = getCurrentWindow();
+
+function closeWindow() {
+  appWindow.close();
+}
+
+function minimizeWindow() {
+  appWindow.minimize();
+}
+
+function maximizeWindow() {
+  appWindow.toggleMaximize();
+}
 
 const mainNavItems = [
   { path: "/today", label: "今日", icon: "☀" },

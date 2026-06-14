@@ -35,7 +35,7 @@
         <a-card :bordered="false" class="dashboard-panel habit-summary-panel">
           <template #title>
             <div class="dashboard-panel-title">
-              <span>🌱</span>
+              <ExperimentOutlined/>
               <strong>习惯打卡统计</strong>
             </div>
           </template>
@@ -69,7 +69,7 @@
         <a-card :bordered="false" class="dashboard-panel today-habit-panel">
           <template #title>
             <div class="dashboard-panel-title">
-              <span>✅</span>
+              <CheckCircleOutlined/>
               <strong>今日习惯打卡</strong>
               <em>{{ todayHabits.length }}</em>
             </div>
@@ -94,7 +94,7 @@
                 </div>
                 <div class="habit-meta">
                   <span>目标值 {{ formatHabitTargetValue(item.targetValue, item.unit) }}</span>
-                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
                   <span v-if="item.note">备注 {{ item.note }}</span>
                 </div>
               </div>
@@ -127,7 +127,7 @@
         <a-card :bordered="false" class="dashboard-panel category-panel">
           <template #title>
             <div class="dashboard-panel-title">
-              <span>📊</span>
+              <BarChartOutlined/>
               <strong>分类目标和任务分布</strong>
             </div>
           </template>
@@ -168,7 +168,7 @@
         <a-card :bordered="false" class="dashboard-panel trend-panel">
           <template #title>
             <div class="dashboard-panel-title">
-              <span>📈</span>
+              <RiseOutlined/>
               <strong>完成趋势</strong>
             </div>
           </template>
@@ -207,7 +207,7 @@
       <a-card :bordered="false" class="dashboard-panel risk-panel">
         <template #title>
           <div class="dashboard-panel-title">
-            <span>⚠️</span>
+            <WarningOutlined/>
             <strong>风险雷达</strong>
           </div>
         </template>
@@ -234,7 +234,7 @@
               <div v-for="item in dashboard.riskStats.overdueTasks" :key="item.id || item.title" class="risk-item">
                 <div class="risk-item-title">{{ item.title }}</div>
                 <div class="risk-item-meta">
-                  <span>🎯 {{ item.goalTitle || '-' }}</span>
+                  <span><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle || '-' }}</span>
                   <span>逾期 {{ item.overdueDays }} 天</span>
                   <span>截止 {{ item.deadline || '-' }}</span>
                 </div>
@@ -264,7 +264,7 @@
               <div v-for="item in dashboard.riskStats.highPriorityUnfinishedTasks" :key="item.id || item.title" class="risk-item">
                 <div class="risk-item-title">{{ item.title }}</div>
                 <div class="risk-item-meta">
-                  <span>🎯 {{ item.goalTitle || '-' }}</span>
+                  <span><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle || '-' }}</span>
                   <span>截止 {{ item.deadline || '-' }}</span>
                 </div>
               </div>
@@ -280,7 +280,15 @@
 import {computed, onMounted, reactive, ref} from "vue";
 import {useRouter} from "vue-router";
 import {message, Modal} from "ant-design-vue";
-import {RedoOutlined} from "@ant-design/icons-vue";
+import {
+  RedoOutlined,
+  ExperimentOutlined,
+  CheckCircleOutlined,
+  BarChartOutlined,
+  WarningOutlined,
+  RiseOutlined,
+  AimOutlined
+} from "@ant-design/icons-vue";
 import {queryDashboard} from "@/api/shanzhu/dashboard/Dashboard.ts";
 import type {DashboardOverviewStats, ShanzhuDashboard} from "@/api/shanzhu/dashboard/type/Dashboard.ts";
 import {

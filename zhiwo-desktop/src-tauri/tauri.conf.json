@@ -10,6 +10,7 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "知我",
@@ -18,10 +19,11 @@
         "minWidth": 960,
         "minHeight": 600,
         "center": true,
-        "decorations": true,
-        "transparent": false,
+        "decorations": false,
+        "transparent": true,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "shadow": true
       }
     ],
     "security": {

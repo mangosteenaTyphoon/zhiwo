@@ -237,47 +237,6 @@ const routers = [
       }
     ],
   },
-  {
-    path: '/shanzhu-v2',
-    component: MiddleView,
-    name: 'ShanzhuGoalV2Manage',
-    meta: {
-      label: "目标管理V2",
-      icon: "FlagOutlined",
-      cache: false,
-      affix: false,
-      viewTab: false,
-      visible: true
-    },
-    children: [
-      {
-        path: '/shanzhu-v2/goal',
-        component: () => import("@/views/shanzhu/goal-v2/index.vue"),
-        name: 'ShanzhuGoalV2List',
-        meta: {
-          label: "目标列表",
-          icon: "UnorderedListOutlined",
-          cache: false,
-          affix: false,
-          viewTab: true,
-          visible: true
-        }
-      },
-      {
-        path: '/shanzhu-v2/goal/detail/:id',
-        component: () => import("@/views/shanzhu/goal-v2/detail/index.vue"),
-        name: 'ShanzhuGoalV2Detail',
-        meta: {
-          label: "目标详情",
-          icon: "FlagOutlined",
-          cache: false,
-          affix: false,
-          viewTab: true,
-          visible: false
-        }
-      }
-    ]
-  },
   // login
   {
     path: '/login',

@@ -125,7 +125,7 @@
                       <CalendarOutlined style="margin-right: 2px;"/> {{ todo.plannedDate }}
                     </span>
                     <span v-if="todo.goalTitle" class="todo-tag todo-tag-goal">
-                      🎯 {{ todo.goalTitle }}
+                      <AimOutlined style="margin-right: 3px;"/> {{ todo.goalTitle }}
                     </span>
                   </div>
                 </div>
@@ -195,7 +195,7 @@
       <div class="todo-sidebar">
         <!-- 概览 -->
         <div class="sidebar-card">
-          <h4 class="sidebar-title">📊 概览</h4>
+          <h4 class="sidebar-title"><BarChartOutlined style="margin-right: 6px;"/> 概览</h4>
           <div class="sidebar-stats">
             <div class="stat-row">
               <span class="stat-label">收集箱</span>
@@ -218,7 +218,7 @@
 
         <!-- 快捷操作 -->
         <div class="sidebar-card">
-          <h4 class="sidebar-title">⚡ 快捷操作</h4>
+          <h4 class="sidebar-title"><ThunderboltOutlined style="margin-right: 6px;"/> 快捷操作</h4>
           <div class="sidebar-actions">
             <a-button block @click="router.push('/shanzhu/today-work')">
               <template #icon><DesktopOutlined/></template>
@@ -229,7 +229,7 @@
               任务中心
             </a-button>
             <a-button block @click="router.push('/shanzhu/goal')">
-              <template #icon><span style="margin-right: 0;">🎯</span></template>
+              <template #icon><AimOutlined/></template>
               目标列表
             </a-button>
           </div>
@@ -237,7 +237,7 @@
 
         <!-- 小贴士 -->
         <div class="sidebar-card sidebar-card-tip">
-          <h4 class="sidebar-title">💡 使用提示</h4>
+          <h4 class="sidebar-title"><BulbOutlined style="margin-right: 6px;"/> 使用提示</h4>
           <ul class="sidebar-tips">
             <li>想到什么就记，不用分类</li>
             <li>定期整理：转任务 / 移入今日 / 删除</li>
@@ -340,6 +340,9 @@ import {useRouter} from "vue-router";
 import type {FormInstance, Rule} from "ant-design-vue/es/form";
 import {message, Modal} from "ant-design-vue";
 import {
+  AimOutlined,
+  BarChartOutlined,
+  BulbOutlined,
   CalendarOutlined,
   CheckOutlined,
   CheckSquareOutlined,
@@ -350,7 +353,8 @@ import {
   MoreOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SearchOutlined
+  SearchOutlined,
+  ThunderboltOutlined
 } from "@ant-design/icons-vue";
 import {queryGoalPage} from "@/api/shanzhu/goal/Goal.ts";
 import type {ShanzhuGoalVO} from "@/api/shanzhu/goal/type/Goal.ts";

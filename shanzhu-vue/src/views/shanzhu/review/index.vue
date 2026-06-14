@@ -56,7 +56,7 @@
         <div class="review-summary-list">
           <div v-if="review.reviewSummary.length === 0" class="review-empty-tip">暂无复盘摘要，生成复盘后会在这里沉淀关键结论。</div>
           <div v-for="item in review.reviewSummary" v-else :key="item" class="review-summary-item">
-            <span>✨</span>
+            <span><StarOutlined/></span>
             <p>{{ item }}</p>
           </div>
         </div>
@@ -66,7 +66,7 @@
         <a-card :bordered="false" class="review-panel habit-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>🌱</span>
+              <span><ExperimentOutlined/></span>
               <strong>习惯完成分析</strong>
             </div>
           </template>
@@ -113,7 +113,7 @@
                 <div class="habit-analysis-meta">
                   <span>连续 {{ item.continuousDays }} 天</span>
                   <span>目标值 {{ formatHabitTargetValue(item.targetValue, item.unit) }}</span>
-                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
                 </div>
               </div>
               <a-progress class="habit-analysis-progress" :percent="item.completionRate" size="small"/>
@@ -124,7 +124,7 @@
         <a-card :bordered="false" class="review-panel checkin-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>✅</span>
+              <span><CheckCircleOutlined/></span>
               <strong>打卡记录洞察</strong>
             </div>
           </template>
@@ -159,7 +159,7 @@
               </div>
               <div class="checkin-tags">
                 <span>{{ item.checkinDate }}</span>
-                <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
               </div>
             </div>
           </div>
@@ -170,7 +170,7 @@
         <a-card :bordered="false" class="review-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>🧭</span>
+              <span><CompassOutlined/></span>
               <strong>分类长期投入情况</strong>
             </div>
           </template>
@@ -200,7 +200,7 @@
         <a-card :bordered="false" class="review-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>🏷️</span>
+              <span><TagsOutlined/></span>
               <strong>标签维度任务类型分析</strong>
             </div>
           </template>
@@ -230,7 +230,7 @@
         <a-card :bordered="false" class="review-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>📈</span>
+              <span><RiseOutlined/></span>
               <strong>任务完成效率变化</strong>
             </div>
           </template>
@@ -250,7 +250,7 @@
         <a-card :bordered="false" class="review-panel suggestion-panel">
           <template #title>
             <div class="review-panel-title">
-              <span>💡</span>
+              <span><BulbOutlined/></span>
               <strong>目标调整建议</strong>
             </div>
           </template>
@@ -280,7 +280,7 @@
       <a-card :bordered="false" class="review-panel goal-achievement-panel">
         <template #title>
           <div class="review-panel-title">
-            <span>🎯</span>
+            <span><AimOutlined/></span>
             <strong>目标达成率分析</strong>
           </div>
         </template>
@@ -317,7 +317,19 @@
 import {computed, onMounted, reactive, ref} from "vue";
 import {message, Modal} from "ant-design-vue";
 import {useRouter} from "vue-router";
-import {DesktopOutlined, InboxOutlined, PlusOutlined} from "@ant-design/icons-vue";
+import {
+  AimOutlined,
+  BulbOutlined,
+  CheckCircleOutlined,
+  CompassOutlined,
+  DesktopOutlined,
+  ExperimentOutlined,
+  InboxOutlined,
+  PlusOutlined,
+  RiseOutlined,
+  StarOutlined,
+  TagsOutlined
+} from "@ant-design/icons-vue";
 import {queryReviewSummary} from "@/api/shanzhu/review/Review.ts";
 import type {ShanzhuReview, ShanzhuReviewQuery, TaskEfficiencyTrend} from "@/api/shanzhu/review/type/Review.ts";
 import {

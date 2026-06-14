@@ -10,7 +10,7 @@
         </div>
         <a-space>
           <a-button class="task-secondary-btn" @click="router.push('/shanzhu/goal')">
-            🎯 目标管理
+            <AimOutlined style="margin-right: 4px;"/> 目标管理
           </a-button>
           <a-button type="primary" shape="round" size="large" @click="openCreateTaskModal">
             <template #icon><PlusOutlined/></template>
@@ -94,7 +94,7 @@
                       <CalendarOutlined style="margin-right: 2px;"/> {{ task.plannedDate }}
                     </span>
                     <span v-if="task.goalTitle" class="task-tag task-tag-goal">
-                      🎯 {{ task.goalTitle }}
+                      <AimOutlined style="margin-right: 3px;"/> {{ task.goalTitle }}
                     </span>
                     <span v-if="task.categoryName" class="task-tag task-tag-category">
                       {{ task.categoryName }}
@@ -125,7 +125,7 @@
                             <CheckOutlined/> 标记完成
                           </a-menu-item>
                           <a-menu-item v-if="task.goalId" @click="openGoalDetail(task.goalId)">
-                            🎯 查看目标
+                            <AimOutlined/> 查看目标
                           </a-menu-item>
                           <a-menu-item @click="openEditTaskModal(task)">
                             <EditOutlined/> 编辑
@@ -160,7 +160,7 @@
       <!-- 侧边栏 -->
       <div class="task-sidebar">
         <div class="sidebar-card sidebar-anim" style="animation-delay: 0.1s;">
-          <h4 class="sidebar-title">📊 概览</h4>
+          <h4 class="sidebar-title"><BarChartOutlined style="margin-right: 6px;"/> 概览</h4>
           <div class="sidebar-stats">
             <div class="stat-row">
               <span class="stat-label">今日任务</span>
@@ -187,7 +187,7 @@
         </div>
 
         <div class="sidebar-card sidebar-anim" style="animation-delay: 0.2s;">
-          <h4 class="sidebar-title">⚡ 快捷操作</h4>
+          <h4 class="sidebar-title"><ThunderboltOutlined style="margin-right: 6px;"/> 快捷操作</h4>
           <div class="sidebar-actions">
             <a-button block @click="router.push('/shanzhu/today-work')">
               <template #icon><DesktopOutlined/></template>
@@ -201,7 +201,7 @@
         </div>
 
         <div class="sidebar-card sidebar-card-tip sidebar-anim" style="animation-delay: 0.3s;">
-          <h4 class="sidebar-title">💡 使用提示</h4>
+          <h4 class="sidebar-title"><BulbOutlined style="margin-right: 6px;"/> 使用提示</h4>
           <ul class="sidebar-tips">
             <li>任务从目标拆解而来</li>
             <li>高优任务优先处理</li>
@@ -305,6 +305,9 @@ import {useRouter} from "vue-router";
 import type {FormInstance, Rule} from "ant-design-vue/es/form";
 import {message, Modal} from "ant-design-vue";
 import {
+  AimOutlined,
+  BarChartOutlined,
+  BulbOutlined,
   CalendarOutlined,
   CheckOutlined,
   DeleteOutlined,
@@ -313,7 +316,8 @@ import {
   InboxOutlined,
   MoreOutlined,
   PlusOutlined,
-  SearchOutlined
+  SearchOutlined,
+  ThunderboltOutlined
 } from "@ant-design/icons-vue";
 import ShanzhuCategorySelect from "@/components/shanzhu-category-select/index.vue";
 import ShanzhuTagSelect from "@/components/shanzhu-tag-select/index.vue";

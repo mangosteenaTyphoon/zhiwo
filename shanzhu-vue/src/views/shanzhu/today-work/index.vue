@@ -107,7 +107,7 @@
       <a-card :bordered="false" class="today-section-card today-task-card">
         <template #title>
           <div class="today-section-title">
-            <span class="today-section-icon">✅</span>
+            <span class="today-section-icon"><CheckCircleOutlined/></span>
             <span>今日任务</span>
             <em>{{ tasks.length }}</em>
           </div>
@@ -138,8 +138,8 @@
                   {{ item.title }}
                 </div>
                 <div class="item-meta">
-                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
-                  <span v-if="item.estimatedMinutes">⏱ {{ item.estimatedMinutes }} 分钟</span>
+                  <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
+                  <span v-if="item.estimatedMinutes"><ClockCircleOutlined style="margin-right: 3px;"/> {{ item.estimatedMinutes }} 分钟</span>
                 </div>
               </div>
               <div class="today-item-actions">
@@ -168,7 +168,7 @@
       <a-card :bordered="false" class="today-section-card today-habit-card">
         <template #title>
           <div class="today-section-title">
-            <span class="today-section-icon">🌱</span>
+            <span class="today-section-icon"><ExperimentOutlined/></span>
             <span>今日习惯</span>
             <em>{{ habits.length }}</em>
           </div>
@@ -199,7 +199,7 @@
                   {{ item.title }}
                 </div>
                 <div class="item-meta">
-                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
+                  <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
                   <span v-if="item.targetValue">目标值 {{ item.targetValue }}{{ item.unit || '' }}</span>
                 </div>
               </div>
@@ -216,7 +216,7 @@
       <a-card :bordered="false" class="today-section-card today-todo-card">
         <template #title>
           <div class="today-section-title">
-            <span class="today-section-icon">📥</span>
+            <span class="today-section-icon"><InboxOutlined/></span>
             <span>今日 Todo</span>
             <em>{{ todos.length }}</em>
           </div>
@@ -247,8 +247,8 @@
                   {{ item.title }}
                 </div>
                 <div class="item-meta">
-                  <span v-if="item.goalTitle">🎯 {{ item.goalTitle }}</span>
-                  <span v-if="item.estimatedMinutes">⏱ {{ item.estimatedMinutes }} 分钟</span>
+                  <span v-if="item.goalTitle"><AimOutlined style="margin-right: 3px;"/> {{ item.goalTitle }}</span>
+                  <span v-if="item.estimatedMinutes"><ClockCircleOutlined style="margin-right: 3px;"/> {{ item.estimatedMinutes }} 分钟</span>
                 </div>
               </div>
               <div class="today-item-actions">
@@ -325,10 +325,14 @@ import type {FormInstance, Rule} from "ant-design/vue/es/form";
 import {message, Modal} from "ant-design-vue";
 import {useRouter} from "vue-router";
 import {
+  AimOutlined,
   CalendarOutlined,
+  CheckCircleOutlined,
   CheckSquareOutlined,
+  ClockCircleOutlined,
   DeleteOutlined,
   EditOutlined,
+  ExperimentOutlined,
   EyeOutlined,
   InboxOutlined,
   MoreOutlined,

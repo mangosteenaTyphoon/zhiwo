@@ -16,6 +16,9 @@ import SidebarNav from "./SidebarNav.vue";
   display: flex;
   width: 100%;
   height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--z-bg-primary);
 }
 
 .main-content {
