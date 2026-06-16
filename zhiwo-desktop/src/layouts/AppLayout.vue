@@ -1,5 +1,5 @@
 <template>
-  <div class="app-layout" @mousedown="onDragStart" :style="{ '--sidebar-w': sidebarWidth + 'px' }">
+  <div class="app-layout" :style="{ '--sidebar-w': sidebarWidth + 'px' }">
     <!-- 四边调整大小手柄 -->
     <div class="resize-handle top" @mousedown.stop="startResize('n')"></div>
     <div class="resize-handle bottom" @mousedown.stop="startResize('s')"></div>
@@ -10,7 +10,9 @@
     <div class="resize-handle corner bottom-left" @mousedown.stop="startResize('sw')"></div>
     <div class="resize-handle corner bottom-right" @mousedown.stop="startResize('se')"></div>
 
-    <SidebarNav :collapsed="collapsed" />
+    <div class="sidebar-wrapper" @mousedown="onDragStart">
+      <SidebarNav :collapsed="collapsed" />
+    </div>
     <!-- 分隔条：可拖拽调整宽度 + 点击收起 -->
     <div
       class="sidebar-divider"
@@ -25,6 +27,7 @@
       </button>
     </div>
     <main class="main-content">
+      <div class="main-drag-bar" @mousedown="onDragStart"></div>
       <router-view />
     </main>
   </div>
@@ -89,7 +92,7 @@ let startScrX = 0, startScrY = 0, startWinX = 0, startWinY = 0;
 
 async function onDragStart(e: MouseEvent) {
   const el = e.target as HTMLElement;
-  if (el.closest("button, a, input, textarea, .resize-handle, .sidebar-divider")) return;
+  if (el.closest("button, a, input, select, .sidebar-divider, .collapse-btn")) return;
   const [wx, wy] = (await invoke("get_pos")) as [number, number];
   dragging = true;
   startScrX = e.screenX; startScrY = e.screenY;
@@ -135,6 +138,11 @@ function startResize(direction: string) {
     linear-gradient(180deg, #f2f2f5 0%, #ebebf0 100%);
 }
 
+/* 侧边栏 wrapper —— 只有这个区域可拖拽窗口 */
+.sidebar-wrapper {
+  flex-shrink: 0;
+}
+
 .main-content {
   flex: 1;
   overflow: auto;
@@ -142,6 +150,16 @@ function startResize(direction: string) {
   border-radius: 16px;
   padding: var(--z-space-2xl);
   clip-path: inset(0 round 16px);
+  position: relative;
+}
+
+/* 主内容区顶部隐形拖拽条 —— 可拖拽窗口 */
+.main-drag-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 20px;
+  z-index: 10;
+  cursor: default;
 }
 
 /* 分隔条 */
