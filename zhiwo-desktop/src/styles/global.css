@@ -19,6 +19,17 @@ body,
   overflow: hidden;
 }
 
+/* 窗口圆角 - macOS 风格 */
+html {
+  border-radius: var(--z-window-radius);
+  overflow: hidden;
+}
+
+body {
+  border-radius: var(--z-window-radius);
+  overflow: hidden;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -42,4 +53,56 @@ body,
 ::selection {
   background: var(--z-accent-light);
   color: var(--z-text-primary);
+}
+
+/* ===== 公共页面样式 ===== */
+
+/* 页面容器 */
+.page-container {
+  max-width: var(--z-content-max-width);
+}
+
+/* 页面标题 */
+.page-title {
+  font-size: var(--z-page-title-size);
+  font-weight: var(--z-page-title-weight);
+  letter-spacing: var(--z-page-title-spacing);
+  margin-bottom: var(--z-space-sm);
+  color: var(--z-text-primary);
+}
+
+/* 页面描述 */
+.page-desc {
+  font-size: var(--z-page-desc-size);
+  color: var(--z-page-desc-color);
+  margin-bottom: var(--z-space-xl);
+}
+
+/* 页面区块 */
+.page-section {
+  margin-bottom: var(--z-space-2xl);
+}
+
+.page-section-title {
+  font-size: var(--z-font-size-lg);
+  font-weight: var(--z-font-weight-semibold);
+  color: var(--z-text-primary);
+  margin-bottom: var(--z-space-md);
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: var(--z-space-2xl);
+  color: var(--z-text-tertiary);
+  font-size: var(--z-font-size-md);
+}
+
+/* 卡片 */
+.card {
+  background: var(--z-card-bg);
+  border-radius: var(--z-card-radius);
+  box-shadow: var(--z-shadow-sm);
+  border: 1px solid var(--z-border);
+  padding: var(--z-space-xl);
 }

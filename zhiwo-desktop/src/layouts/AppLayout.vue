@@ -123,7 +123,7 @@ function startResize(direction: string) {
   display: flex;
   width: 100%;
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--z-window-radius);
   overflow: hidden;
   padding: 8px;
   gap: 0;
