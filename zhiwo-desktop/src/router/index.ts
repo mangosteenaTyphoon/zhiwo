@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "今日", icon: "Today" },
       },
       {
+        path: "inbox",
+        name: "Inbox",
+        component: () => import("@/views/inbox/InboxView.vue"),
+        meta: { title: "收集箱", icon: "Inbox" },
+      },
+      {
         path: "goals",
         name: "Goals",
         component: () => import("@/views/goals/GoalsView.vue"),

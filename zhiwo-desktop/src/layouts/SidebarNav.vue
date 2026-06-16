@@ -71,6 +71,7 @@ const mainNavItems = [
 ];
 
 const workspaceItems = [
+  { path: "/inbox", label: "收集箱", icon: "📥" },
   { path: "/goals", label: "目标", icon: "🎯" },
   { path: "/tasks", label: "任务", icon: "✓" },
 ];
